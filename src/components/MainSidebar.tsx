@@ -50,6 +50,7 @@ import { useLanguageStore } from '@/stores/useLanguageStore'
 import { Link, useLocation } from 'react-router-dom'
 import { cn } from '@/lib/utils'
 import { PublishModal } from '@/components/PublishModal'
+import logoImg from '@/assets/corepm-f1280.png'
 
 interface SidebarSection {
   label: string
@@ -181,8 +182,17 @@ export function MainSidebar() {
                 : 'gap-2 justify-start w-full overflow-hidden',
             )}
           >
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-              O
+            <div
+              className={cn(
+                'flex shrink-0 items-center justify-center transition-all duration-200',
+                state === 'collapsed' ? 'w-8 h-8' : 'w-10 h-10',
+              )}
+            >
+              <img
+                src={logoImg}
+                alt="Opporjob Logo"
+                className="w-full h-full object-contain drop-shadow-sm"
+              />
             </div>
             <span
               className={cn(

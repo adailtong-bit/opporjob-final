@@ -70,97 +70,6 @@ import { supabase } from '@/lib/supabase/client'
 import { useLanguageStore } from '@/stores/useLanguageStore'
 import { EvaluationModal } from '@/components/EvaluationModal'
 import { AuthProvider, useAuth } from '@/hooks/use-auth'
-import logoImg from '@/assets/corepm-f1280.png'
-
-const LogoFixer = () => {
-  useEffect(() => {
-    const fixLogo = () => {
-      try {
-        const checkAndReplace = (el: HTMLElement) => {
-          let parent = el.parentElement
-          let foundOpperjob = false
-          // Look up the DOM tree to see if this logo is next to the "Opporjob" text
-          for (let j = 0; j < 4; j++) {
-            if (
-              parent &&
-              (parent.textContent?.toLowerCase().includes('opporjob') ||
-                parent.textContent?.toLowerCase().includes('bidwork'))
-            ) {
-              foundOpperjob = true
-              break
-            }
-            parent = parent?.parentElement || null
-          }
-
-          if (foundOpperjob && !el.querySelector('img')) {
-            el.innerHTML = ''
-            el.style.backgroundColor = 'transparent'
-            el.className = 'flex items-center justify-center shrink-0'
-            const img = document.createElement('img')
-            img.src = logoImg
-            img.className = 'h-8 w-auto object-contain scale-125'
-            img.alt = 'Opporjob Logo'
-            el.appendChild(img)
-            el.classList.remove(
-              'bg-primary',
-              'bg-blue-600',
-              'text-primary-foreground',
-              'text-white',
-              'rounded-lg',
-              'rounded-md',
-              'bg-sidebar-primary',
-            )
-          }
-        }
-
-        // 1. Find elements with text 'O' or 'o' or 'B' or 'b'
-        const bTextElements = document.evaluate(
-          "//div[text()='O'] | //span[text()='O'] | //div[text()='o'] | //span[text()='o'] | //div[text()='B'] | //span[text()='B'] | //div[text()='b'] | //span[text()='b']",
-          document,
-          null,
-          XPathResult.UNORDERED_NODE_SNAPSHOT_TYPE,
-          null,
-        )
-        for (let i = 0; i < bTextElements.snapshotLength; i++) {
-          const el = bTextElements.snapshotItem(i) as HTMLElement
-          if (el && el.children.length === 0) checkAndReplace(el)
-        }
-
-        // 2. Also find standard shadcn layout/sidebar logo containers
-        const logoContainers = document.querySelectorAll(
-          '.bg-sidebar-primary, .bg-primary, .bg-blue-600',
-        )
-        logoContainers.forEach((el) => {
-          if (
-            el.classList.contains('aspect-square') &&
-            (el.classList.contains('size-8') || el.classList.contains('h-8'))
-          ) {
-            checkAndReplace(el as HTMLElement)
-          }
-        })
-      } catch (e) {
-        // ignore
-      }
-    }
-
-    fixLogo()
-    const observer = new MutationObserver((mutations) => {
-      let shouldFix = false
-      for (const m of mutations) {
-        if (m.addedNodes.length > 0) {
-          shouldFix = true
-          break
-        }
-      }
-      if (shouldFix) setTimeout(fixLogo, 10)
-    })
-
-    observer.observe(document.body, { childList: true, subtree: true })
-    return () => observer.disconnect()
-  }, [])
-
-  return null
-}
 
 const ScrollToTop = () => {
   const { pathname } = useLocation()
@@ -272,7 +181,6 @@ const App = () => {
       <BrowserRouter
         future={{ v7_startTransition: false, v7_relativeSplatPath: false }}
       >
-        <LogoFixer />
         <AuthSync />
         <ScrollToTop />
         <TooltipProvider>
