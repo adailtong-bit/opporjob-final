@@ -25,6 +25,7 @@ export interface Ad {
   segment: 'dashboard' | 'search' | 'profile' | 'home' | 'all'
   link: string
   active: boolean
+  is_published?: boolean
 
   advertiserName: string
   advertiserDetails?: AdvertiserDetails
@@ -66,6 +67,7 @@ export const useAdStore = create<AdState>((set, get) => ({
         {
           ...(ad as Ad),
           id: Math.random().toString(36).substr(2, 9),
+          is_published: true, // Auto-publish new ads for now so they appear
         },
       ],
     })),
@@ -123,12 +125,17 @@ export const useAdStore = create<AdState>((set, get) => ({
 
     const validAds = ads.filter((ad) => {
       if (isProd) {
+        // Strict production filter: only explicitly published ads
+        if (ad.is_published !== true) return false
+
         const title = (ad.title || '').toLowerCase()
         const isTest =
           title.includes('test') ||
           title.includes('demo') ||
           title.includes('fictício') ||
-          title.includes('ficticio')
+          title.includes('ficticio') ||
+          title.includes('mock') ||
+          title.includes('lorem')
         if (isTest || (ad as any).isTest || (ad as any).is_test) return false
       }
       return (

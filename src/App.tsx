@@ -191,12 +191,17 @@ const App = () => {
             if (store?.state?.jobs && Array.isArray(store.state.jobs)) {
               const originalLength = store.state.jobs.length
               store.state.jobs = store.state.jobs.filter((j: any) => {
+                if (j.is_published !== true) return false
                 const title = (j.title || '').toLowerCase()
+                const desc = (j.description || '').toLowerCase()
                 return !(
                   title.includes('test') ||
                   title.includes('demo') ||
                   title.includes('fictício') ||
-                  title.includes('ficticio')
+                  title.includes('ficticio') ||
+                  title.includes('mock') ||
+                  title.includes('lorem') ||
+                  desc.includes('lorem')
                 )
               })
               if (store.state.jobs.length !== originalLength) modified = true
@@ -206,12 +211,15 @@ const App = () => {
             if (store?.state?.ads && Array.isArray(store.state.ads)) {
               const originalLength = store.state.ads.length
               store.state.ads = store.state.ads.filter((a: any) => {
+                if (a.is_published !== true) return false
                 const title = (a.title || '').toLowerCase()
                 return !(
                   title.includes('test') ||
                   title.includes('demo') ||
                   title.includes('fictício') ||
-                  title.includes('ficticio')
+                  title.includes('ficticio') ||
+                  title.includes('mock') ||
+                  title.includes('lorem')
                 )
               })
               if (store.state.ads.length !== originalLength) modified = true

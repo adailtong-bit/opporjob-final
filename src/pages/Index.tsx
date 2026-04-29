@@ -20,15 +20,29 @@ export default function Index() {
 
   const validJobs = jobs.filter((j: any) => {
     if (!isProd) return true
+
+    // Strict production filter as defined in the system policies
+    // Only explicitly published records are allowed in production
+    if (j.is_published !== true) return false
+
     const isTestFlag = j.is_test || j.isTest || j.status === 'test'
+    if (isTestFlag) return false
+
     const titleLower = (j.title || '').toLowerCase()
+    const descLower = (j.description || '').toLowerCase()
     const hasTestWord =
       titleLower.includes('test') ||
       titleLower.includes('mock') ||
       titleLower.includes('fictício') ||
       titleLower.includes('ficticio') ||
-      titleLower.includes('demo')
-    return !isTestFlag && !hasTestWord
+      titleLower.includes('demo') ||
+      titleLower.includes('lorem') ||
+      titleLower.includes('ipsum') ||
+      descLower.includes('test') ||
+      descLower.includes('mock') ||
+      descLower.includes('lorem')
+
+    return !hasTestWord
   })
 
   const mappedListings = validJobs.map((j) => {
