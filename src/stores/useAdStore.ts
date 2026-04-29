@@ -116,14 +116,28 @@ export const useAdStore = create<AdState>((set, get) => ({
   getAdsBySegment: (segment, isPaidUser = false) => {
     const { ads } = get()
     const now = new Date()
+    const isProd =
+      import.meta.env.PROD ||
+      (typeof window !== 'undefined' &&
+        window.location.hostname !== 'localhost')
 
-    const validAds = ads.filter(
-      (ad) =>
+    const validAds = ads.filter((ad) => {
+      if (isProd) {
+        const title = (ad.title || '').toLowerCase()
+        const isTest =
+          title.includes('test') ||
+          title.includes('demo') ||
+          title.includes('fictício') ||
+          title.includes('ficticio')
+        if (isTest || (ad as any).isTest || (ad as any).is_test) return false
+      }
+      return (
         ad.active &&
         ad.status === 'active' &&
         new Date(ad.endDate) >= now &&
-        (ad.segment === segment || ad.segment === 'all'),
-    )
+        (ad.segment === segment || ad.segment === 'all')
+      )
+    })
 
     // Time-Gate logic: 24h block for free users
     const timeGatedAds = validAds.filter((ad) => {

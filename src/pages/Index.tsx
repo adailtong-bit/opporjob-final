@@ -13,7 +13,25 @@ export default function Index() {
   const { t } = useLanguageStore()
   const { jobs } = useJobStore()
 
-  const mappedListings = jobs.map((j) => {
+  // Filter out test/dummy data for production
+  const isProd =
+    import.meta.env.PROD ||
+    (typeof window !== 'undefined' && window.location.hostname !== 'localhost')
+
+  const validJobs = jobs.filter((j: any) => {
+    if (!isProd) return true
+    const isTestFlag = j.is_test || j.isTest || j.status === 'test'
+    const titleLower = (j.title || '').toLowerCase()
+    const hasTestWord =
+      titleLower.includes('test') ||
+      titleLower.includes('mock') ||
+      titleLower.includes('fictício') ||
+      titleLower.includes('ficticio') ||
+      titleLower.includes('demo')
+    return !isTestFlag && !hasTestWord
+  })
+
+  const mappedListings = validJobs.map((j) => {
     let tabType = 'jobs'
     if (j.listingType === 'rental') tabType = 'rentals'
     if (j.listingType === 'product') {

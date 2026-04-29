@@ -174,6 +174,58 @@ const App = () => {
 
   useEffect(() => {
     document.title = t('app.title') + ' - Marketplace'
+
+    // Clean up dummy data from local storage to ensure production is clean
+    try {
+      const isProd =
+        import.meta.env.PROD || window.location.hostname !== 'localhost'
+      if (isProd) {
+        const storesToClean = ['job-store', 'ad-store', 'bound-store']
+        storesToClean.forEach((storeKey) => {
+          const storeStr = localStorage.getItem(storeKey)
+          if (storeStr) {
+            const store = JSON.parse(storeStr)
+            let modified = false
+
+            // Clean jobs
+            if (store?.state?.jobs && Array.isArray(store.state.jobs)) {
+              const originalLength = store.state.jobs.length
+              store.state.jobs = store.state.jobs.filter((j: any) => {
+                const title = (j.title || '').toLowerCase()
+                return !(
+                  title.includes('test') ||
+                  title.includes('demo') ||
+                  title.includes('fictício') ||
+                  title.includes('ficticio')
+                )
+              })
+              if (store.state.jobs.length !== originalLength) modified = true
+            }
+
+            // Clean ads
+            if (store?.state?.ads && Array.isArray(store.state.ads)) {
+              const originalLength = store.state.ads.length
+              store.state.ads = store.state.ads.filter((a: any) => {
+                const title = (a.title || '').toLowerCase()
+                return !(
+                  title.includes('test') ||
+                  title.includes('demo') ||
+                  title.includes('fictício') ||
+                  title.includes('ficticio')
+                )
+              })
+              if (store.state.ads.length !== originalLength) modified = true
+            }
+
+            if (modified) {
+              localStorage.setItem(storeKey, JSON.stringify(store))
+            }
+          }
+        })
+      }
+    } catch (e) {
+      console.error('Error cleaning dummy data', e)
+    }
   }, [t])
 
   return (
