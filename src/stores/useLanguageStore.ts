@@ -29,7 +29,7 @@ export const useLanguageStore = create<LanguageState>()(
       setCurrency: (currency) => set({ currentCurrency: currency }),
       t: (key, params) => {
         const lang = get().currentLanguage
-        let text = translations[lang][key] || key
+        let text = translations[lang]?.[key] || translations['en'][key] || key
 
         if (params) {
           Object.entries(params).forEach(([k, v]) => {
@@ -40,9 +40,9 @@ export const useLanguageStore = create<LanguageState>()(
         return text
       },
       formatCurrency: (value) => {
-        const currency = get().currentCurrency || 'USD'
-        const locale =
-          currency === 'BRL' ? 'pt-BR' : currency === 'EUR' ? 'es-ES' : 'en-US'
+        // Enforce USD globally to maintain system standards as requested
+        const currency = 'USD'
+        const locale = 'en-US'
 
         return new Intl.NumberFormat(locale, {
           style: 'currency',

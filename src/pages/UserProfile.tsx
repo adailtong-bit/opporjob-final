@@ -7,6 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { MessageSquare, Heart, Shield, ArrowLeft } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
+import { useLanguageStore } from '@/stores/useLanguageStore'
 
 export default function UserProfile() {
   const { id } = useParams<{ id: string }>()
@@ -15,6 +16,7 @@ export default function UserProfile() {
     useMessageStore()
   const navigate = useNavigate()
   const { toast } = useToast()
+  const { t } = useLanguageStore()
 
   // Mock fetching user data for demonstration
   const targetUser = {
@@ -22,30 +24,28 @@ export default function UserProfile() {
     name:
       id === 'owner-1'
         ? 'Admin Tech Corp'
-        : 'Profissional ' + id?.substring(0, 4),
+        : 'Professional ' + id?.substring(0, 4),
     avatar: `https://img.usecurling.com/ppl/large?seed=${id}`,
     openChat: id === 'owner-1' ? true : false,
     role: id === 'owner-1' ? 'contractor' : 'executor',
     reputation: 4.8,
-    location: 'São Paulo - SP',
+    location: 'New York - NY',
   }
 
   if (!user)
     return (
       <div className="p-8 text-center text-muted-foreground">
-        Por favor, faça login para ver este perfil.
+        {t('profile.login_required')}
       </div>
     )
 
   if (user.id === id) {
     return (
       <div className="max-w-3xl mx-auto py-8 px-4 text-center space-y-4">
-        <h2 className="text-2xl font-bold">Meu Perfil Público</h2>
-        <p className="text-muted-foreground">
-          Este é como outros usuários veem o seu perfil na plataforma.
-        </p>
+        <h2 className="text-2xl font-bold">{t('profile.public_title')}</h2>
+        <p className="text-muted-foreground">{t('profile.public_desc')}</p>
         <Button onClick={() => navigate('/settings')}>
-          Ir para Configurações
+          {t('profile.go_settings')}
         </Button>
       </div>
     )
@@ -81,8 +81,8 @@ export default function UserProfile() {
         targetUser.id,
       )
       toast({
-        title: 'Interesse enviado!',
-        description: 'Aguarde a aceitação do usuário para iniciar o chat.',
+        title: 'Interest Sent!',
+        description: 'Wait for the user to accept to start chatting.',
       })
     }
   }
@@ -90,7 +90,7 @@ export default function UserProfile() {
   return (
     <div className="max-w-3xl mx-auto py-8 px-4 space-y-6">
       <Button variant="ghost" className="mb-2" onClick={() => navigate(-1)}>
-        <ArrowLeft className="mr-2 h-4 w-4" /> Voltar
+        <ArrowLeft className="mr-2 h-4 w-4" /> {t('back')}
       </Button>
 
       <Card>
@@ -107,13 +107,15 @@ export default function UserProfile() {
               {targetUser.openChat && (
                 <Shield
                   className="h-4 w-4 text-green-500"
-                  title="Open Chat Habilitado"
+                  title="Open Chat Enabled"
                 />
               )}
             </h1>
             <div className="flex flex-wrap justify-center sm:justify-start gap-2">
               <Badge variant="outline" className="capitalize">
-                {targetUser.role === 'contractor' ? 'Contratante' : 'Executor'}
+                {targetUser.role === 'contractor'
+                  ? t('role.contractor')
+                  : t('role.executor')}
               </Badge>
               <Badge variant="secondary" className="text-yellow-600">
                 ★ {targetUser.reputation}
@@ -121,9 +123,7 @@ export default function UserProfile() {
               <Badge variant="outline">{targetUser.location}</Badge>
             </div>
             <p className="text-sm text-muted-foreground max-w-lg mx-auto sm:mx-0">
-              Profissional verificado pela plataforma BIDWORK. Avaliado
-              positivamente por clientes anteriores em quesitos como prazo e
-              qualidade.
+              {t('profile.verified_desc')}
             </p>
           </div>
           <div className="flex flex-col gap-2 w-full sm:w-auto mt-4 sm:mt-0">
@@ -135,27 +135,29 @@ export default function UserProfile() {
             >
               {canMessage ? (
                 <>
-                  <MessageSquare className="mr-2 h-4 w-4" /> Enviar Mensagem
+                  <MessageSquare className="mr-2 h-4 w-4" />{' '}
+                  {t('profile.send_message')}
                 </>
               ) : existingInterest?.status === 'pending' ? (
                 <>
-                  <Heart className="mr-2 h-4 w-4" /> Interesse Pendente
+                  <Heart className="mr-2 h-4 w-4" />{' '}
+                  {t('profile.pending_interest')}
                 </>
               ) : (
                 <>
-                  <Heart className="mr-2 h-4 w-4" /> Demonstrar Interesse
+                  <Heart className="mr-2 h-4 w-4" />{' '}
+                  {t('profile.show_interest')}
                 </>
               )}
             </Button>
             {!canMessage && !existingInterest && (
               <p className="text-xs text-muted-foreground text-center max-w-[200px] mx-auto mt-2">
-                Este usuário possui chat fechado. <br /> Assine um plano Premium
-                para envio direto.
+                {t('profile.closed_chat_desc')}
               </p>
             )}
             {isPremium && !targetUser.openChat && !existingConversation && (
               <div className="mt-2 text-center bg-primary/10 text-primary px-3 py-1.5 rounded-md text-xs font-medium border border-primary/20">
-                Benefício Premium: Chat liberado.
+                {t('profile.premium_benefit')}
               </div>
             )}
           </div>

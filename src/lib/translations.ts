@@ -957,6 +957,87 @@ export const translations: Translations = {
     'admin.cplans.configured': 'Planos Configurados',
     'admin.cplans.configured_desc':
       'Gerencie ativamente o que é oferecido aos contratantes.',
+
+    'sub.updated.title': 'Assinatura Atualizada!',
+    'sub.updated.desc':
+      'Parabéns! Agora você tem acesso aos recursos do plano {tierName}.',
+    'sub.plans.title': 'Escolha o plano ideal para sua carreira',
+    'sub.plans.subtitle':
+      'Desbloqueie ferramentas exclusivas, aumente sua visibilidade e feche mais negócios com os planos premium.',
+    'sub.plans.most_popular': 'Mais Popular',
+    'sub.plans.month': 'mês',
+    'sub.plans.cycle': 'ciclo',
+    'sub.plans.subscribe': 'Assinar Agora',
+
+    'profile.login_required': 'Por favor, faça login para ver este perfil.',
+    'profile.public_title': 'Meu Perfil Público',
+    'profile.public_desc':
+      'Este é como outros usuários veem o seu perfil na plataforma.',
+    'profile.go_settings': 'Ir para Configurações',
+    'profile.verified_desc':
+      'Profissional verificado pela plataforma BIDWORK. Avaliado positivamente por clientes anteriores em quesitos como prazo e qualidade.',
+    'profile.send_message': 'Enviar Mensagem',
+    'profile.pending_interest': 'Interesse Pendente',
+    'profile.show_interest': 'Demonstrar Interesse',
+    'profile.closed_chat_desc':
+      'Este usuário possui chat fechado. Assine um plano Premium para envio direto.',
+    'profile.premium_benefit': 'Benefício Premium: Chat liberado.',
+
+    'checkout.plan_not_found': 'Plano não encontrado.',
+    'checkout.admin_access': 'Acesso Admin Liberado!',
+    'checkout.sub_confirmed': 'Assinatura confirmada!',
+    'checkout.secure': 'Checkout Seguro',
+    'checkout.finalize_desc':
+      'Finalize sua assinatura para liberar os recursos.',
+    'checkout.payment_method': 'Método de Pagamento',
+    'checkout.cc': 'Cartão de Crédito',
+    'checkout.dc': 'Cartão de Débito',
+    'checkout.card_name': 'Nome no Cartão',
+    'checkout.card_number': 'Número do Cartão',
+    'checkout.expiry': 'Validade (MM/AA)',
+    'checkout.cvv': 'CVV',
+    'checkout.summary': 'Resumo da Compra',
+    'checkout.selected_plan': 'Plano Selecionado',
+    'checkout.billing': 'Cobrança',
+    'checkout.monthly': 'Mensal Recorrente',
+    'checkout.yearly': 'Anual Recorrente',
+    'checkout.total': 'Total a Pagar',
+    'checkout.free_admin': 'Grátis (Admin)',
+    'checkout.confirm_pay': 'Confirmar Pagamento',
+    'checkout.processing': 'Processando...',
+    'checkout.secure_info':
+      'Pagamento processado com segurança via Stripe. Seus dados estão criptografados de ponta a ponta.',
+
+    'payment.finalize_desc': 'Finalize a contratação para iniciar o serviço.',
+    'payment.simulation_cc': 'Simulação: Cartão Final 4242 (Mock)',
+    'payment.protected_desc':
+      'Seus dados estão protegidos. O valor fica retido (Escrow) até a conclusão do serviço.',
+    'payment.order_summary': 'Resumo do Pedido',
+    'payment.service': 'Serviço',
+    'payment.professional': 'Profissional',
+    'payment.pay_hire': 'Pagar e Contratar',
+
+    'credits.store_title': 'Loja de Créditos',
+    'credits.store_desc':
+      'Adquira créditos para lances em leilões e impulsione seus resultados.',
+    'credits.available': 'créditos disponíveis',
+    'credits.packages': 'Pacotes de Créditos',
+    'credits.boosts': 'Impulsionadores (Boosts)',
+    'credits.buy_now': 'Comprar Agora',
+    'credits.buy_boost': 'Adquirir Boost',
+    'credits.beginner': 'Iniciante',
+    'credits.popular': 'Popular',
+    'credits.pro': 'Profissional',
+    'credits.bonus': '+{bonus} bônus',
+    'credits.boost.24h': 'Destaque de Job (24h)',
+    'credits.boost.24h_desc':
+      'Seu job no topo das buscas por 24 horas na sua região.',
+    'credits.boost.7d': 'Super Destaque (7 dias)',
+    'credits.boost.7d_desc':
+      'Visibilidade máxima na categoria e região por uma semana.',
+    'credits.boost.profile': 'Impulsionar Perfil',
+    'credits.boost.profile_desc':
+      'Apareça como sugestão para contratantes por 3 dias.',
   },
   en: {
     'app.title': 'OPPORJOB',
@@ -1901,6 +1982,86 @@ export const translations: Translations = {
     'admin.cplans.configured': 'Configured Plans',
     'admin.cplans.configured_desc':
       'Actively manage what is offered to contractors.',
+
+    'sub.updated.title': 'Subscription Updated!',
+    'sub.updated.desc':
+      'Congratulations! You now have access to {tierName} plan features.',
+    'sub.plans.title': 'Choose the ideal plan for your career',
+    'sub.plans.subtitle':
+      'Unlock exclusive tools, increase your visibility, and close more deals with premium plans.',
+    'sub.plans.most_popular': 'Most Popular',
+    'sub.plans.month': 'month',
+    'sub.plans.cycle': 'cycle',
+    'sub.plans.subscribe': 'Subscribe Now',
+
+    'profile.login_required': 'Please login to view this profile.',
+    'profile.public_title': 'My Public Profile',
+    'profile.public_desc':
+      'This is how other users see your profile on the platform.',
+    'profile.go_settings': 'Go to Settings',
+    'profile.verified_desc':
+      'Verified professional by the platform. Positively reviewed by previous clients for deadlines and quality.',
+    'profile.send_message': 'Send Message',
+    'profile.pending_interest': 'Pending Interest',
+    'profile.show_interest': 'Show Interest',
+    'profile.closed_chat_desc':
+      'This user has a closed chat. Subscribe to a Premium plan to message directly.',
+    'profile.premium_benefit': 'Premium Benefit: Chat unlocked.',
+
+    'checkout.plan_not_found': 'Plan not found.',
+    'checkout.admin_access': 'Admin Access Granted!',
+    'checkout.sub_confirmed': 'Subscription confirmed!',
+    'checkout.secure': 'Secure Checkout',
+    'checkout.finalize_desc': 'Complete your subscription to unlock features.',
+    'checkout.payment_method': 'Payment Method',
+    'checkout.cc': 'Credit Card',
+    'checkout.dc': 'Debit Card',
+    'checkout.card_name': 'Name on Card',
+    'checkout.card_number': 'Card Number',
+    'checkout.expiry': 'Expiry (MM/YY)',
+    'checkout.cvv': 'CVV',
+    'checkout.summary': 'Order Summary',
+    'checkout.selected_plan': 'Selected Plan',
+    'checkout.billing': 'Billing',
+    'checkout.monthly': 'Monthly Recurring',
+    'checkout.yearly': 'Yearly Recurring',
+    'checkout.total': 'Total to Pay',
+    'checkout.free_admin': 'Free (Admin)',
+    'checkout.confirm_pay': 'Confirm Payment',
+    'checkout.processing': 'Processing...',
+    'checkout.secure_info':
+      'Payment securely processed via Stripe. Your data is end-to-end encrypted.',
+
+    'payment.finalize_desc': 'Finalize the hiring to start the service.',
+    'payment.simulation_cc': 'Simulation: Card ending in 4242 (Mock)',
+    'payment.protected_desc':
+      'Your data is protected. The amount is held in Escrow until the service is completed.',
+    'payment.order_summary': 'Order Summary',
+    'payment.service': 'Service',
+    'payment.professional': 'Professional',
+    'payment.pay_hire': 'Pay and Hire',
+
+    'credits.store_title': 'Credits Store',
+    'credits.store_desc':
+      'Purchase credits for auction bids and boost your results.',
+    'credits.available': 'available credits',
+    'credits.packages': 'Credit Packages',
+    'credits.boosts': 'Boosters',
+    'credits.buy_now': 'Buy Now',
+    'credits.buy_boost': 'Buy Boost',
+    'credits.beginner': 'Starter',
+    'credits.popular': 'Popular',
+    'credits.pro': 'Professional',
+    'credits.bonus': '+{bonus} bonus',
+    'credits.boost.24h': 'Job Highlight (24h)',
+    'credits.boost.24h_desc':
+      'Your job at the top of searches for 24 hours in your region.',
+    'credits.boost.7d': 'Super Highlight (7 days)',
+    'credits.boost.7d_desc':
+      'Maximum visibility in category and region for a week.',
+    'credits.boost.profile': 'Boost Profile',
+    'credits.boost.profile_desc':
+      'Appear as a suggestion to contractors for 3 days.',
   },
   es: {
     'app.title': 'OPPORJOB',
@@ -2846,5 +3007,87 @@ export const translations: Translations = {
     'admin.cplans.configured': 'Planes Configurados',
     'admin.cplans.configured_desc':
       'Gestione activamente lo que se ofrece a los contratistas.',
+
+    'sub.updated.title': '¡Suscripción Actualizada!',
+    'sub.updated.desc':
+      '¡Felicidades! Ahora tienes acceso a las funciones del plan {tierName}.',
+    'sub.plans.title': 'Elige el plan ideal para tu carrera',
+    'sub.plans.subtitle':
+      'Desbloquea herramientas exclusivas, aumenta tu visibilidad y cierra más negocios con planes premium.',
+    'sub.plans.most_popular': 'Más Popular',
+    'sub.plans.month': 'mes',
+    'sub.plans.cycle': 'ciclo',
+    'sub.plans.subscribe': 'Suscribirse Ahora',
+
+    'profile.login_required': 'Inicia sesión para ver este perfil.',
+    'profile.public_title': 'Mi Perfil Público',
+    'profile.public_desc':
+      'Así es como otros usuarios ven tu perfil en la plataforma.',
+    'profile.go_settings': 'Ir a Ajustes',
+    'profile.verified_desc':
+      'Profesional verificado por la plataforma. Evaluado positivamente por clientes anteriores en plazos y calidad.',
+    'profile.send_message': 'Enviar Mensaje',
+    'profile.pending_interest': 'Interés Pendiente',
+    'profile.show_interest': 'Mostrar Interés',
+    'profile.closed_chat_desc':
+      'Este usuario tiene el chat cerrado. Suscríbete a un plan Premium para enviar mensajes directamente.',
+    'profile.premium_benefit': 'Beneficio Premium: Chat desbloqueado.',
+
+    'checkout.plan_not_found': 'Plan no encontrado.',
+    'checkout.admin_access': '¡Acceso Admin Otorgado!',
+    'checkout.sub_confirmed': '¡Suscripción confirmada!',
+    'checkout.secure': 'Pago Seguro',
+    'checkout.finalize_desc':
+      'Completa tu suscripción para desbloquear funciones.',
+    'checkout.payment_method': 'Método de Pago',
+    'checkout.cc': 'Tarjeta de Crédito',
+    'checkout.dc': 'Tarjeta de Débito',
+    'checkout.card_name': 'Nombre en la Tarjeta',
+    'checkout.card_number': 'Número de Tarjeta',
+    'checkout.expiry': 'Vencimiento (MM/AA)',
+    'checkout.cvv': 'CVV',
+    'checkout.summary': 'Resumen del Pedido',
+    'checkout.selected_plan': 'Plan Seleccionado',
+    'checkout.billing': 'Facturación',
+    'checkout.monthly': 'Mensual Recurrente',
+    'checkout.yearly': 'Anual Recurrente',
+    'checkout.total': 'Total a Pagar',
+    'checkout.free_admin': 'Gratis (Admin)',
+    'checkout.confirm_pay': 'Confirmar Pago',
+    'checkout.processing': 'Procesando...',
+    'checkout.secure_info':
+      'Pago procesado de forma segura vía Stripe. Tus datos están encriptados de extremo a extremo.',
+
+    'payment.finalize_desc':
+      'Finaliza la contratación para iniciar el servicio.',
+    'payment.simulation_cc': 'Simulación: Tarjeta terminada en 4242 (Mock)',
+    'payment.protected_desc':
+      'Tus datos están protegidos. El monto queda en Escrow hasta que se complete el servicio.',
+    'payment.order_summary': 'Resumen del Pedido',
+    'payment.service': 'Servicio',
+    'payment.professional': 'Profesional',
+    'payment.pay_hire': 'Pagar y Contratar',
+
+    'credits.store_title': 'Tienda de Créditos',
+    'credits.store_desc':
+      'Compra créditos para pujas en subastas y mejora tus resultados.',
+    'credits.available': 'créditos disponibles',
+    'credits.packages': 'Paquetes de Créditos',
+    'credits.boosts': 'Impulsadores (Boosts)',
+    'credits.buy_now': 'Comprar Ahora',
+    'credits.buy_boost': 'Comprar Boost',
+    'credits.beginner': 'Principiante',
+    'credits.popular': 'Popular',
+    'credits.pro': 'Profesional',
+    'credits.bonus': '+{bonus} bono',
+    'credits.boost.24h': 'Destacar Trabajo (24h)',
+    'credits.boost.24h_desc':
+      'Tu trabajo en la cima de las búsquedas por 24 horas en tu región.',
+    'credits.boost.7d': 'Súper Destacado (7 días)',
+    'credits.boost.7d_desc':
+      'Máxima visibilidad en la categoría y región por una semana.',
+    'credits.boost.profile': 'Impulsar Perfil',
+    'credits.boost.profile_desc':
+      'Aparece como sugerencia a contratistas por 3 días.',
   },
 }

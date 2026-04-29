@@ -18,13 +18,13 @@ export default function SubscriptionPlans() {
   const { user, upgradeSubscription } = useAuthStore()
   const { plans } = useAdminPricingStore()
   const { toast } = useToast()
-  const { formatCurrency } = useLanguageStore()
+  const { formatCurrency, t } = useLanguageStore()
 
   const handleSubscribe = (tierName: string) => {
     upgradeSubscription('pro')
     toast({
-      title: 'Assinatura Atualizada!',
-      description: `Parabéns! Agora você tem acesso aos recursos do plano ${tierName}.`,
+      title: t('sub.updated.title'),
+      description: t('sub.updated.desc', { tierName }),
     })
   }
 
@@ -52,11 +52,10 @@ export default function SubscriptionPlans() {
     <div className="space-y-8 max-w-6xl mx-auto py-8 px-4">
       <div className="text-center space-y-4">
         <h1 className="text-4xl font-bold tracking-tight">
-          Escolha o plano ideal para sua carreira
+          {t('sub.plans.title')}
         </h1>
         <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-          Desbloqueie ferramentas exclusivas, aumente sua visibilidade e feche
-          mais negócios com os planos premium.
+          {t('sub.plans.subtitle')}
         </p>
       </div>
 
@@ -73,7 +72,7 @@ export default function SubscriptionPlans() {
             {plan.popular && (
               <div className="absolute -top-4 left-0 right-0 flex justify-center">
                 <Badge className="bg-primary text-primary-foreground px-4 py-1 text-sm shadow-sm">
-                  Mais Popular
+                  {t('sub.plans.most_popular')}
                 </Badge>
               </div>
             )}
@@ -96,7 +95,10 @@ export default function SubscriptionPlans() {
                 </span>
                 {plan.price !== 0 && (
                   <span className="text-muted-foreground text-sm font-medium whitespace-nowrap shrink-0">
-                    /{plan.billingCycle === 'monthly' ? 'mês' : 'ciclo'}
+                    /
+                    {plan.billingCycle === 'monthly'
+                      ? t('sub.plans.month')
+                      : t('sub.plans.cycle')}
                   </span>
                 )}
               </div>
@@ -122,7 +124,7 @@ export default function SubscriptionPlans() {
                 variant={plan.popular ? 'default' : 'outline'}
                 onClick={() => handleSubscribe(plan.name)}
               >
-                Assinar Agora
+                {t('sub.plans.subscribe')}
               </Button>
             </CardFooter>
           </Card>

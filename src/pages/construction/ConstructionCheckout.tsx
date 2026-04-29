@@ -24,7 +24,7 @@ export default function ConstructionCheckout() {
   const { user, activateConstructionSubscription } = useAuthStore()
   const navigate = useNavigate()
   const { toast } = useToast()
-  const { formatCurrency } = useLanguageStore()
+  const { formatCurrency, t } = useLanguageStore()
 
   const isAdmin = user?.role === 'admin' || user?.isPremium
 
@@ -35,7 +35,7 @@ export default function ConstructionCheckout() {
   if (!plan)
     return (
       <div className="p-10 text-center text-muted-foreground">
-        Plano não encontrado.
+        {t('checkout.plan_not_found')}
       </div>
     )
 
@@ -50,10 +50,12 @@ export default function ConstructionCheckout() {
         price: isAdmin ? 0 : plan.price,
       })
       toast({
-        title: isAdmin ? 'Acesso Admin Liberado!' : 'Assinatura confirmada!',
+        title: isAdmin
+          ? t('checkout.admin_access')
+          : t('checkout.sub_confirmed'),
         description: isAdmin
-          ? 'Você ativou os recursos como administrador.'
-          : 'Recursos de gestão de obras desbloqueados.',
+          ? t('checkout.admin_access')
+          : t('checkout.sub_confirmed'),
       })
       setIsProcessing(false)
       navigate('/construction/dashboard')
@@ -64,10 +66,10 @@ export default function ConstructionCheckout() {
     <div className="max-w-4xl mx-auto py-6 md:py-10 px-4 sm:px-6">
       <div className="mb-6 md:mb-8 text-center space-y-2">
         <h1 className="text-2xl md:text-3xl font-bold tracking-tight break-words">
-          Checkout Seguro
+          {t('checkout.secure')}
         </h1>
         <p className="text-sm md:text-base text-muted-foreground break-words max-w-lg mx-auto">
-          Finalize sua assinatura para liberar a Gestão de Obras.
+          {t('checkout.finalize_desc')}
         </p>
       </div>
 
@@ -77,10 +79,10 @@ export default function ConstructionCheckout() {
             <Card className="overflow-hidden">
               <CardHeader className="p-4 md:p-6 pb-4">
                 <CardTitle className="text-lg md:text-xl break-words">
-                  Método de Pagamento
+                  {t('checkout.payment_method')}
                 </CardTitle>
                 <CardDescription className="text-xs md:text-sm break-words">
-                  Aceitamos cartões de crédito e débito.
+                  {t('checkout.secure_info')}
                 </CardDescription>
               </CardHeader>
               <CardContent className="p-4 md:p-6 pt-0 space-y-4 md:space-y-6">
@@ -96,7 +98,7 @@ export default function ConstructionCheckout() {
                       className="flex items-center gap-2 cursor-pointer w-full text-xs md:text-sm font-medium break-words"
                     >
                       <CreditCard className="h-4 w-4 md:h-5 md:w-5 text-blue-600 shrink-0" />{' '}
-                      Cartão de Crédito
+                      {t('checkout.cc')}
                     </Label>
                   </div>
                   <div className="flex items-center space-x-2 border p-3 md:p-4 rounded-lg cursor-pointer hover:bg-muted/50 transition-colors">
@@ -106,7 +108,7 @@ export default function ConstructionCheckout() {
                       className="flex items-center gap-2 cursor-pointer w-full text-xs md:text-sm font-medium break-words"
                     >
                       <CreditCard className="h-4 w-4 md:h-5 md:w-5 text-green-600 shrink-0" />{' '}
-                      Cartão de Débito
+                      {t('checkout.dc')}
                     </Label>
                   </div>
                 </RadioGroup>
@@ -114,18 +116,18 @@ export default function ConstructionCheckout() {
                 <div className="space-y-4 pt-4 border-t">
                   <div className="space-y-2">
                     <Label htmlFor="cardName" className="text-xs md:text-sm">
-                      Nome no Cartão
+                      {t('checkout.card_name')}
                     </Label>
                     <Input
                       id="cardName"
-                      placeholder="Ex: JOAO DA SILVA"
+                      placeholder="JOHN DOE"
                       className="h-9 md:h-10 text-sm"
                       required
                     />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="cardNumber" className="text-xs md:text-sm">
-                      Número do Cartão
+                      {t('checkout.card_number')}
                     </Label>
                     <Input
                       id="cardNumber"
@@ -138,11 +140,11 @@ export default function ConstructionCheckout() {
                   <div className="grid grid-cols-2 gap-3 md:gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="expiry" className="text-xs md:text-sm">
-                        Validade (MM/AA)
+                        {t('checkout.expiry')}
                       </Label>
                       <Input
                         id="expiry"
-                        placeholder="MM/AA"
+                        placeholder="MM/YY"
                         maxLength={5}
                         className="h-9 md:h-10 text-sm"
                         required
@@ -150,7 +152,7 @@ export default function ConstructionCheckout() {
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="cvv" className="text-xs md:text-sm">
-                        CVV
+                        {t('checkout.cvv')}
                       </Label>
                       <Input
                         id="cvv"
@@ -169,8 +171,7 @@ export default function ConstructionCheckout() {
           <div className="flex items-start md:items-center gap-3 text-xs md:text-sm text-muted-foreground bg-blue-50 p-3 md:p-4 rounded-lg border border-blue-100">
             <Lock className="h-4 w-4 md:h-5 md:w-5 text-blue-600 shrink-0 mt-0.5 md:mt-0" />
             <p className="leading-relaxed break-words">
-              Pagamento processado com segurança via Stripe. Seus dados estão
-              criptografados de ponta a ponta.
+              {t('checkout.secure_info')}
             </p>
           </div>
         </div>
@@ -179,13 +180,13 @@ export default function ConstructionCheckout() {
           <Card className="sticky top-6 overflow-hidden">
             <CardHeader className="p-4 md:p-6 pb-4">
               <CardTitle className="text-lg md:text-xl break-words">
-                Resumo da Compra
+                {t('checkout.summary')}
               </CardTitle>
             </CardHeader>
             <CardContent className="p-4 md:p-6 pt-0 space-y-4">
               <div className="space-y-1">
                 <p className="text-xs md:text-sm font-medium text-muted-foreground break-words">
-                  Plano Selecionado
+                  {t('checkout.selected_plan')}
                 </p>
                 <p className="font-semibold text-sm md:text-base break-words">
                   {plan.name}
@@ -193,19 +194,22 @@ export default function ConstructionCheckout() {
               </div>
               <div className="space-y-1">
                 <p className="text-xs md:text-sm font-medium text-muted-foreground break-words">
-                  Cobrança
+                  {t('checkout.billing')}
                 </p>
                 <p className="font-medium text-sm md:text-base break-words">
-                  {plan.billingCycle === 'monthly' ? 'Mensal' : 'Anual'}{' '}
-                  Recorrente
+                  {plan.billingCycle === 'monthly'
+                    ? t('checkout.monthly')
+                    : t('checkout.yearly')}
                 </p>
               </div>
               <div className="border-t pt-4 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
                 <span className="font-bold text-sm md:text-base">
-                  Total a Pagar
+                  {t('checkout.total')}
                 </span>
                 <span className="text-xl md:text-2xl font-bold text-primary break-all">
-                  {isAdmin ? 'Grátis (Admin)' : formatCurrency(plan.price)}
+                  {isAdmin
+                    ? t('checkout.free_admin')
+                    : formatCurrency(plan.price)}
                 </span>
               </div>
             </CardContent>
@@ -219,12 +223,14 @@ export default function ConstructionCheckout() {
                 {isProcessing ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 md:h-5 md:w-5 animate-spin" />{' '}
-                    Processando...
+                    {t('checkout.processing')}
                   </>
                 ) : (
                   <>
                     <ShieldCheck className="mr-2 h-4 w-4 md:h-5 md:w-5" />{' '}
-                    {isAdmin ? 'Liberar Acesso Admin' : 'Confirmar Pagamento'}
+                    {isAdmin
+                      ? t('checkout.admin_access')
+                      : t('checkout.confirm_pay')}
                   </>
                 )}
               </Button>

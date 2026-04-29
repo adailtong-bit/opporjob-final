@@ -1,22 +1,22 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useJobStore } from '@/stores/useJobStore'
 import { useAuthStore } from '@/stores/useAuthStore'
 import { usePaymentStore } from '@/stores/usePaymentStore'
 import { useNotificationStore } from '@/stores/useNotificationStore'
+import { useLanguageStore } from '@/stores/useLanguageStore'
 import { Button } from '@/components/ui/button'
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-  CardDescription,
   CardFooter,
 } from '@/components/ui/card'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Label } from '@/components/ui/label'
 import { useToast } from '@/hooks/use-toast'
-import { Loader2, CreditCard, Lock, ShieldCheck } from 'lucide-react'
+import { Loader2, CreditCard, Lock } from 'lucide-react'
 
 export default function PaymentCheckout() {
   const { jobId, bidId } = useParams<{ jobId: string; bidId: string }>()
@@ -26,6 +26,7 @@ export default function PaymentCheckout() {
   const { processPayment } = usePaymentStore()
   const { addNotification } = useNotificationStore()
   const { toast } = useToast()
+  const { t, formatCurrency } = useLanguageStore()
 
   const [paymentMethod, setPaymentMethod] = useState('credit-card')
   const [isProcessing, setIsProcessing] = useState(false)
@@ -37,10 +38,10 @@ export default function PaymentCheckout() {
     bidId && bidId !== 'fixed' ? job?.bids.find((b) => b.id === bidId) : null
 
   const amount = bid ? bid.amount : job?.budget || 0
-  const receiverName = bid ? bid.executorName : 'Profissional (A Definir)'
+  const receiverName = bid ? bid.executorName : 'Professional (TBD)'
   const receiverId = bid ? bid.executorId : 'pending'
 
-  if (!job || !user) return <div className="p-8">Dados inválidos</div>
+  if (!job || !user) return <div className="p-8">Invalid data</div>
 
   const handlePayment = async () => {
     setIsProcessing(true)
@@ -62,8 +63,8 @@ export default function PaymentCheckout() {
         // Notify Executor
         addNotification({
           userId: bid.executorId,
-          title: 'Proposta Aceita e Paga!',
-          message: `O contratante pagou R$ ${amount} (Escrow). Pode iniciar o job "${job.title}".`,
+          title: 'Proposal Accepted & Paid!',
+          message: `The contractor paid ${formatCurrency(amount)} (Escrow). You can start the job "${job.title}".`,
           type: 'success',
           link: `/jobs/${job.id}`,
         })
@@ -75,8 +76,8 @@ export default function PaymentCheckout() {
       setIsProcessing(false)
       toast({
         variant: 'destructive',
-        title: 'Erro no pagamento',
-        description: 'Tente novamente.',
+        title: 'Payment error',
+        description: 'Please try again.',
       })
     }
   }
@@ -84,18 +85,17 @@ export default function PaymentCheckout() {
   return (
     <div className="max-w-3xl mx-auto py-8 px-4">
       <div className="mb-8 text-center">
-        <h1 className="text-3xl font-bold tracking-tight">Checkout Seguro</h1>
-        <p className="text-muted-foreground">
-          Finalize a contratação para iniciar o serviço.
-        </p>
+        <h1 className="text-3xl font-bold tracking-tight">
+          {t('checkout.secure')}
+        </h1>
+        <p className="text-muted-foreground">{t('payment.finalize_desc')}</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="md:col-span-2 space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Método de Pagamento</CardTitle>
-              <CardDescription>Selecione como deseja pagar.</CardDescription>
+              <CardTitle>{t('checkout.payment_method')}</CardTitle>
             </CardHeader>
             <CardContent>
               <RadioGroup
@@ -109,24 +109,14 @@ export default function PaymentCheckout() {
                     htmlFor="cc"
                     className="flex items-center gap-2 cursor-pointer w-full"
                   >
-                    <CreditCard className="h-5 w-5" /> Cartão de Crédito
-                  </Label>
-                </div>
-                <div className="flex items-center space-x-2 border p-4 rounded-lg cursor-pointer hover:bg-muted/50 transition-colors">
-                  <RadioGroupItem value="pix" id="pix" />
-                  <Label
-                    htmlFor="pix"
-                    className="flex items-center gap-2 cursor-pointer w-full"
-                  >
-                    <span className="font-bold text-emerald-600">PIX</span>{' '}
-                    (Aprovação Imediata)
+                    <CreditCard className="h-5 w-5" /> {t('checkout.cc')}
                   </Label>
                 </div>
               </RadioGroup>
 
               {paymentMethod === 'credit-card' && (
                 <div className="mt-4 p-4 bg-muted/30 rounded-lg text-sm text-center text-muted-foreground">
-                  Simulação: Cartão Final 4242 (Mock)
+                  {t('payment.simulation_cc')}
                 </div>
               )}
             </CardContent>
@@ -134,35 +124,32 @@ export default function PaymentCheckout() {
 
           <div className="flex items-center gap-2 text-sm text-muted-foreground bg-blue-50 p-4 rounded-lg border border-blue-100">
             <Lock className="h-4 w-4 text-blue-600" />
-            <p>
-              Seus dados estão protegidos. O valor fica retido (Escrow) até a
-              conclusão do serviço.
-            </p>
+            <p>{t('payment.protected_desc')}</p>
           </div>
         </div>
 
         <div>
           <Card>
             <CardHeader>
-              <CardTitle>Resumo do Pedido</CardTitle>
+              <CardTitle>{t('payment.order_summary')}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-1">
                 <p className="text-sm font-medium text-muted-foreground">
-                  Serviço
+                  {t('payment.service')}
                 </p>
                 <p className="font-semibold">{job.title}</p>
               </div>
               <div className="space-y-1">
                 <p className="text-sm font-medium text-muted-foreground">
-                  Profissional
+                  {t('payment.professional')}
                 </p>
                 <p className="font-semibold">{receiverName}</p>
               </div>
               <div className="border-t pt-4 flex justify-between items-center">
-                <span className="font-bold">Total</span>
+                <span className="font-bold">{t('checkout.total')}</span>
                 <span className="text-2xl font-bold text-primary">
-                  R$ {amount.toFixed(2)}
+                  {formatCurrency(amount)}
                 </span>
               </div>
             </CardContent>
@@ -176,10 +163,10 @@ export default function PaymentCheckout() {
                 {isProcessing ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />{' '}
-                    Processando...
+                    {t('checkout.processing')}
                   </>
                 ) : (
-                  <>Pagar e Contratar</>
+                  <>{t('payment.pay_hire')}</>
                 )}
               </Button>
             </CardFooter>

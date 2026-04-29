@@ -16,39 +16,39 @@ import { useLanguageStore } from '@/stores/useLanguageStore'
 export default function CreditsStore() {
   const { user, buyCredits } = useAuthStore()
   const { toast } = useToast()
-  const { formatCurrency } = useLanguageStore()
+  const { t, formatCurrency } = useLanguageStore()
 
   const handleBuy = (amount: number, price: number) => {
     buyCredits(amount)
     toast({
-      title: 'Compra realizada com sucesso!',
-      description: `Você adquiriu ${amount} créditos por ${formatCurrency(price)}.`,
+      title: 'Purchase Successful!',
+      description: `You acquired ${amount} credits for ${formatCurrency(price)}.`,
     })
   }
 
   const creditPackages = [
-    { amount: 50, price: 29.9, label: 'Iniciante', bonus: 0 },
-    { amount: 100, price: 49.9, label: 'Popular', bonus: 10 },
-    { amount: 500, price: 199.9, label: 'Profissional', bonus: 75 },
+    { amount: 50, price: 29.9, label: t('credits.beginner'), bonus: 0 },
+    { amount: 100, price: 49.9, label: t('credits.popular'), bonus: 10 },
+    { amount: 500, price: 199.9, label: t('credits.pro'), bonus: 75 },
   ]
 
   const boostPackages = [
     {
-      title: 'Destaque de Job (24h)',
+      title: t('credits.boost.24h'),
       price: 19.9,
-      description: 'Seu job no topo das buscas por 24 horas na sua região.',
+      description: t('credits.boost.24h_desc'),
       icon: Zap,
     },
     {
-      title: 'Super Destaque (7 dias)',
+      title: t('credits.boost.7d'),
       price: 49.9,
-      description: 'Visibilidade máxima na categoria e região por uma semana.',
+      description: t('credits.boost.7d_desc'),
       icon: Trophy,
     },
     {
-      title: 'Impulsionar Perfil',
+      title: t('credits.boost.profile'),
       price: 29.9,
-      description: 'Apareça como sugestão para contratantes por 3 dias.',
+      description: t('credits.boost.profile_desc'),
       icon: Rocket,
     },
   ]
@@ -58,26 +58,25 @@ export default function CreditsStore() {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">
-            Loja de Créditos
+            {t('credits.store_title')}
           </h1>
-          <p className="text-muted-foreground">
-            Adquira créditos para lances em leilões e impulsione seus
-            resultados.
-          </p>
+          <p className="text-muted-foreground">{t('credits.store_desc')}</p>
         </div>
         <div className="flex items-center gap-2 bg-primary/10 px-4 py-2 rounded-full">
           <Coins className="h-5 w-5 text-primary" />
           <span className="font-bold text-lg text-primary">
             {user?.credits || 0}
           </span>
-          <span className="text-sm text-primary/80">créditos disponíveis</span>
+          <span className="text-sm text-primary/80">
+            {t('credits.available')}
+          </span>
         </div>
       </div>
 
       <div className="grid gap-8">
         <section>
           <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-            <Coins className="h-5 w-5" /> Pacotes de Créditos
+            <Coins className="h-5 w-5" /> {t('credits.packages')}
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {creditPackages.map((pkg, i) => (
@@ -90,14 +89,14 @@ export default function CreditsStore() {
                         variant="secondary"
                         className="bg-green-100 text-green-700"
                       >
-                        +{pkg.bonus} bônus
+                        {t('credits.bonus', { bonus: String(pkg.bonus) })}
                       </Badge>
                     )}
                   </div>
                 </CardHeader>
                 <CardContent className="text-center py-6">
                   <div className="text-4xl font-bold mb-2">{pkg.amount}</div>
-                  <div className="text-sm text-muted-foreground">Créditos</div>
+                  <div className="text-sm text-muted-foreground">Credits</div>
                   <div className="mt-4 text-2xl font-bold text-primary">
                     {formatCurrency(pkg.price)}
                   </div>
@@ -107,7 +106,7 @@ export default function CreditsStore() {
                     className="w-full"
                     onClick={() => handleBuy(pkg.amount + pkg.bonus, pkg.price)}
                   >
-                    Comprar Agora
+                    {t('credits.buy_now')}
                   </Button>
                 </CardFooter>
               </Card>
@@ -117,7 +116,7 @@ export default function CreditsStore() {
 
         <section>
           <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-            <Rocket className="h-5 w-5" /> Impulsionadores (Boosts)
+            <Rocket className="h-5 w-5" /> {t('credits.boosts')}
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {boostPackages.map((boost, i) => (
@@ -140,12 +139,12 @@ export default function CreditsStore() {
                     className="w-full"
                     onClick={() => {
                       toast({
-                        title: 'Impulsionamento Ativado!',
-                        description: `O pacote "${boost.title}" foi ativado.`,
+                        title: 'Boost Activated!',
+                        description: `Package "${boost.title}" was activated.`,
                       })
                     }}
                   >
-                    Adquirir Boost
+                    {t('credits.buy_boost')}
                   </Button>
                 </CardFooter>
               </Card>
