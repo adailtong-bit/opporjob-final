@@ -652,4 +652,3 @@ export default function ManagePlans() {
       </Dialog>
     </div>
   )
-}
