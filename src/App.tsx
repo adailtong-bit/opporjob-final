@@ -176,6 +176,25 @@ const App = () => {
   useEffect(() => {
     document.title = t('app.title') + ' - Marketplace'
 
+    // Hide Skip badge globally
+    const style = document.createElement('style')
+    style.id = 'hide-skip-badge'
+    style.innerHTML = `
+      #skip-badge,
+      .skip-badge,
+      a[href*="goskip.app"],
+      a[href*="skip.build"] {
+        display: none !important;
+        opacity: 0 !important;
+        visibility: hidden !important;
+        pointer-events: none !important;
+        z-index: -9999 !important;
+      }
+    `
+    if (!document.getElementById('hide-skip-badge')) {
+      document.head.appendChild(style)
+    }
+
     // Clean up dummy data from local storage to ensure production is clean
     try {
       const isProd =
