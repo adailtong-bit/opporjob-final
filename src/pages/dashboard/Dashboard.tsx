@@ -77,45 +77,43 @@ export default function Dashboard() {
       <div className="space-y-6">
         <div>
           <h2 className="text-3xl font-bold tracking-tight">
-            Painel Administrativo
+            {t('dashboard.admin.title')}
           </h2>
-          <p className="text-muted-foreground">
-            Visão geral do sistema e métricas de plataforma.
-          </p>
+          <p className="text-muted-foreground">{t('dashboard.admin.desc')}</p>
         </div>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium">
-                Usuários Ativos
+                {t('dashboard.admin.users')}
               </CardTitle>
               <Users className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">12,450</div>
               <p className="text-xs text-muted-foreground">
-                +15% desde o último mês
+                {t('dashboard.admin.users_desc')}
               </p>
             </CardContent>
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium">
-                Jobs Abertos
+                {t('dashboard.admin.jobs')}
               </CardTitle>
               <Briefcase className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">842</div>
               <p className="text-xs text-muted-foreground">
-                Em mais de 50 categorias
+                {t('dashboard.admin.jobs_desc')}
               </p>
             </CardContent>
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium">
-                Volume Transacionado
+                {t('dashboard.admin.volume')}
               </CardTitle>
               <Wallet className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
@@ -123,20 +121,22 @@ export default function Dashboard() {
               <div className="text-2xl font-bold">
                 {formatCurrency(4500000)}
               </div>
-              <p className="text-xs text-muted-foreground">Mês atual</p>
+              <p className="text-xs text-muted-foreground">
+                {t('dashboard.admin.volume_desc')}
+              </p>
             </CardContent>
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium">
-                Obras Premium
+                {t('dashboard.admin.premium')}
               </CardTitle>
               <HardHat className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">320</div>
               <p className="text-xs text-muted-foreground">
-                Projetos gerenciados na plataforma
+                {t('dashboard.admin.premium_desc')}
               </p>
             </CardContent>
           </Card>
@@ -289,13 +289,13 @@ export default function Dashboard() {
             value="overview"
             className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground border"
           >
-            Visão Geral
+            {t('dashboard.tabs.overview')}
           </TabsTrigger>
           <TabsTrigger
             value="interests"
             className="relative data-[state=active]:bg-primary data-[state=active]:text-primary-foreground border"
           >
-            Interesses Recebidos
+            {t('dashboard.tabs.interests')}
             {myPendingInterests.length > 0 && (
               <span className="ml-2 inline-flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">
                 {myPendingInterests.length}
@@ -326,7 +326,9 @@ export default function Dashboard() {
                       variant={globalSPI >= 1 ? 'default' : 'destructive'}
                       className={globalSPI >= 1 ? 'bg-green-500' : ''}
                     >
-                      {globalSPI >= 1 ? 'Adiantado' : 'Atrasado'}
+                      {globalSPI >= 1
+                        ? t('dashboard.kpi.ahead')
+                        : t('dashboard.kpi.delayed')}
                     </Badge>
                   </div>
                   <p className="text-xs text-muted-foreground mt-2">
@@ -353,7 +355,9 @@ export default function Dashboard() {
                       variant={globalCPI >= 1 ? 'default' : 'destructive'}
                       className={globalCPI >= 1 ? 'bg-green-500' : ''}
                     >
-                      {globalCPI >= 1 ? 'No Orçamento' : 'Sobre Custo'}
+                      {globalCPI >= 1
+                        ? t('dashboard.kpi.on_budget')
+                        : t('dashboard.kpi.over_budget')}
                     </Badge>
                   </div>
                   <p className="text-xs text-muted-foreground mt-2">
@@ -422,12 +426,12 @@ export default function Dashboard() {
                               }
                             >
                               {insp.status === 'rejected'
-                                ? 'Reprovada'
-                                : 'Pendente'}
+                                ? t('dashboard.insp.rejected')
+                                : t('dashboard.insp.pending')}
                             </Badge>
                           </div>
                           <span className="text-muted-foreground truncate">
-                            Obra: {insp.projectName}
+                            {t('dashboard.insp.project')}: {insp.projectName}
                           </span>
                         </li>
                       ))}
@@ -603,11 +607,8 @@ export default function Dashboard() {
         <Card>
           <CardHeader className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
             <div>
-              <CardTitle>Interesses de Comunicação</CardTitle>
-              <CardDescription>
-                Pessoas que desejam iniciar uma conversa com você. Ao aceitar, o
-                chat será liberado na aba de Mensagens.
-              </CardDescription>
+              <CardTitle>{t('dashboard.interests.title')}</CardTitle>
+              <CardDescription>{t('dashboard.interests.desc')}</CardDescription>
             </div>
             {user && (
               <Button
@@ -617,18 +618,20 @@ export default function Dashboard() {
                 onClick={() => {
                   const mockSender = {
                     id: 'mock-' + Math.random().toString(36).substr(2, 5),
-                    name: 'Investidor Anjo ' + Math.floor(Math.random() * 100),
+                    name:
+                      `${t('dashboard.interests.simulate.sender')} ` +
+                      Math.floor(Math.random() * 100),
                     avatar: `https://img.usecurling.com/ppl/thumbnail?seed=${Math.random()}`,
                   }
                   sendInterest(mockSender, user.id, {
                     type: 'profile',
                     id: user.id,
-                    title: 'Seu Perfil Profissional',
+                    title: t('dashboard.interests.simulate.title'),
                   })
                 }}
               >
-                <Sparkles className="h-4 w-4 mr-2 text-yellow-500" /> Simular
-                Recebimento
+                <Sparkles className="h-4 w-4 mr-2 text-yellow-500" />{' '}
+                {t('dashboard.interests.simulate')}
               </Button>
             )}
           </CardHeader>
@@ -636,7 +639,7 @@ export default function Dashboard() {
             {myPendingInterests.length === 0 ? (
               <div className="text-center py-10 border-2 border-dashed rounded-lg bg-muted/20 text-muted-foreground flex flex-col items-center">
                 <MessageSquare className="h-10 w-10 mb-3 opacity-30" />
-                <p>Você ainda não recebeu nenhum interesse.</p>
+                <p>{t('dashboard.interests.empty')}</p>
               </div>
             ) : (
               <div className="space-y-4">
@@ -663,8 +666,8 @@ export default function Dashboard() {
                           <div className="mt-1 flex items-center gap-2">
                             <Badge variant="secondary" className="text-xs">
                               {interest.context.type === 'job'
-                                ? 'Vaga/Serviço'
-                                : 'Perfil'}
+                                ? t('dashboard.interests.type.job')
+                                : t('dashboard.interests.type.profile')}
                             </Badge>
                             <span className="text-sm font-medium">
                               {interest.context.title}
@@ -672,7 +675,7 @@ export default function Dashboard() {
                           </div>
                         )}
                         <p className="text-xs text-muted-foreground mt-1">
-                          Recebido em{' '}
+                          {t('dashboard.interests.received_at')}{' '}
                           {formatDate(interest.createdAt, 'dd/MM/yyyy HH:mm')}
                         </p>
                       </div>
@@ -683,23 +686,22 @@ export default function Dashboard() {
                         className="flex-1 sm:flex-none"
                         onClick={() => declineInterest(interest.id)}
                       >
-                        Recusar
+                        {t('dashboard.interests.decline')}
                       </Button>
                       <Button
                         className="flex-1 sm:flex-none"
                         onClick={() => {
                           const convId = acceptInterest(interest.id)
                           toast({
-                            title: 'Interesse aceito',
-                            description:
-                              'Uma nova conversa foi iniciada com sucesso.',
+                            title: t('dashboard.interests.toast.title'),
+                            description: t('dashboard.interests.toast.desc'),
                           })
                           navigate(
                             `/messages${convId ? `?conv=${convId}` : ''}`,
                           )
                         }}
                       >
-                        Aceitar Chat
+                        {t('dashboard.interests.accept')}
                       </Button>
                     </div>
                   </div>

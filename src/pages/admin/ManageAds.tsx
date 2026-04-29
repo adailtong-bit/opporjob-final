@@ -17,11 +17,13 @@ import { AdActionsMenu } from './components/AdActionsMenu'
 import AdCreateDialog from './components/AdCreateDialog'
 import PricingMatrixTab from './components/PricingMatrixTab'
 import { useToast } from '@/hooks/use-toast'
+import { useLanguageStore } from '@/stores/useLanguageStore'
 
 export default function ManageAds() {
   const { ads, checkExpirations } = useAdStore()
   const [createOpen, setCreateOpen] = useState(false)
   const { toast } = useToast()
+  const { t } = useLanguageStore()
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -63,23 +65,21 @@ export default function ManageAds() {
     <div className="space-y-6 max-w-7xl mx-auto pb-10">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">
-          Gestão de Publicidade
+          {t('admin.ads.title')}
         </h1>
-        <p className="text-muted-foreground">
-          Gerencie faturamento, matriz de preços e o ciclo de vida de anúncios.
-        </p>
+        <p className="text-muted-foreground">{t('admin.ads.desc')}</p>
       </div>
 
       <Tabs defaultValue="ads" className="w-full">
         <TabsList className="mb-4">
-          <TabsTrigger value="ads">Anúncios</TabsTrigger>
-          <TabsTrigger value="matrix">Matriz de Preços</TabsTrigger>
+          <TabsTrigger value="ads">{t('admin.ads.tab.ads')}</TabsTrigger>
+          <TabsTrigger value="matrix">{t('admin.ads.tab.matrix')}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="ads" className="space-y-4">
           <div className="flex justify-end">
             <Button onClick={() => setCreateOpen(true)}>
-              Criar Novo Anúncio
+              {t('admin.ads.create_btn')}
             </Button>
           </div>
 

@@ -51,7 +51,7 @@ export default function ManageCategories() {
   const handleAdd = () => {
     if (!newCategory.trim()) {
       toast({
-        title: 'O nome da categoria não pode ser vazio',
+        title: t('val.required'),
         variant: 'destructive',
       })
       return
@@ -86,23 +86,22 @@ export default function ManageCategories() {
     <div className="space-y-6 max-w-5xl mx-auto pb-10">
       <div className="flex flex-col gap-2">
         <h1 className="text-3xl font-bold tracking-tight">
-          Gerenciar Categorias
+          {t('admin.categories.title')}
         </h1>
-        <p className="text-muted-foreground">
-          Adicione ou remova categorias e acesse os detalhes para gerenciar
-          subcategorias.
-        </p>
+        <p className="text-muted-foreground">{t('admin.categories.desc')}</p>
       </div>
 
       <Card>
         <CardHeader className="py-4">
-          <CardTitle className="text-lg">Adicionar Categoria</CardTitle>
-          <CardDescription>Crie uma nova categoria principal.</CardDescription>
+          <CardTitle className="text-lg">
+            {t('admin.categories.add_title')}
+          </CardTitle>
+          <CardDescription>{t('admin.categories.add_desc')}</CardDescription>
         </CardHeader>
         <CardContent className="pb-4">
           <div className="flex flex-col sm:flex-row gap-4">
             <Input
-              placeholder="Nome da categoria"
+              placeholder={t('admin.categories.placeholder')}
               value={newCategory}
               onChange={(e) => setNewCategory(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleAdd()}

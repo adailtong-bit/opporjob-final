@@ -140,20 +140,19 @@ export default function ManagePlans() {
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-10">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Gestão de Planos</h1>
-        <p className="text-muted-foreground">
-          Crie e edite planos de assinatura, defina regras de notificação e
-          níveis de prioridade.
-        </p>
+        <h1 className="text-3xl font-bold tracking-tight">
+          {t('admin.plans.title')}
+        </h1>
+        <p className="text-muted-foreground">{t('admin.plans.desc')}</p>
       </div>
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
-            <CardTitle>Planos Cadastrados</CardTitle>
+            <CardTitle>{t('admin.plans.registered')}</CardTitle>
           </div>
           <Button onClick={openAdd}>
-            <Plus className="mr-2 h-4 w-4" /> Novo Plano
+            <Plus className="mr-2 h-4 w-4" /> {t('admin.plans.new')}
           </Button>
         </CardHeader>
         <CardContent>

@@ -895,6 +895,68 @@ export const translations: Translations = {
     'home.my_ads.table.date': 'Data',
     'home.my_ads.table.actions': 'Ações',
     'delete.confirm': 'Tem certeza que deseja excluir este item?',
+
+    'dashboard.admin.title': 'Painel Administrativo',
+    'dashboard.admin.desc': 'Visão geral do sistema e métricas de plataforma.',
+    'dashboard.admin.users': 'Usuários Ativos',
+    'dashboard.admin.users_desc': '+15% desde o último mês',
+    'dashboard.admin.jobs': 'Jobs Abertos',
+    'dashboard.admin.jobs_desc': 'Em mais de 50 categorias',
+    'dashboard.admin.volume': 'Volume Transacionado',
+    'dashboard.admin.volume_desc': 'Mês atual',
+    'dashboard.admin.premium': 'Obras Premium',
+    'dashboard.admin.premium_desc': 'Projetos gerenciados na plataforma',
+    'dashboard.tabs.overview': 'Visão Geral',
+    'dashboard.tabs.interests': 'Interesses Recebidos',
+    'dashboard.kpi.ahead': 'Adiantado',
+    'dashboard.kpi.delayed': 'Atrasado',
+    'dashboard.kpi.on_budget': 'No Orçamento',
+    'dashboard.kpi.over_budget': 'Sobre Custo',
+    'dashboard.insp.rejected': 'Reprovada',
+    'dashboard.insp.pending': 'Pendente',
+    'dashboard.insp.project': 'Obra',
+    'dashboard.interests.title': 'Interesses de Comunicação',
+    'dashboard.interests.desc':
+      'Pessoas que desejam iniciar uma conversa com você. Ao aceitar, o chat será liberado na aba de Mensagens.',
+    'dashboard.interests.simulate': 'Simular Recebimento',
+    'dashboard.interests.empty': 'Você ainda não recebeu nenhum interesse.',
+    'dashboard.interests.received_at': 'Recebido em',
+    'dashboard.interests.decline': 'Recusar',
+    'dashboard.interests.accept': 'Aceitar Chat',
+    'dashboard.interests.toast.title': 'Interesse aceito',
+    'dashboard.interests.toast.desc':
+      'Uma nova conversa foi iniciada com sucesso.',
+    'dashboard.interests.type.job': 'Vaga/Serviço',
+    'dashboard.interests.type.profile': 'Perfil',
+    'dashboard.interests.simulate.sender': 'Investidor Anjo',
+    'dashboard.interests.simulate.title': 'Seu Perfil Profissional',
+
+    'admin.ads.title': 'Gestão de Publicidade',
+    'admin.ads.desc':
+      'Gerencie faturamento, matriz de preços e o ciclo de vida de anúncios.',
+    'admin.ads.tab.ads': 'Anúncios',
+    'admin.ads.tab.matrix': 'Matriz de Preços',
+    'admin.ads.create_btn': 'Criar Novo Anúncio',
+
+    'admin.categories.title': 'Gerenciar Categorias',
+    'admin.categories.desc':
+      'Adicione ou remova categorias e acesse os detalhes para gerenciar subcategorias.',
+    'admin.categories.add_title': 'Adicionar Categoria',
+    'admin.categories.add_desc': 'Crie uma nova categoria principal.',
+    'admin.categories.placeholder': 'Nome da categoria',
+
+    'admin.plans.title': 'Gestão de Planos',
+    'admin.plans.desc':
+      'Crie e edite planos de assinatura, defina regras de notificação e níveis de prioridade.',
+    'admin.plans.registered': 'Planos Cadastrados',
+    'admin.plans.new': 'Novo Plano',
+
+    'admin.cplans.title': 'Planos de Obras',
+    'admin.cplans.desc':
+      'Configure os planos de assinatura e limites para construtoras e empreiteiros.',
+    'admin.cplans.configured': 'Planos Configurados',
+    'admin.cplans.configured_desc':
+      'Gerencie ativamente o que é oferecido aos contratantes.',
   },
   en: {
     'app.title': 'OPPORJOB',
@@ -1778,6 +1840,67 @@ export const translations: Translations = {
     'home.my_ads.table.date': 'Date',
     'home.my_ads.table.actions': 'Actions',
     'delete.confirm': 'Are you sure you want to delete this item?',
+
+    'dashboard.admin.title': 'Admin Dashboard',
+    'dashboard.admin.desc': 'System overview and platform metrics.',
+    'dashboard.admin.users': 'Active Users',
+    'dashboard.admin.users_desc': '+15% since last month',
+    'dashboard.admin.jobs': 'Open Jobs',
+    'dashboard.admin.jobs_desc': 'In over 50 categories',
+    'dashboard.admin.volume': 'Transaction Volume',
+    'dashboard.admin.volume_desc': 'Current month',
+    'dashboard.admin.premium': 'Premium Projects',
+    'dashboard.admin.premium_desc': 'Projects managed on the platform',
+    'dashboard.tabs.overview': 'Overview',
+    'dashboard.tabs.interests': 'Received Interests',
+    'dashboard.kpi.ahead': 'Ahead',
+    'dashboard.kpi.delayed': 'Delayed',
+    'dashboard.kpi.on_budget': 'On Budget',
+    'dashboard.kpi.over_budget': 'Over Budget',
+    'dashboard.insp.rejected': 'Rejected',
+    'dashboard.insp.pending': 'Pending',
+    'dashboard.insp.project': 'Project',
+    'dashboard.interests.title': 'Communication Interests',
+    'dashboard.interests.desc':
+      'People who want to start a conversation with you. Upon accepting, the chat will be available in the Messages tab.',
+    'dashboard.interests.simulate': 'Simulate Receipt',
+    'dashboard.interests.empty': 'You have not received any interest yet.',
+    'dashboard.interests.received_at': 'Received at',
+    'dashboard.interests.decline': 'Decline',
+    'dashboard.interests.accept': 'Accept Chat',
+    'dashboard.interests.toast.title': 'Interest accepted',
+    'dashboard.interests.toast.desc':
+      'A new conversation was started successfully.',
+    'dashboard.interests.type.job': 'Job/Service',
+    'dashboard.interests.type.profile': 'Profile',
+    'dashboard.interests.simulate.sender': 'Angel Investor',
+    'dashboard.interests.simulate.title': 'Your Professional Profile',
+
+    'admin.ads.title': 'Ads Management',
+    'admin.ads.desc': 'Manage billing, pricing matrix, and ad lifecycles.',
+    'admin.ads.tab.ads': 'Ads',
+    'admin.ads.tab.matrix': 'Pricing Matrix',
+    'admin.ads.create_btn': 'Create New Ad',
+
+    'admin.categories.title': 'Manage Categories',
+    'admin.categories.desc':
+      'Add or remove categories and access details to manage subcategories.',
+    'admin.categories.add_title': 'Add Category',
+    'admin.categories.add_desc': 'Create a new main category.',
+    'admin.categories.placeholder': 'Category name',
+
+    'admin.plans.title': 'Plan Management',
+    'admin.plans.desc':
+      'Create and edit subscription plans, define notification rules and priority levels.',
+    'admin.plans.registered': 'Registered Plans',
+    'admin.plans.new': 'New Plan',
+
+    'admin.cplans.title': 'Construction Plans',
+    'admin.cplans.desc':
+      'Configure subscription plans and limits for construction companies and contractors.',
+    'admin.cplans.configured': 'Configured Plans',
+    'admin.cplans.configured_desc':
+      'Actively manage what is offered to contractors.',
   },
   es: {
     'app.title': 'OPPORJOB',
@@ -2660,5 +2783,68 @@ export const translations: Translations = {
     'home.my_ads.table.date': 'Fecha',
     'home.my_ads.table.actions': 'Acciones',
     'delete.confirm': '¿Seguro que deseas eliminar este ítem?',
+
+    'dashboard.admin.title': 'Panel de Administración',
+    'dashboard.admin.desc':
+      'Visión general del sistema y métricas de plataforma.',
+    'dashboard.admin.users': 'Usuarios Activos',
+    'dashboard.admin.users_desc': '+15% desde el último mes',
+    'dashboard.admin.jobs': 'Trabajos Abiertos',
+    'dashboard.admin.jobs_desc': 'En más de 50 categorías',
+    'dashboard.admin.volume': 'Volumen Transaccionado',
+    'dashboard.admin.volume_desc': 'Mes actual',
+    'dashboard.admin.premium': 'Proyectos Premium',
+    'dashboard.admin.premium_desc': 'Proyectos gestionados en la plataforma',
+    'dashboard.tabs.overview': 'Visión General',
+    'dashboard.tabs.interests': 'Intereses Recibidos',
+    'dashboard.kpi.ahead': 'Adelantado',
+    'dashboard.kpi.delayed': 'Atrasado',
+    'dashboard.kpi.on_budget': 'En Presupuesto',
+    'dashboard.kpi.over_budget': 'Sobre Costo',
+    'dashboard.insp.rejected': 'Rechazada',
+    'dashboard.insp.pending': 'Pendiente',
+    'dashboard.insp.project': 'Proyecto',
+    'dashboard.interests.title': 'Intereses de Comunicación',
+    'dashboard.interests.desc':
+      'Personas que desean iniciar una conversación contigo. Al aceptar, el chat estará disponible en la pestaña de Mensajes.',
+    'dashboard.interests.simulate': 'Simular Recepción',
+    'dashboard.interests.empty': 'Aún no has recibido ningún interés.',
+    'dashboard.interests.received_at': 'Recibido en',
+    'dashboard.interests.decline': 'Rechazar',
+    'dashboard.interests.accept': 'Aceptar Chat',
+    'dashboard.interests.toast.title': 'Interés aceptado',
+    'dashboard.interests.toast.desc':
+      'Una nueva conversación se inició con éxito.',
+    'dashboard.interests.type.job': 'Trabajo/Servicio',
+    'dashboard.interests.type.profile': 'Perfil',
+    'dashboard.interests.simulate.sender': 'Inversor Ángel',
+    'dashboard.interests.simulate.title': 'Tu Perfil Profesional',
+
+    'admin.ads.title': 'Gestión de Publicidad',
+    'admin.ads.desc':
+      'Gestione facturación, matriz de precios y el ciclo de vida de anuncios.',
+    'admin.ads.tab.ads': 'Anuncios',
+    'admin.ads.tab.matrix': 'Matriz de Precios',
+    'admin.ads.create_btn': 'Crear Nuevo Anuncio',
+
+    'admin.categories.title': 'Gestionar Categorías',
+    'admin.categories.desc':
+      'Añada o elimine categorías y acceda a los detalles para gestionar subcategorías.',
+    'admin.categories.add_title': 'Añadir Categoría',
+    'admin.categories.add_desc': 'Cree una nueva categoría principal.',
+    'admin.categories.placeholder': 'Nombre de la categoría',
+
+    'admin.plans.title': 'Gestión de Planes',
+    'admin.plans.desc':
+      'Cree y edite planes de suscripción, defina reglas de notificación y niveles de prioridad.',
+    'admin.plans.registered': 'Planes Registrados',
+    'admin.plans.new': 'Nuevo Plan',
+
+    'admin.cplans.title': 'Planes de Obras',
+    'admin.cplans.desc':
+      'Configure planes de suscripción y límites para constructoras y contratistas.',
+    'admin.cplans.configured': 'Planes Configurados',
+    'admin.cplans.configured_desc':
+      'Gestione activamente lo que se ofrece a los contratistas.',
   },
 }

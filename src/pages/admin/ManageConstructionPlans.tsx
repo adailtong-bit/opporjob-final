@@ -60,24 +60,20 @@ export default function ManageConstructionPlans() {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
-            <HardHat className="h-8 w-8 text-primary" /> Planos de Obras
+            <HardHat className="h-8 w-8 text-primary" />{' '}
+            {t('admin.cplans.title')}
           </h1>
-          <p className="text-muted-foreground">
-            Configure os planos de assinatura e limites para construtoras e
-            empreiteiros.
-          </p>
+          <p className="text-muted-foreground">{t('admin.cplans.desc')}</p>
         </div>
         <Button onClick={openAdd}>
-          <Plus className="mr-2 h-4 w-4" /> Novo Plano
+          <Plus className="mr-2 h-4 w-4" /> {t('admin.plans.new')}
         </Button>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Planos Configurados</CardTitle>
-          <CardDescription>
-            Gerencie ativamente o que é oferecido aos contratantes.
-          </CardDescription>
+          <CardTitle>{t('admin.cplans.configured')}</CardTitle>
+          <CardDescription>{t('admin.cplans.configured_desc')}</CardDescription>
         </CardHeader>
         <CardContent className="p-0">
           <Table>
