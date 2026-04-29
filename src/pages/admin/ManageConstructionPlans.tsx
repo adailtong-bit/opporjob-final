@@ -26,7 +26,7 @@ import { ConstructionPlanFormModal } from '@/components/admin/ConstructionPlanFo
 
 export default function ManageConstructionPlans() {
   const { plans, deletePlan, togglePlanStatus } = useAdminPricingStore()
-  const { formatCurrency } = useLanguageStore()
+  const { t, formatCurrency } = useLanguageStore()
 
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingPlan, setEditingPlan] = useState<SubscriptionPlan | null>(null)
