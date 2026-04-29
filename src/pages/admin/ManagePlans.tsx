@@ -42,7 +42,7 @@ export default function ManagePlans() {
   const { plans, addPlan, updatePlan, deletePlan, togglePlanStatus } =
     useAdminPricingStore()
   const { toast } = useToast()
-  const { formatCurrency } = useLanguageStore()
+  const { formatCurrency, t } = useLanguageStore()
 
   const [isEditOpen, setIsEditOpen] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
