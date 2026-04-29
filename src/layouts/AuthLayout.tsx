@@ -1,69 +1,134 @@
 import { Outlet, Link } from 'react-router-dom'
+import logoImg from '@/assets/corepm-f1280.png'
 import { useLanguageStore } from '@/stores/useLanguageStore'
-import { LanguageSelector } from '@/components/LanguageSelector'
+import { useEffect, useState } from 'react'
+import { supabase } from '@/lib/supabase/client'
+import { CheckCircle2, Globe } from 'lucide-react'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import { Button } from '@/components/ui/button'
 
 export default function AuthLayout() {
-  const { t } = useLanguageStore()
+  const { t, currentLanguage, setLanguage } = useLanguageStore()
+  const [content, setContent] = useState<any>(null)
+
+  useEffect(() => {
+    supabase
+      .from('marketing_content')
+      .select('*')
+      .eq('key', 'login_page')
+      .single()
+      .then(({ data }) => {
+        if (data) setContent(data)
+      })
+  }, [])
 
   return (
-    <div className="flex min-h-screen w-full relative bg-background justify-start">
-      {/* Language Selector fixed at top-right of the viewport for easy access */}
+    <div className="min-h-screen grid grid-cols-1 lg:grid-cols-2 relative">
+      {/* Language Selector */}
       <div className="absolute top-4 right-4 z-50">
-        <LanguageSelector />
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              className="gap-2 bg-background/50 backdrop-blur-sm"
+            >
+              <Globe className="h-4 w-4" />
+              {currentLanguage === 'pt'
+                ? 'Português'
+                : currentLanguage === 'es'
+                  ? 'Español'
+                  : 'English'}
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={() => setLanguage('en')}>
+              English
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setLanguage('pt')}>
+              Português
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setLanguage('es')}>
+              Español
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
-      {/* Left side - Decorative */}
-      <div className="hidden lg:flex w-1/2 bg-primary relative overflow-hidden items-start pt-32 justify-center p-12">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary via-primary to-indigo-900 opacity-90 z-10" />
-        {/* Abstract shapes */}
-        <div className="absolute -top-20 -left-20 w-96 h-96 bg-indigo-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob" />
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full h-full max-w-lg max-h-lg border border-white/10 rounded-full animate-spin-slow" />
+      {/* Left panel */}
+      <div className="hidden lg:flex flex-col bg-primary text-primary-foreground p-12 justify-center relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary-foreground/10 to-transparent pointer-events-none" />
 
-        <div className="relative z-20 text-white max-w-lg">
+        <div className="relative z-10 max-w-lg mx-auto w-full">
           <Link
             to="/"
-            className="mb-8 flex items-center gap-3 w-fit hover:opacity-90 transition-opacity"
+            className="flex items-center gap-3 mb-12 hover:opacity-90 transition-opacity"
           >
-            <div className="h-10 w-10 bg-white rounded-lg flex items-center justify-center text-primary font-bold text-xl">
-              B
+            <div className="bg-white p-2 rounded-xl flex items-center justify-center">
+              <img
+                src={logoImg}
+                alt="OPPORJOB Logo"
+                className="h-8 w-auto object-contain"
+              />
             </div>
-            <span className="text-2xl font-bold tracking-tight">BIDWORK</span>
+            <span className="text-3xl font-extrabold tracking-tight">
+              OPPORJOB
+            </span>
           </Link>
-          <h1 className="text-4xl font-bold tracking-tight mb-6 leading-tight">
-            {t('layout.hero.title')}
+
+          <h1 className="text-4xl lg:text-5xl font-extrabold tracking-tight mb-6 leading-tight">
+            {content?.title || t('layout.hero.title')}
           </h1>
-          <p className="text-lg text-indigo-100 leading-relaxed">
-            {t('layout.hero.subtitle')}
+          <p className="text-lg text-primary-foreground/80 mb-12">
+            {content?.subtitle || t('layout.hero.subtitle')}
           </p>
 
-          <div className="mt-12 flex items-center gap-4">
-            <div className="flex -space-x-4">
+          <div className="space-y-6">
+            {(content?.features || []).map((feature: any, idx: number) => (
+              <div key={idx} className="flex gap-4 items-start">
+                <CheckCircle2 className="h-6 w-6 text-primary-foreground/60 shrink-0 mt-0.5" />
+                <div>
+                  <h3 className="font-semibold text-lg">{feature.title}</h3>
+                  <p className="text-primary-foreground/70 text-sm mt-1">
+                    {feature.desc}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-16 flex items-center gap-4">
+            <div className="flex -space-x-3">
               <img
-                src="https://img.usecurling.com/ppl/thumbnail?gender=male&seed=3"
                 className="w-10 h-10 rounded-full border-2 border-primary"
+                src="https://img.usecurling.com/ppl/thumbnail?seed=1"
                 alt="User"
               />
               <img
-                src="https://img.usecurling.com/ppl/thumbnail?gender=female&seed=4"
                 className="w-10 h-10 rounded-full border-2 border-primary"
+                src="https://img.usecurling.com/ppl/thumbnail?seed=2"
                 alt="User"
               />
               <img
-                src="https://img.usecurling.com/ppl/thumbnail?gender=male&seed=5"
                 className="w-10 h-10 rounded-full border-2 border-primary"
+                src="https://img.usecurling.com/ppl/thumbnail?seed=3"
                 alt="User"
               />
             </div>
-            <p className="text-sm font-medium text-indigo-100">
+            <span className="text-sm font-medium">
               {t('layout.hero.user_count')}
-            </p>
+            </span>
           </div>
         </div>
       </div>
 
-      {/* Right side - Content */}
-      <div className="flex-1 flex items-start justify-center p-6 pt-16 md:pt-32 bg-background">
-        <div className="w-full max-w-[400px] animate-fade-in-down">
+      {/* Right panel */}
+      <div className="flex flex-col p-6 lg:p-12 overflow-y-auto bg-background relative z-10">
+        <div className="w-full max-w-[400px] mx-auto my-auto">
           <Outlet />
         </div>
       </div>

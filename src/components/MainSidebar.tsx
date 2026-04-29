@@ -24,6 +24,7 @@ import {
   Mail,
   Truck,
   ShoppingCart,
+  LayoutTemplate,
 } from 'lucide-react'
 import {
   Sidebar,
@@ -144,6 +145,11 @@ export function MainSidebar() {
           },
           { title: t('nav.categories'), url: '/admin/categories', icon: Tags },
           { title: t('nav.ads'), url: '/admin/ads', icon: Megaphone },
+          {
+            title: t('nav.marketing'),
+            url: '/admin/marketing',
+            icon: LayoutTemplate,
+          },
         ],
       })
     }

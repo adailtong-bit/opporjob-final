@@ -938,6 +938,29 @@ export const translations: Translations = {
     'admin.ads.tab.matrix': 'Matriz de Preços',
     'admin.ads.create_btn': 'Criar Novo Anúncio',
 
+    'nav.marketing': 'Conteúdo de Marketing',
+    'admin.marketing.title': 'Conteúdo de Marketing',
+    'admin.marketing.desc':
+      'Gerencie os textos exibidos na página de login e outras áreas públicas.',
+    'admin.marketing.form.title': 'Título Principal',
+    'admin.marketing.form.subtitle': 'Subtítulo / Descrição',
+    'admin.marketing.features': 'Recursos / Destaques',
+    'admin.marketing.feature.title': 'Título do Recurso',
+    'admin.marketing.feature.desc': 'Descrição do Recurso',
+    'admin.marketing.add_feature': 'Adicionar Recurso',
+    'admin.marketing.save': 'Salvar Alterações',
+
+    'auth.login.secure_access': 'Acesso Seguro',
+    'auth.login.secure_access_desc':
+      'Acesse o painel integrado de Gestão de Obras, Equipamentos e Compras.',
+    'auth.login.email': 'Email Corporativo',
+    'auth.login.password': 'Senha',
+    'auth.login.forgot': 'Esqueci a Senha',
+    'auth.login.remember': 'Lembrar de mim',
+    'auth.login.signin': 'Entrar',
+    'auth.login.no_account': 'Ainda não tem uma conta?',
+    'auth.login.create_account': 'Criar Conta',
+
     'admin.categories.title': 'Gerenciar Categorias',
     'admin.categories.desc':
       'Adicione ou remova categorias e acesse os detalhes para gerenciar subcategorias.',
@@ -1963,6 +1986,29 @@ export const translations: Translations = {
     'admin.ads.tab.matrix': 'Pricing Matrix',
     'admin.ads.create_btn': 'Create New Ad',
 
+    'nav.marketing': 'Marketing Content',
+    'admin.marketing.title': 'Marketing Content',
+    'admin.marketing.desc':
+      'Manage the text displayed on the login page and other public areas.',
+    'admin.marketing.form.title': 'Main Title',
+    'admin.marketing.form.subtitle': 'Subtitle / Description',
+    'admin.marketing.features': 'Features / Highlights',
+    'admin.marketing.feature.title': 'Feature Title',
+    'admin.marketing.feature.desc': 'Feature Description',
+    'admin.marketing.add_feature': 'Add Feature',
+    'admin.marketing.save': 'Save Changes',
+
+    'auth.login.secure_access': 'Secure Access',
+    'auth.login.secure_access_desc':
+      'Access the integrated Construction, Equipment, and Purchasing Management panel.',
+    'auth.login.email': 'Corporate Email',
+    'auth.login.password': 'Password',
+    'auth.login.forgot': 'Forgot Password',
+    'auth.login.remember': 'Remember me',
+    'auth.login.signin': 'Sign In',
+    'auth.login.no_account': "Don't have an account yet?",
+    'auth.login.create_account': 'Create Account',
+
     'admin.categories.title': 'Manage Categories',
     'admin.categories.desc':
       'Add or remove categories and access details to manage subcategories.',
@@ -2987,6 +3033,29 @@ export const translations: Translations = {
     'admin.ads.tab.ads': 'Anuncios',
     'admin.ads.tab.matrix': 'Matriz de Precios',
     'admin.ads.create_btn': 'Crear Nuevo Anuncio',
+
+    'nav.marketing': 'Contenido de Marketing',
+    'admin.marketing.title': 'Contenido de Marketing',
+    'admin.marketing.desc':
+      'Gestione los textos mostrados en la página de inicio de sesión y áreas públicas.',
+    'admin.marketing.form.title': 'Título Principal',
+    'admin.marketing.form.subtitle': 'Subtítulo / Descripción',
+    'admin.marketing.features': 'Características / Destacados',
+    'admin.marketing.feature.title': 'Título de Característica',
+    'admin.marketing.feature.desc': 'Descripción de Característica',
+    'admin.marketing.add_feature': 'Añadir Característica',
+    'admin.marketing.save': 'Guardar Cambios',
+
+    'auth.login.secure_access': 'Acceso Seguro',
+    'auth.login.secure_access_desc':
+      'Acceda al panel integrado de Gestión de Obras, Equipos y Compras.',
+    'auth.login.email': 'Correo Corporativo',
+    'auth.login.password': 'Contraseña',
+    'auth.login.forgot': 'Olvidé mi Contraseña',
+    'auth.login.remember': 'Recordarme',
+    'auth.login.signin': 'Iniciar Sesión',
+    'auth.login.no_account': '¿Aún no tienes una cuenta?',
+    'auth.login.create_account': 'Crear Cuenta',
 
     'admin.categories.title': 'Gestionar Categorías',
     'admin.categories.desc':
