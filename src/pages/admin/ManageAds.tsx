@@ -30,14 +30,12 @@ export default function ManageAds() {
       const expired = useAdStore.getState().checkExpirations()
       if (expired.length > 0) {
         expired.forEach((ad) => {
-          const docName =
-            ad.country === 'BR' ? 'Nota Fiscal (NF)' : 'Billing Note'
+          const docName = 'Billing Note'
           const email =
-            ad.advertiserDetails?.billingContact.email ||
-            'o email de faturamento'
+            ad.advertiserDetails?.billingContact.email || 'billing email'
           toast({
-            title: `Anúncio Expirado: ${ad.title}`,
-            description: `A validade do anúncio expirou. ${docName} gerada e enviada automaticamente para ${email}.`,
+            title: `Ad Expired: ${ad.title}`,
+            description: `Ad validity expired. ${docName} generated and sent automatically to ${email}.`,
             duration: 8000,
           })
         })
@@ -49,15 +47,15 @@ export default function ManageAds() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'active':
-        return <Badge className="bg-green-500">Ativo</Badge>
+        return <Badge className="bg-green-500">Active</Badge>
       case 'suspended':
-        return <Badge className="bg-amber-500">Suspenso</Badge>
+        return <Badge className="bg-amber-500">Suspended</Badge>
       case 'canceled':
-        return <Badge variant="destructive">Cancelado</Badge>
+        return <Badge variant="destructive">Canceled</Badge>
       case 'expired':
-        return <Badge variant="secondary">Expirado</Badge>
+        return <Badge variant="secondary">Expired</Badge>
       default:
-        return <Badge>{status}</Badge>
+        return <Badge className="capitalize">{status}</Badge>
     }
   }
 
@@ -87,13 +85,13 @@ export default function ManageAds() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Anunciante</TableHead>
-                  <TableHead>Detalhes</TableHead>
-                  <TableHead>Nível / Matriz</TableHead>
-                  <TableHead>Período</TableHead>
-                  <TableHead>Faturamento</TableHead>
+                  <TableHead>Advertiser</TableHead>
+                  <TableHead>Details</TableHead>
+                  <TableHead>Level / Matrix</TableHead>
+                  <TableHead>Period</TableHead>
+                  <TableHead>Billing</TableHead>
                   <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Ações</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -127,27 +125,24 @@ export default function ManageAds() {
                       <div className="flex flex-col gap-1 items-start">
                         <Badge variant="outline">{ad.planLevel}</Badge>
                         <span className="text-[10px] text-muted-foreground flex items-center gap-1">
-                          <Info className="h-3 w-3" /> Peso:{' '}
+                          <Info className="h-3 w-3" /> Weight:{' '}
                           {ad.skillWeight || 1}
                         </span>
                       </div>
                     </TableCell>
                     <TableCell className="text-xs">
                       <div>
-                        Início: {format(new Date(ad.startDate), 'dd/MM/yyyy')}
+                        Start: {format(new Date(ad.startDate), 'MM/dd/yyyy')}
                       </div>
                       <div>
-                        Fim: {format(new Date(ad.endDate), 'dd/MM/yyyy')}
+                        End: {format(new Date(ad.endDate), 'MM/dd/yyyy')}
                       </div>
                     </TableCell>
                     <TableCell className="font-bold text-primary">
-                      {new Intl.NumberFormat(
-                        ad.country === 'BR' ? 'pt-BR' : 'en-US',
-                        {
-                          style: 'currency',
-                          currency: ad.country === 'BR' ? 'BRL' : 'USD',
-                        },
-                      ).format(ad.calculatedPrice || 0)}
+                      {new Intl.NumberFormat('en-US', {
+                        style: 'currency',
+                        currency: 'USD',
+                      }).format(ad.calculatedPrice || 0)}
                     </TableCell>
                     <TableCell>{getStatusBadge(ad.status)}</TableCell>
                     <TableCell className="text-right">

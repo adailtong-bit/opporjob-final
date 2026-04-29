@@ -44,10 +44,10 @@ export function ListingCard({
               )}
             >
               {status === 'open'
-                ? 'Disponível'
+                ? 'Available'
                 : status === 'completed'
-                  ? 'Fechado'
-                  : 'Em Negociação'}
+                  ? 'Closed'
+                  : 'In Negotiation'}
             </Badge>
           )}
         </div>
@@ -56,7 +56,7 @@ export function ListingCard({
             {title}
           </h3>
           <p className="font-bold text-lg mt-1 text-primary">
-            {price === 0 ? 'Grátis' : formatCurrency(price)}
+            {price === 0 ? 'Free' : formatCurrency(price)}
           </p>
           {location && (
             <p className="text-xs text-muted-foreground mt-1 truncate">

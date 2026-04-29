@@ -142,8 +142,8 @@ export default function AdCreateDialog({
     })
     onOpenChange(false)
     toast({
-      title: 'Anúncio Criado',
-      description: `Faturamento inicial de R$ ${price.toFixed(2)}`,
+      title: 'Ad Created',
+      description: `Initial billing of $${price.toFixed(2)}`,
     })
   }
 
@@ -158,19 +158,19 @@ export default function AdCreateDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Criar Novo Anúncio</DialogTitle>
+          <DialogTitle>Create New Ad</DialogTitle>
         </DialogHeader>
         <Tabs defaultValue="company" className="w-full mt-2">
           <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="company">Empresa</TabsTrigger>
-            <TabsTrigger value="contacts">Contatos</TabsTrigger>
-            <TabsTrigger value="campaign">Campanha</TabsTrigger>
-            <TabsTrigger value="media">Mídia</TabsTrigger>
+            <TabsTrigger value="company">Company</TabsTrigger>
+            <TabsTrigger value="contacts">Contacts</TabsTrigger>
+            <TabsTrigger value="campaign">Campaign</TabsTrigger>
+            <TabsTrigger value="media">Media</TabsTrigger>
           </TabsList>
 
           <TabsContent value="company" className="space-y-4 mt-4">
             <div className="space-y-2">
-              <Label>Razão Social</Label>
+              <Label>Company Name</Label>
               <Input
                 value={form.advertiserName}
                 onChange={(e) =>
@@ -179,7 +179,7 @@ export default function AdCreateDialog({
               />
             </div>
             <div className="space-y-2">
-              <Label>Endereço Legal</Label>
+              <Label>Legal Address</Label>
               <Input
                 value={form.legalAddress}
                 onChange={(e) =>
@@ -202,10 +202,10 @@ export default function AdCreateDialog({
             value="contacts"
             className="space-y-4 mt-4 h-[250px] overflow-y-auto pr-2"
           >
-            <h4 className="font-semibold text-sm border-b pb-1">Faturamento</h4>
+            <h4 className="font-semibold text-sm border-b pb-1">Billing</h4>
             <div className="grid grid-cols-2 gap-2">
               <div className="space-y-1">
-                <Label>Nome</Label>
+                <Label>Name</Label>
                 <Input
                   value={form.billingName}
                   onChange={(e) =>
@@ -224,7 +224,7 @@ export default function AdCreateDialog({
                 />
               </div>
               <div className="space-y-1 col-span-2">
-                <Label>Telefone</Label>
+                <Label>Phone</Label>
                 <Input
                   value={form.billingPhone}
                   onChange={(e) =>
@@ -238,7 +238,7 @@ export default function AdCreateDialog({
             </h4>
             <div className="grid grid-cols-2 gap-2">
               <div className="space-y-1">
-                <Label>Nome</Label>
+                <Label>Name</Label>
                 <Input
                   value={form.adContactName}
                   onChange={(e) =>
@@ -257,7 +257,7 @@ export default function AdCreateDialog({
                 />
               </div>
               <div className="space-y-1 col-span-2">
-                <Label>Telefone</Label>
+                <Label>Phone</Label>
                 <Input
                   value={form.adContactPhone}
                   onChange={(e) =>
@@ -273,7 +273,7 @@ export default function AdCreateDialog({
             className="space-y-4 mt-4 h-[250px] overflow-y-auto pr-2"
           >
             <div className="space-y-2">
-              <Label>Título da Campanha*</Label>
+              <Label>Campaign Title*</Label>
               <Input
                 value={form.title}
                 onChange={(e) =>
@@ -283,7 +283,7 @@ export default function AdCreateDialog({
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>Categoria</Label>
+                <Label>Category</Label>
                 <Select
                   value={form.category}
                   onValueChange={(v) => setForm((p) => ({ ...p, category: v }))}
@@ -301,7 +301,7 @@ export default function AdCreateDialog({
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label>Região</Label>
+                <Label>Region</Label>
                 <Select
                   value={form.region}
                   onValueChange={(v) => setForm((p) => ({ ...p, region: v }))}
@@ -319,7 +319,7 @@ export default function AdCreateDialog({
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label>Nível</Label>
+                <Label>Level</Label>
                 <Select
                   value={form.planLevel}
                   onValueChange={(v) =>
@@ -339,13 +339,13 @@ export default function AdCreateDialog({
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label>Custo</Label>
+                <Label>Cost</Label>
                 <div className="h-10 px-3 py-2 border rounded-md bg-muted text-primary font-bold">
-                  R$ {price.toFixed(2)}
+                  $ {price.toFixed(2)}
                 </div>
               </div>
               <div className="space-y-2">
-                <Label>Início*</Label>
+                <Label>Start*</Label>
                 <Input
                   type="date"
                   value={form.startDate}
@@ -355,7 +355,7 @@ export default function AdCreateDialog({
                 />
               </div>
               <div className="space-y-2">
-                <Label>Fim*</Label>
+                <Label>End*</Label>
                 <Input
                   type="date"
                   value={form.endDate}
@@ -369,7 +369,7 @@ export default function AdCreateDialog({
 
           <TabsContent value="media" className="space-y-4 mt-4">
             <div className="space-y-2">
-              <Label>Imagem (JPG, PNG)</Label>
+              <Label>Image (JPG, PNG)</Label>
               <Input
                 type="file"
                 accept="image/png, image/jpeg"
@@ -389,7 +389,7 @@ export default function AdCreateDialog({
         </Tabs>
         <DialogFooter className="mt-4">
           <Button onClick={handleSubmit} disabled={!isValid}>
-            Criar Anúncio
+            Create Ad
           </Button>
         </DialogFooter>
       </DialogContent>
