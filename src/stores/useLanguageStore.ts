@@ -25,8 +25,6 @@ export const useLanguageStore = create<LanguageState>()(
       setLanguage: (lang) =>
         set({
           currentLanguage: lang,
-          currentCurrency:
-            lang === 'en' ? 'USD' : lang === 'es' ? 'EUR' : 'BRL',
         }),
       setCurrency: (currency) => set({ currentCurrency: currency }),
       t: (key, params) => {
@@ -42,10 +40,9 @@ export const useLanguageStore = create<LanguageState>()(
         return text
       },
       formatCurrency: (value) => {
-        const lang = get().currentLanguage
-        const currency = get().currentCurrency || 'BRL'
+        const currency = get().currentCurrency || 'USD'
         const locale =
-          lang === 'pt' ? 'pt-BR' : lang === 'es' ? 'es-ES' : 'en-US'
+          currency === 'BRL' ? 'pt-BR' : currency === 'EUR' ? 'es-ES' : 'en-US'
 
         return new Intl.NumberFormat(locale, {
           style: 'currency',

@@ -16,6 +16,7 @@ import {
   formatPhone,
   formatZip,
 } from '@/lib/validation'
+import { maskTaxId } from '@/lib/utils'
 import {
   Loader2,
   User,
@@ -129,6 +130,21 @@ export default function Register() {
   const handleCountryChange = (val: CountryCode) => {
     setCountry(val)
     form.setValue('country' as any, val)
+
+    const currentPhone = form.getValues('phone' as any)
+    if (currentPhone) {
+      form.setValue('phone' as any, formatPhone(currentPhone, val))
+    }
+
+    const currentZip = form.getValues('zipCode' as any)
+    if (currentZip) {
+      form.setValue('zipCode' as any, formatZip(currentZip, val))
+    }
+
+    const currentDoc = form.getValues('document' as any)
+    if (currentDoc) {
+      form.setValue('document' as any, maskTaxId(currentDoc, val))
+    }
   }
 
   async function onSubmit(data: any) {
@@ -536,7 +552,15 @@ export default function Register() {
                   <FormItem>
                     <FormLabel>{t('settings.banking.doc')}</FormLabel>
                     <FormControl>
-                      <Input placeholder="Document" {...field} />
+                      <Input
+                        placeholder={
+                          country === 'US' ? '000-00-0000' : '000.000.000-00'
+                        }
+                        {...field}
+                        onChange={(e) =>
+                          field.onChange(maskTaxId(e.target.value, country))
+                        }
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

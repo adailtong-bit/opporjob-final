@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/card'
 import { useToast } from '@/hooks/use-toast'
 import { Loader2 } from 'lucide-react'
+import { maskTaxId } from '@/lib/utils'
 import {
   Form,
   FormControl,
@@ -299,8 +300,33 @@ export default function Settings() {
                           <FormLabel>Country</FormLabel>
                           <Select
                             onValueChange={(v) => {
-                              setCountry(v as CountryCode)
-                              field.onChange(v)
+                              const newCountry = v as CountryCode
+                              setCountry(newCountry)
+                              field.onChange(newCountry)
+
+                              const currentPhone = form.getValues('phone')
+                              if (currentPhone) {
+                                form.setValue(
+                                  'phone',
+                                  formatPhone(currentPhone, newCountry),
+                                )
+                              }
+
+                              const currentZip = form.getValues('zipCode')
+                              if (currentZip) {
+                                form.setValue(
+                                  'zipCode',
+                                  formatZip(currentZip, newCountry),
+                                )
+                              }
+
+                              const currentDoc = form.getValues('document')
+                              if (currentDoc) {
+                                form.setValue(
+                                  'document',
+                                  maskTaxId(currentDoc, newCountry),
+                                )
+                              }
                             }}
                             value={field.value}
                           >
@@ -508,7 +534,19 @@ export default function Settings() {
                           <FormItem>
                             <FormLabel>Document/Tax ID</FormLabel>
                             <FormControl>
-                              <Input {...field} />
+                              <Input
+                                placeholder={
+                                  country === 'US'
+                                    ? '000-00-0000'
+                                    : '000.000.000-00'
+                                }
+                                {...field}
+                                onChange={(e) =>
+                                  field.onChange(
+                                    maskTaxId(e.target.value, country),
+                                  )
+                                }
+                              />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
