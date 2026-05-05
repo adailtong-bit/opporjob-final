@@ -182,7 +182,9 @@ const App = () => {
     style.innerHTML = `
       #skip-badge,
       .skip-badge,
+      [data-skip-badge],
       a[href*="goskip.app"],
+      a[href*="goskip.dev"],
       a[href*="skip.build"] {
         display: none !important;
         opacity: 0 !important;
