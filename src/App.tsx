@@ -71,6 +71,7 @@ import { supabase } from '@/lib/supabase/client'
 import { useLanguageStore } from '@/stores/useLanguageStore'
 import { EvaluationModal } from '@/components/EvaluationModal'
 import { AuthProvider, useAuth } from '@/hooks/use-auth'
+import logoImg from '@/assets/corepm-f1280.png'
 
 const ScrollToTop = () => {
   const { pathname } = useLocation()
@@ -174,7 +175,7 @@ const App = () => {
   const { t } = useLanguageStore()
 
   useEffect(() => {
-    document.title = t('app.title') + ' - Marketplace'
+    document.title = t('app.title') + ' - Plataforma Completa'
 
     // Hide Skip badge globally
     const style = document.createElement('style')
@@ -196,6 +197,46 @@ const App = () => {
     if (!document.getElementById('hide-skip-badge')) {
       document.head.appendChild(style)
     }
+
+    // Dynamic Manifest for PWA and App Icon using the brand logo
+    const manifest = {
+      name: 'OPPORJOB',
+      short_name: 'OPPORJOB',
+      description: 'Plataforma completa para projetos e especialistas.',
+      start_url: '/',
+      display: 'standalone',
+      background_color: '#ffffff',
+      theme_color: '#ffffff',
+      icons: [
+        {
+          src: logoImg,
+          type: 'image/png',
+          sizes: '512x512',
+          purpose: 'any maskable',
+        },
+      ],
+    }
+    const stringManifest = JSON.stringify(manifest)
+    const blob = new Blob([stringManifest], { type: 'application/json' })
+    const manifestURL = URL.createObjectURL(blob)
+
+    let link = document.querySelector('link[rel="manifest"]')
+    if (!link) {
+      link = document.createElement('link')
+      link.setAttribute('rel', 'manifest')
+      document.head.appendChild(link)
+    }
+    link.setAttribute('href', manifestURL)
+
+    // Ensure OG Image has absolute URL for proper WhatsApp sharing
+    const absoluteLogoUrl = window.location.origin + logoImg
+    const ogImage = document.querySelector('meta[property="og:image"]')
+    if (ogImage) ogImage.setAttribute('content', absoluteLogoUrl)
+
+    const twitterImage = document.querySelector(
+      'meta[property="twitter:image"]',
+    )
+    if (twitterImage) twitterImage.setAttribute('content', absoluteLogoUrl)
 
     // Clean up dummy data from local storage to ensure production is clean
     try {
