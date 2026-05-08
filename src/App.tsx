@@ -198,7 +198,12 @@ const App = () => {
       document.head.appendChild(style)
     }
 
-    const absoluteLogoUrl = window.location.origin + logoImg
+    const getAbsoluteUrl = (path: string) => {
+      // Prevent double origin if the bundler already returned a data URI or absolute URL
+      if (path.startsWith('http') || path.startsWith('data:')) return path
+      return window.location.origin + (path.startsWith('/') ? '' : '/') + path
+    }
+    const absoluteLogoUrl = getAbsoluteUrl(logoImg)
 
     // Dynamic Manifest for PWA and App Icon using the brand logo
     const manifest = {
