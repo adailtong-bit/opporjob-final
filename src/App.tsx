@@ -250,38 +250,28 @@ const App = () => {
     link.setAttribute('href', manifestURL)
 
     // Update dynamic Apple Touch Icon
-    let appleIcon = document.querySelector('link[rel="apple-touch-icon"]')
-    if (!appleIcon) {
-      appleIcon = document.createElement('link')
-      appleIcon.setAttribute('rel', 'apple-touch-icon')
-      document.head.appendChild(appleIcon)
+    const appleIcon = document.querySelector('link[rel="apple-touch-icon"]')
+    if (appleIcon) {
+      appleIcon.setAttribute('href', absoluteLogoUrl)
     }
-    appleIcon.setAttribute('href', absoluteLogoUrl)
 
-    // Ensure OG Image has absolute URL for proper WhatsApp sharing
-    let ogImage = document.querySelector('meta[property="og:image"]')
-    if (!ogImage) {
-      ogImage = document.createElement('meta')
-      ogImage.setAttribute('property', 'og:image')
-      document.head.appendChild(ogImage)
+    // Ensure OG Image has absolute URL for crawlers that support JS execution
+    const ogImage = document.querySelector('meta[property="og:image"]')
+    if (ogImage) {
+      ogImage.setAttribute('content', absoluteLogoUrl)
     }
-    ogImage.setAttribute('content', absoluteLogoUrl)
 
-    let ogUrl = document.querySelector('meta[property="og:url"]')
-    if (!ogUrl) {
-      ogUrl = document.createElement('meta')
-      ogUrl.setAttribute('property', 'og:url')
-      document.head.appendChild(ogUrl)
+    const ogUrl = document.querySelector('meta[property="og:url"]')
+    if (ogUrl) {
+      ogUrl.setAttribute('content', window.location.href)
     }
-    ogUrl.setAttribute('content', window.location.href)
 
-    let twitterImage = document.querySelector('meta[property="twitter:image"]')
-    if (!twitterImage) {
-      twitterImage = document.createElement('meta')
-      twitterImage.setAttribute('property', 'twitter:image')
-      document.head.appendChild(twitterImage)
+    const twitterImage = document.querySelector(
+      'meta[property="twitter:image"]',
+    )
+    if (twitterImage) {
+      twitterImage.setAttribute('content', absoluteLogoUrl)
     }
-    twitterImage.setAttribute('content', absoluteLogoUrl)
 
     // Clean up dummy data from local storage to ensure production is clean
     try {
