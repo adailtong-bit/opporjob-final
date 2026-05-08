@@ -237,8 +237,9 @@ const App = () => {
       ],
     }
     const stringManifest = JSON.stringify(manifest)
-    const blob = new Blob([stringManifest], { type: 'application/json' })
-    const manifestURL = URL.createObjectURL(blob)
+    // Use base64 Data URI instead of blob to ensure mobile OS correctly fetches it and prevents icon graying out
+    const manifestBase64 = btoa(unescape(encodeURIComponent(stringManifest)))
+    const manifestURL = `data:application/manifest+json;base64,${manifestBase64}`
 
     let link = document.querySelector('link[rel="manifest"]')
     if (!link) {
@@ -265,6 +266,14 @@ const App = () => {
       document.head.appendChild(ogImage)
     }
     ogImage.setAttribute('content', absoluteLogoUrl)
+
+    let ogUrl = document.querySelector('meta[property="og:url"]')
+    if (!ogUrl) {
+      ogUrl = document.createElement('meta')
+      ogUrl.setAttribute('property', 'og:url')
+      document.head.appendChild(ogUrl)
+    }
+    ogUrl.setAttribute('content', window.location.href)
 
     let twitterImage = document.querySelector('meta[property="twitter:image"]')
     if (!twitterImage) {
