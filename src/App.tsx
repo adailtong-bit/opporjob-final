@@ -198,6 +198,8 @@ const App = () => {
       document.head.appendChild(style)
     }
 
+    const absoluteLogoUrl = window.location.origin + logoImg
+
     // Dynamic Manifest for PWA and App Icon using the brand logo
     const manifest = {
       name: 'OPPORJOB',
@@ -209,10 +211,28 @@ const App = () => {
       theme_color: '#ffffff',
       icons: [
         {
-          src: logoImg,
+          src: absoluteLogoUrl,
+          type: 'image/png',
+          sizes: '192x192',
+          purpose: 'any',
+        },
+        {
+          src: absoluteLogoUrl,
           type: 'image/png',
           sizes: '512x512',
-          purpose: 'any maskable',
+          purpose: 'any',
+        },
+        {
+          src: absoluteLogoUrl,
+          type: 'image/png',
+          sizes: '192x192',
+          purpose: 'maskable',
+        },
+        {
+          src: absoluteLogoUrl,
+          type: 'image/png',
+          sizes: '512x512',
+          purpose: 'maskable',
         },
       ],
     }
@@ -228,15 +248,31 @@ const App = () => {
     }
     link.setAttribute('href', manifestURL)
 
-    // Ensure OG Image has absolute URL for proper WhatsApp sharing
-    const absoluteLogoUrl = window.location.origin + logoImg
-    const ogImage = document.querySelector('meta[property="og:image"]')
-    if (ogImage) ogImage.setAttribute('content', absoluteLogoUrl)
+    // Update dynamic Apple Touch Icon
+    let appleIcon = document.querySelector('link[rel="apple-touch-icon"]')
+    if (!appleIcon) {
+      appleIcon = document.createElement('link')
+      appleIcon.setAttribute('rel', 'apple-touch-icon')
+      document.head.appendChild(appleIcon)
+    }
+    appleIcon.setAttribute('href', absoluteLogoUrl)
 
-    const twitterImage = document.querySelector(
-      'meta[property="twitter:image"]',
-    )
-    if (twitterImage) twitterImage.setAttribute('content', absoluteLogoUrl)
+    // Ensure OG Image has absolute URL for proper WhatsApp sharing
+    let ogImage = document.querySelector('meta[property="og:image"]')
+    if (!ogImage) {
+      ogImage = document.createElement('meta')
+      ogImage.setAttribute('property', 'og:image')
+      document.head.appendChild(ogImage)
+    }
+    ogImage.setAttribute('content', absoluteLogoUrl)
+
+    let twitterImage = document.querySelector('meta[property="twitter:image"]')
+    if (!twitterImage) {
+      twitterImage = document.createElement('meta')
+      twitterImage.setAttribute('property', 'twitter:image')
+      document.head.appendChild(twitterImage)
+    }
+    twitterImage.setAttribute('content', absoluteLogoUrl)
 
     // Clean up dummy data from local storage to ensure production is clean
     try {
