@@ -4,12 +4,15 @@ import { PromoBanner } from '@/components/home/PromoBanner'
 import { ListingCard } from '@/components/home/ListingCard'
 import { MyAdsDashboard } from '@/components/home/MyAdsDashboard'
 import { Button } from '@/components/ui/button'
-import { ArrowRight } from 'lucide-react'
+import { ArrowRight, Download, Share2, Bell, BellOff } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { useJobStore } from '@/stores/useJobStore'
+import { usePWA } from '@/hooks/use-pwa'
 
 export default function Index() {
+  const { isInstallable, installPWA, shareContent, setBadge, clearBadge } =
+    usePWA()
   const { t } = useLanguageStore()
   const { jobs } = useJobStore()
 
@@ -120,7 +123,64 @@ export default function Index() {
       <PromoBanner />
       <MyAdsDashboard />
 
-      <div className="px-4 mt-2">
+      {isInstallable && (
+        <div className="px-4 mt-4">
+          <Card className="bg-primary text-primary-foreground border-none shadow-lg animate-fade-in-up">
+            <CardContent className="p-4 flex items-center justify-between">
+              <div>
+                <h3 className="font-bold text-lg">Instale o App OPPORJOB</h3>
+                <p className="text-sm text-primary-foreground/90">
+                  Acesse rápido, receba notificações e use offline!
+                </p>
+              </div>
+              <Button
+                onClick={installPWA}
+                variant="secondary"
+                className="gap-2 font-bold whitespace-nowrap"
+              >
+                <Download className="h-4 w-4" />
+                Instalar
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* PWA Feature Showcase / Quick Actions */}
+      <div className="px-4 mt-4 grid grid-cols-2 md:grid-cols-4 gap-2">
+        <Button
+          variant="outline"
+          className="gap-2 w-full bg-card shadow-sm hover:bg-muted"
+          onClick={() =>
+            shareContent({
+              title: 'OPPORJOB',
+              text: 'Encontre os melhores projetos e especialistas na OPPORJOB!',
+              url: window.location.origin,
+            })
+          }
+        >
+          <Share2 className="h-4 w-4 text-primary" />
+          Compartilhar App
+        </Button>
+        <Button
+          variant="outline"
+          className="gap-2 w-full bg-card shadow-sm hover:bg-muted"
+          onClick={() => setBadge(3)}
+        >
+          <Bell className="h-4 w-4 text-primary" />
+          Testar Badge (3)
+        </Button>
+        <Button
+          variant="outline"
+          className="gap-2 w-full bg-card shadow-sm hover:bg-muted md:col-span-2"
+          onClick={() => clearBadge()}
+        >
+          <BellOff className="h-4 w-4 text-primary" />
+          Limpar Notificações
+        </Button>
+      </div>
+
+      <div className="px-4 mt-4">
         <div className="space-y-2 pt-2">
           {renderSection('Marketplace', 'marketplace', 'product')}
           {renderSection('Donations & Community', 'donation', 'community')}
