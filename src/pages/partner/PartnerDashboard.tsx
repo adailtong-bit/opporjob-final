@@ -39,6 +39,7 @@ import {
 } from 'lucide-react'
 import { ProjectScheduleTable } from '@/components/construction/ProjectScheduleTable'
 import { TeamMemberModal } from '@/components/partner/TeamMemberModal'
+import { VendorsTabContent } from '@/components/partner/VendorsTabContent'
 import { useToast } from '@/hooks/use-toast'
 import { useLanguageStore } from '@/stores/useLanguageStore'
 import { CurrencyInput } from '@/components/CurrencyInput'
@@ -205,10 +206,19 @@ export default function PartnerDashboard() {
       </div>
 
       <Tabs defaultValue="projects">
-        <TabsList>
-          <TabsTrigger value="projects">Meus Projetos & Tarefas</TabsTrigger>
-          <TabsTrigger value="quotes">Orçamentos (Propostas)</TabsTrigger>
-          <TabsTrigger value="team">Minha Equipe</TabsTrigger>
+        <TabsList className="w-full justify-start overflow-x-auto flex-nowrap h-auto p-1 py-1.5 scrollbar-none">
+          <TabsTrigger value="projects" className="whitespace-nowrap">
+            Meus Projetos & Tarefas
+          </TabsTrigger>
+          <TabsTrigger value="quotes" className="whitespace-nowrap">
+            Orçamentos (Propostas)
+          </TabsTrigger>
+          <TabsTrigger value="team" className="whitespace-nowrap">
+            Minha Equipe
+          </TabsTrigger>
+          <TabsTrigger value="vendors" className="whitespace-nowrap">
+            Fornecedores
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="projects" className="space-y-6 mt-4">
@@ -322,6 +332,10 @@ export default function PartnerDashboard() {
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="vendors" className="mt-4">
+          <VendorsTabContent />
         </TabsContent>
 
         <TabsContent value="team" className="mt-4">
