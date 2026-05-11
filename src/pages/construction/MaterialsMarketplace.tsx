@@ -46,6 +46,7 @@ import {
   Lock,
   Trash2,
   Store,
+  Plus,
 } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import { useLanguageStore } from '@/stores/useLanguageStore'
@@ -67,7 +68,7 @@ export default function MaterialsMarketplace() {
   const navigate = useNavigate()
   const { materials, vendors, addOrder, importMaterialList, addVendor } =
     useMaterialStore()
-  const { projects } = useProjectStore()
+  const { projects, addAllocatedCost, updateStageActuals } = useProjectStore()
   const { user } = useAuthStore()
   const { toast } = useToast()
   const { t, formatCurrency } = useLanguageStore()
@@ -98,6 +99,16 @@ export default function MaterialsMarketplace() {
   // New Vendor State
   const [isNewVendorOpen, setIsNewVendorOpen] = useState(false)
   const [newVendorName, setNewVendorName] = useState('')
+
+  // Custom Material State
+  const [isCustomMaterialOpen, setIsCustomMaterialOpen] = useState(false)
+  const [customMaterial, setCustomMaterial] = useState({
+    name: '',
+    price: 0,
+    unit: 'un',
+    quantity: 1,
+    category: 'Diversos',
+  })
 
   useEffect(() => {
     if (urlProjectId) setCheckoutProjectId(urlProjectId)
@@ -192,6 +203,52 @@ export default function MaterialsMarketplace() {
     toast({ title: 'Vendor registered successfully!' })
   }
 
+  const handleAddCustomMaterial = () => {
+    if (
+      !customMaterial.name ||
+      customMaterial.price <= 0 ||
+      customMaterial.quantity <= 0
+    )
+      return
+
+    const newMat: Material = {
+      id: 'custom-' + Math.random().toString(36).substr(2, 9),
+      name: customMaterial.name,
+      category: customMaterial.category,
+      price: customMaterial.price,
+      unit: customMaterial.unit,
+      imageUrl: 'https://img.usecurling.com/p/300/300?q=box&color=gray',
+      supplier: checkoutVendorId
+        ? vendors.find((v) => v.id === checkoutVendorId)?.name ||
+          'Fornecedor Local'
+        : 'Avulso',
+      stock: 999,
+      description: 'Item adicionado sob demanda para a obra',
+    }
+
+    setCart((prev) => [
+      ...prev,
+      {
+        id: Math.random().toString(36).substring(2),
+        material: newMat,
+        quantity: customMaterial.quantity,
+        unitPrice: customMaterial.price,
+        brand: 'Sob Demanda',
+        color: '',
+      },
+    ])
+
+    toast({ title: 'Item avulso adicionado ao carrinho!' })
+    setIsCustomMaterialOpen(false)
+    setCustomMaterial({
+      name: '',
+      price: 0,
+      unit: 'un',
+      quantity: 1,
+      category: 'Diversos',
+    })
+  }
+
   const handleCheckoutSubmit = () => {
     if (!checkoutProjectId) {
       toast({
@@ -235,9 +292,29 @@ export default function MaterialsMarketplace() {
       requesterName: user?.name,
     })
 
+    // Integrar com o painel financeiro da obra
+    addAllocatedCost(checkoutProjectId, {
+      description: `Pedido de Materiais: ${selectedVendor?.name || 'Diversos'}`,
+      amount: cartTotal,
+      type: 'actual',
+      category: 'material',
+      costClass: 'capex',
+      date: new Date(),
+      stageId: checkoutStageId !== 'none' ? checkoutStageId : undefined,
+    })
+
+    if (checkoutStageId !== 'none') {
+      updateStageActuals(
+        checkoutProjectId,
+        checkoutStageId,
+        'material',
+        cartTotal,
+      )
+    }
+
     toast({
-      title: 'Approval Required',
-      description: `The order of ${formatCurrency(cartTotal)} has been sent to the manager for approval.`,
+      title: 'Pedido Registrado',
+      description: `A compra de ${formatCurrency(cartTotal)} foi enviada e integrada ao financeiro da obra.`,
     })
 
     setCart([])
@@ -343,10 +420,19 @@ export default function MaterialsMarketplace() {
         </Select>
         <Button
           variant="outline"
+          onClick={() => setIsCustomMaterialOpen(true)}
+          title="Adicionar item fora do catálogo"
+          className="bg-primary/5 text-primary border-primary/20 hover:bg-primary/10"
+        >
+          <Plus className="mr-2 h-4 w-4" /> Item Avulso
+        </Button>
+        <Button
+          variant="outline"
           onClick={() => fileInputRef.current?.click()}
           title="Import product list"
+          className="hidden sm:flex"
         >
-          <Upload className="mr-2 h-4 w-4" /> Import List
+          <Upload className="mr-2 h-4 w-4" /> Importar
         </Button>
         <input
           type="file"
@@ -576,14 +662,14 @@ export default function MaterialsMarketplace() {
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
                 <div className="space-y-2 flex-1 w-full">
                   <Label className="text-sm font-semibold flex items-center gap-1">
-                    Vendor / Store <span className="text-red-500">*</span>
+                    Loja / Fornecedor <span className="text-red-500">*</span>
                   </Label>
                   <Select
                     value={checkoutVendorId}
                     onValueChange={setCheckoutVendorId}
                   >
-                    <SelectTrigger className="bg-background">
-                      <SelectValue placeholder="Select Vendor" />
+                    <SelectTrigger className="bg-background border-blue-200">
+                      <SelectValue placeholder="Onde você está comprando?" />
                     </SelectTrigger>
                     <SelectContent>
                       {vendors.map((v) => (
@@ -597,9 +683,9 @@ export default function MaterialsMarketplace() {
                 <Button
                   variant="outline"
                   onClick={() => setIsNewVendorOpen(!isNewVendorOpen)}
-                  className="bg-background"
+                  className="bg-background border-blue-200 hover:bg-blue-100"
                 >
-                  <Store className="mr-2 h-4 w-4" /> New Vendor
+                  <Store className="mr-2 h-4 w-4 text-blue-600" /> Nova Loja
                 </Button>
               </div>
 
@@ -755,6 +841,118 @@ export default function MaterialsMarketplace() {
                 Request Approval
               </Button>
             </div>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      {/* Custom Material Dialog */}
+      <Dialog
+        open={isCustomMaterialOpen}
+        onOpenChange={setIsCustomMaterialOpen}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Item Fora do Catálogo</DialogTitle>
+            <DialogDescription>
+              Adicione materiais avulsos que você vai comprar diretamente na
+              loja para esta obra.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label>Nome do Produto</Label>
+              <Input
+                placeholder="Ex: Cimento, Prego, Tubo PVC..."
+                value={customMaterial.name}
+                onChange={(e) =>
+                  setCustomMaterial({ ...customMaterial, name: e.target.value })
+                }
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="grid gap-2">
+                <Label>Preço Unitário</Label>
+                <div className="relative">
+                  <span className="absolute left-3 top-2.5 text-muted-foreground text-sm">
+                    $
+                  </span>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    className="pl-7"
+                    value={customMaterial.price}
+                    onChange={(e) =>
+                      setCustomMaterial({
+                        ...customMaterial,
+                        price: parseFloat(e.target.value) || 0,
+                      })
+                    }
+                  />
+                </div>
+              </div>
+              <div className="grid gap-2">
+                <Label>Quantidade</Label>
+                <Input
+                  type="number"
+                  min="1"
+                  value={customMaterial.quantity}
+                  onChange={(e) =>
+                    setCustomMaterial({
+                      ...customMaterial,
+                      quantity: parseInt(e.target.value) || 1,
+                    })
+                  }
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="grid gap-2">
+                <Label>Unidade de Medida</Label>
+                <Input
+                  placeholder="Ex: un, kg, m³..."
+                  value={customMaterial.unit}
+                  onChange={(e) =>
+                    setCustomMaterial({
+                      ...customMaterial,
+                      unit: e.target.value,
+                    })
+                  }
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label>Categoria</Label>
+                <Select
+                  value={customMaterial.category}
+                  onValueChange={(val) =>
+                    setCustomMaterial({ ...customMaterial, category: val })
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Estrutura">Estrutura</SelectItem>
+                    <SelectItem value="Alvenaria">Alvenaria</SelectItem>
+                    <SelectItem value="Acabamento">Acabamento</SelectItem>
+                    <SelectItem value="Diversos">Diversos</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setIsCustomMaterialOpen(false)}
+            >
+              Cancelar
+            </Button>
+            <Button
+              onClick={handleAddCustomMaterial}
+              disabled={!customMaterial.name || customMaterial.price <= 0}
+            >
+              Adicionar ao Carrinho
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
