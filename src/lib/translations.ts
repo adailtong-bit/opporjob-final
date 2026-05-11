@@ -950,6 +950,16 @@ export const translations: Translations = {
     'admin.marketing.add_feature': 'Adicionar Recurso',
     'admin.marketing.save': 'Salvar Alterações',
 
+    'admin.push.title': 'Notificações Push',
+    'admin.push.desc':
+      'Envie notificações para todos os usuários do aplicativo.',
+    'admin.push.form.title': 'Título da Mensagem',
+    'admin.push.form.body': 'Corpo da Mensagem',
+    'admin.push.form.url': 'Link de Destino (Opcional)',
+    'admin.push.send': 'Enviar Notificação',
+    'admin.push.sending': 'Enviando...',
+    'admin.push.success': 'Notificações enviadas com sucesso!',
+
     'auth.login.secure_access': 'Acesso Seguro',
     'auth.login.secure_access_desc':
       'Acesse o painel integrado de Gestão de Obras, Equipamentos e Compras.',
@@ -1998,6 +2008,15 @@ export const translations: Translations = {
     'admin.marketing.add_feature': 'Add Feature',
     'admin.marketing.save': 'Save Changes',
 
+    'admin.push.title': 'Push Notifications',
+    'admin.push.desc': 'Send notifications to all app users.',
+    'admin.push.form.title': 'Message Title',
+    'admin.push.form.body': 'Message Body',
+    'admin.push.form.url': 'Destination Link (Optional)',
+    'admin.push.send': 'Send Notification',
+    'admin.push.sending': 'Sending...',
+    'admin.push.success': 'Notifications sent successfully!',
+
     'auth.login.secure_access': 'Secure Access',
     'auth.login.secure_access_desc':
       'Access the integrated Construction, Equipment, and Purchasing Management panel.',
@@ -3045,6 +3064,16 @@ export const translations: Translations = {
     'admin.marketing.feature.desc': 'Descripción de Característica',
     'admin.marketing.add_feature': 'Añadir Característica',
     'admin.marketing.save': 'Guardar Cambios',
+
+    'admin.push.title': 'Notificaciones Push',
+    'admin.push.desc':
+      'Envíe notificaciones a todos los usuarios de la aplicación.',
+    'admin.push.form.title': 'Título del Mensaje',
+    'admin.push.form.body': 'Cuerpo del Mensaje',
+    'admin.push.form.url': 'Enlace de Destino (Opcional)',
+    'admin.push.send': 'Enviar Notificación',
+    'admin.push.sending': 'Enviando...',
+    'admin.push.success': '¡Notificaciones enviadas con éxito!',
 
     'auth.login.secure_access': 'Acceso Seguro',
     'auth.login.secure_access_desc':

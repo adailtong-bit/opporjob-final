@@ -22,7 +22,9 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { useToast } from '@/hooks/use-toast'
-import { Globe, Briefcase, DollarSign } from 'lucide-react'
+import { Briefcase, DollarSign } from 'lucide-react'
+import { useLanguageStore } from '@/stores/useLanguageStore'
+import { formatPhone } from '@/lib/validation'
 
 const jobSchema = z.object({
   title: z.string().min(3, 'Title must be at least 3 characters'),
@@ -48,9 +50,14 @@ const CATEGORIES = {
     { id: 'technology', name: 'TI & Tecnologia' },
     { id: 'maintenance', name: 'Manutenção Residencial' },
   ],
+  es: [
+    { id: 'construction', name: 'Construcción y Reformas' },
+    { id: 'technology', name: 'TI y Tecnología' },
+    { id: 'maintenance', name: 'Mantenimiento del Hogar' },
+  ],
 }
 
-const SUBCATEGORIES: Record<string, { en: any[]; pt: any[] }> = {
+const SUBCATEGORIES: Record<string, { en: any[]; pt: any[]; es: any[] }> = {
   construction: {
     en: [
       { id: 'plumbing', name: 'Plumbing' },
@@ -60,6 +67,11 @@ const SUBCATEGORIES: Record<string, { en: any[]; pt: any[] }> = {
     pt: [
       { id: 'plumbing', name: 'Encanamento' },
       { id: 'electrical', name: 'Elétrica' },
+      { id: 'painting', name: 'Pintura' },
+    ],
+    es: [
+      { id: 'plumbing', name: 'Plomería' },
+      { id: 'electrical', name: 'Electricidad' },
       { id: 'painting', name: 'Pintura' },
     ],
   },
@@ -72,6 +84,10 @@ const SUBCATEGORIES: Record<string, { en: any[]; pt: any[] }> = {
       { id: 'web', name: 'Desenvolvimento Web' },
       { id: 'support', name: 'Suporte Técnico' },
     ],
+    es: [
+      { id: 'web', name: 'Desarrollo Web' },
+      { id: 'support', name: 'Soporte Técnico' },
+    ],
   },
   maintenance: {
     en: [
@@ -82,20 +98,17 @@ const SUBCATEGORIES: Record<string, { en: any[]; pt: any[] }> = {
       { id: 'cleaning', name: 'Limpeza Residencial' },
       { id: 'landscaping', name: 'Jardinagem' },
     ],
+    es: [
+      { id: 'cleaning', name: 'Limpieza del Hogar' },
+      { id: 'landscaping', name: 'Jardinería' },
+    ],
   },
 }
 
-const formatUSPhone = (val: string) => {
-  const cleaned = ('' + val).replace(/\D/g, '')
-  const match = cleaned.match(/^(\d{0,3})?(\d{0,3})?(\d{0,4})?/)
-  if (!match) return val
-  if (!match[2]) return match[1] ? `(${match[1]}` : ''
-  if (!match[3]) return `(${match[1]}) ${match[2]}`
-  return `(${match[1]}) ${match[2]}-${match[3]}`
-}
-
 export default function PostJob() {
-  const [lang, setLang] = useState<'en' | 'pt'>('en')
+  const { currentLanguage, currentCurrency, t } = useLanguageStore()
+  const lang = currentLanguage as 'en' | 'pt' | 'es'
+  const countryCode = lang === 'pt' ? 'BR' : lang === 'en' ? 'US' : 'ES'
   const { toast } = useToast()
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -119,17 +132,12 @@ export default function PostJob() {
   const onSubmit = async (data: JobFormValues) => {
     setIsSubmitting(true)
     try {
-      // Simulate API call to Supabase
       await new Promise((resolve) => setTimeout(resolve, 1000))
-
       console.log('Job Data to save:', data)
 
       toast({
-        title: lang === 'en' ? 'Success!' : 'Sucesso!',
-        description:
-          lang === 'en'
-            ? 'Your post has been published successfully.'
-            : 'Sua publicação foi criada com sucesso.',
+        title: t('success'),
+        description: t('post.success'),
       })
       form.reset({
         ...data,
@@ -140,9 +148,8 @@ export default function PostJob() {
     } catch (error: any) {
       toast({
         variant: 'destructive',
-        title: lang === 'en' ? 'Error' : 'Erro',
-        description:
-          lang === 'en' ? 'Failed to post job.' : 'Falha ao publicar.',
+        title: t('error'),
+        description: 'Failed to post job.',
       })
     } finally {
       setIsSubmitting(false)
@@ -150,7 +157,7 @@ export default function PostJob() {
   }
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const formatted = formatUSPhone(e.target.value)
+    const formatted = formatPhone(e.target.value, countryCode)
     form.setValue('phone', formatted, { shouldValidate: true })
   }
 
@@ -160,36 +167,15 @@ export default function PostJob() {
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-3">
             <Briefcase className="h-8 w-8 text-primary" />
-            {lang === 'en' ? 'Create a Listing' : 'Criar um Anúncio'}
+            {t('publish.what')}
           </h1>
-          <p className="text-muted-foreground mt-2">
-            {lang === 'en'
-              ? 'Offer a service, post a job, or make a donation.'
-              : 'Ofereça um serviço, publique uma vaga ou faça uma doação.'}
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2 bg-muted/50 p-1.5 rounded-lg border">
-          <Globe className="h-4 w-4 text-muted-foreground ml-2" />
-          <Select
-            value={lang}
-            onValueChange={(val: 'en' | 'pt') => setLang(val)}
-          >
-            <SelectTrigger className="w-[120px] h-8 border-0 bg-transparent shadow-none focus:ring-0">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="en">English (US)</SelectItem>
-              <SelectItem value="pt">Português (BR)</SelectItem>
-            </SelectContent>
-          </Select>
+          <p className="text-muted-foreground mt-2">{t('post.form.desc')}</p>
         </div>
       </div>
 
       <div className="bg-card border rounded-xl shadow-sm p-6 sm:p-8">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-            {/* Type Section */}
             <div className="space-y-6">
               <FormField
                 control={form.control}
@@ -197,7 +183,7 @@ export default function PostJob() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-base font-semibold">
-                      {lang === 'en' ? 'Listing Type' : 'Tipo de Anúncio'}
+                      {t('job.type')}
                     </FormLabel>
                     <Select
                       onValueChange={field.onChange}
@@ -205,24 +191,18 @@ export default function PostJob() {
                     >
                       <FormControl>
                         <SelectTrigger className="h-12">
-                          <SelectValue placeholder="Select type" />
+                          <SelectValue placeholder={t('general.select')} />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
                         <SelectItem value="service">
-                          {lang === 'en'
-                            ? 'Offer a Service'
-                            : 'Oferecer um Serviço'}
+                          {t('post.type.job.label')}
                         </SelectItem>
                         <SelectItem value="job">
-                          {lang === 'en'
-                            ? 'Post a Job / Hiring'
-                            : 'Publicar Vaga / Contratação'}
+                          {t('post.type.job.label')}
                         </SelectItem>
                         <SelectItem value="donation">
-                          {lang === 'en'
-                            ? 'Make a Donation'
-                            : 'Fazer uma Doação'}
+                          {t('category.donation')}
                         </SelectItem>
                       </SelectContent>
                     </Select>
@@ -238,37 +218,22 @@ export default function PostJob() {
                     name="pricingType"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>
-                          {lang === 'en'
-                            ? 'Pricing Model'
-                            : 'Modelo de Cobrança'}
-                        </FormLabel>
+                        <FormLabel>{t('post.pricing_type')}</FormLabel>
                         <Select
                           onValueChange={field.onChange}
                           defaultValue={field.value}
                         >
                           <FormControl>
                             <SelectTrigger>
-                              <SelectValue
-                                placeholder={
-                                  lang === 'en'
-                                    ? 'Select pricing type'
-                                    : 'Selecione o modelo'
-                                }
-                              />
+                              <SelectValue placeholder={t('general.select')} />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
                             <SelectItem value="hourly">
-                              {lang === 'en' ? 'Hourly Rate' : 'Valor por Hora'}
+                              {t('post.rate.daily')}
                             </SelectItem>
                             <SelectItem value="fixed">
-                              {lang === 'en' ? 'Fixed Price' : 'Preço Fixo'}
-                            </SelectItem>
-                            <SelectItem value="negotiable">
-                              {lang === 'en'
-                                ? 'Negotiable / Request Quote'
-                                : 'Negociável / Sob Orçamento'}
+                              {t('job.fixed_price')}
                             </SelectItem>
                           </SelectContent>
                         </Select>
@@ -283,9 +248,7 @@ export default function PostJob() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>
-                          {lang === 'en'
-                            ? 'Estimated Price (USD)'
-                            : 'Preço Estimado (USD)'}
+                          {t('post.budget_est')} ({currentCurrency || 'BRL'})
                         </FormLabel>
                         <FormControl>
                           <div className="relative">
@@ -299,11 +262,7 @@ export default function PostJob() {
                             />
                           </div>
                         </FormControl>
-                        <FormDescription>
-                          {lang === 'en'
-                            ? 'Leave empty if purely negotiable'
-                            : 'Deixe em branco se for negociável'}
-                        </FormDescription>
+                        <FormDescription>{t('post.free_help')}</FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -314,26 +273,19 @@ export default function PostJob() {
 
             <div className="h-px w-full bg-border" />
 
-            {/* General Info Section */}
             <div className="space-y-6">
-              <h3 className="text-lg font-semibold">
-                {lang === 'en' ? 'General Information' : 'Informações Gerais'}
-              </h3>
+              <h3 className="text-lg font-semibold">{t('post.basic_info')}</h3>
 
               <FormField
                 control={form.control}
                 name="title"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{lang === 'en' ? 'Title' : 'Título'}</FormLabel>
+                    <FormLabel>{t('post.title_placeholder')}</FormLabel>
                     <FormControl>
                       <Input
                         className="h-11"
-                        placeholder={
-                          lang === 'en'
-                            ? 'E.g. Professional Plumbing Services'
-                            : 'Ex. Serviços Profissionais de Encanamento'
-                        }
+                        placeholder={t('post.title_placeholder')}
                         {...field}
                       />
                     </FormControl>
@@ -348,9 +300,7 @@ export default function PostJob() {
                   name="category"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>
-                        {lang === 'en' ? 'Category' : 'Categoria'}
-                      </FormLabel>
+                      <FormLabel>{t('category.ti').split(' ')[0]}</FormLabel>
                       <Select
                         onValueChange={(val) => {
                           field.onChange(val)
@@ -360,17 +310,11 @@ export default function PostJob() {
                       >
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue
-                              placeholder={
-                                lang === 'en'
-                                  ? 'Select a category'
-                                  : 'Selecione uma categoria'
-                              }
-                            />
+                            <SelectValue placeholder={t('general.select')} />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {CATEGORIES[lang].map((cat) => (
+                          {(CATEGORIES[lang] || CATEGORIES.pt).map((cat) => (
                             <SelectItem key={cat.id} value={cat.id}>
                               {cat.name}
                             </SelectItem>
@@ -387,9 +331,7 @@ export default function PostJob() {
                   name="subCategory"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>
-                        {lang === 'en' ? 'Subcategory' : 'Subcategoria'}
-                      </FormLabel>
+                      <FormLabel>{t('job.subcategory')}</FormLabel>
                       <Select
                         onValueChange={field.onChange}
                         value={field.value}
@@ -397,18 +339,15 @@ export default function PostJob() {
                       >
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue
-                              placeholder={
-                                lang === 'en'
-                                  ? 'Select a subcategory'
-                                  : 'Selecione uma subcategoria'
-                              }
-                            />
+                            <SelectValue placeholder={t('general.select')} />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
                           {watchCategory &&
-                            SUBCATEGORIES[watchCategory]?.[lang]?.map((sub) => (
+                            (
+                              SUBCATEGORIES[watchCategory]?.[lang] ||
+                              SUBCATEGORIES[watchCategory]?.pt
+                            )?.map((sub) => (
                               <SelectItem key={sub.id} value={sub.id}>
                                 {sub.name}
                               </SelectItem>
@@ -426,23 +365,17 @@ export default function PostJob() {
                 name="phone"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>
-                      {lang === 'en'
-                        ? 'Contact Phone (US Format)'
-                        : 'Telefone de Contato (Formato US)'}
-                    </FormLabel>
+                    <FormLabel>{t('job.post.contact')} (Telefone)</FormLabel>
                     <FormControl>
                       <Input
-                        placeholder="(555) 555-5555"
+                        placeholder="(00) 00000-0000"
                         {...field}
                         onChange={handlePhoneChange}
-                        maxLength={14}
+                        maxLength={15}
                       />
                     </FormControl>
                     <FormDescription>
-                      {lang === 'en'
-                        ? 'Phone will be automatically formatted.'
-                        : 'O telefone será formatado automaticamente.'}
+                      Telefone de contato com DDD
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
@@ -454,17 +387,11 @@ export default function PostJob() {
                 name="description"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>
-                      {lang === 'en' ? 'Description' : 'Descrição'}
-                    </FormLabel>
+                    <FormLabel>{t('job.description')}</FormLabel>
                     <FormControl>
                       <Textarea
                         className="min-h-[120px] resize-y"
-                        placeholder={
-                          lang === 'en'
-                            ? 'Provide details about your listing...'
-                            : 'Forneça detalhes sobre seu anúncio...'
-                        }
+                        placeholder={t('post.desc_placeholder')}
                         {...field}
                       />
                     </FormControl>
@@ -479,13 +406,7 @@ export default function PostJob() {
               className="w-full h-12 text-base font-semibold"
               disabled={isSubmitting}
             >
-              {isSubmitting
-                ? lang === 'en'
-                  ? 'Publishing...'
-                  : 'Publicando...'
-                : lang === 'en'
-                  ? 'Publish Listing'
-                  : 'Publicar Anúncio'}
+              {isSubmitting ? t('loading') : t('publish.btn')}
             </Button>
           </form>
         </Form>

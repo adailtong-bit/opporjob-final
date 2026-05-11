@@ -21,9 +21,19 @@ export function CurrencyInput({
   const { currentLanguage, currentCurrency } = useLanguageStore()
 
   React.useEffect(() => {
-    // Force USD to maintain the requested English/USD standard globally
-    const resolvedCurrency = 'USD'
-    const locale = 'en-US'
+    const locale =
+      currentLanguage === 'pt'
+        ? 'pt-BR'
+        : currentLanguage === 'es'
+          ? 'es-ES'
+          : 'en-US'
+    const resolvedCurrency =
+      currentCurrency ||
+      (currentLanguage === 'pt'
+        ? 'BRL'
+        : currentLanguage === 'es'
+          ? 'EUR'
+          : 'USD')
 
     const formatted = new Intl.NumberFormat(locale, {
       style: 'currency',

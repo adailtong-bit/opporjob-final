@@ -66,7 +66,9 @@ import UserProfile from '@/pages/UserProfile'
 import ApprovalDashboard from '@/pages/approvals/ApprovalDashboard'
 import ManageUsers from '@/pages/admin/ManageUsers'
 import AuditLogs from '@/pages/admin/AuditLogs'
+import PushNotifications from '@/pages/admin/PushNotifications'
 import { useAuthStore } from '@/stores/useAuthStore'
+import { useNotificationStore } from '@/stores/useNotificationStore'
 import { supabase } from '@/lib/supabase/client'
 import { useLanguageStore } from '@/stores/useLanguageStore'
 import { EvaluationModal } from '@/components/EvaluationModal'
@@ -81,6 +83,26 @@ const ScrollToTop = () => {
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'instant' })
   }, [pathname])
+
+  return null
+}
+
+const NotificationBadgeSync = () => {
+  const { user } = useAuth()
+  const { setBadge, clearBadge } = usePWA()
+  const notifications = useNotificationStore((state) => state.notifications)
+
+  useEffect(() => {
+    if (!user) return
+    const unreadCount = notifications.filter(
+      (n) => n.userId === user.id && !n.read,
+    ).length
+    if (unreadCount > 0) {
+      setBadge(unreadCount)
+    } else {
+      clearBadge()
+    }
+  }, [user, notifications, setBadge, clearBadge])
 
   return null
 }
@@ -423,6 +445,7 @@ const App = () => {
         future={{ v7_startTransition: false, v7_relativeSplatPath: false }}
       >
         <AuthSync />
+        <NotificationBadgeSync />
         <ScrollToTop />
         <TooltipProvider>
           <Toaster />
@@ -507,6 +530,14 @@ const App = () => {
                   element={
                     <AdminRoute>
                       <ManageMarketing />
+                    </AdminRoute>
+                  }
+                />
+                <Route
+                  path="/admin/push"
+                  element={
+                    <AdminRoute>
+                      <PushNotifications />
                     </AdminRoute>
                   }
                 />
