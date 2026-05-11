@@ -26,14 +26,16 @@ export default function PaymentCheckout() {
   const { createInvoice } = useInvoices(user?.id)
   const { addNotification } = useNotificationStore()
   const { toast } = useToast()
-  const { t, formatCurrency } = useLanguageStore()
+
+  // Utilizando o contexto de formatação global e região (i18n)
+  const { t, formatCurrency, currency } = useLanguageStore()
 
   const [paymentMethod, setPaymentMethod] = useState('credit-card')
   const [isProcessing, setIsProcessing] = useState(false)
 
   const job = getJob(jobId!)
 
-  // Logic to determine amount and receiver
+  // Lógica para determinar o valor e o prestador do serviço
   const bid =
     bidId && bidId !== 'fixed' ? job?.bids.find((b) => b.id === bidId) : null
 
@@ -41,26 +43,28 @@ export default function PaymentCheckout() {
   const receiverName = bid ? bid.executorName : 'Professional (TBD)'
   const receiverId = bid ? bid.executorId : 'pending'
 
-  if (!job || !user) return <div className="p-8">Invalid data</div>
+  if (!job || !user)
+    return <div className="p-8 text-center">Invalid data / Dados Inválidos</div>
 
   const handlePayment = async () => {
     setIsProcessing(true)
 
+    // A geração de Invoices agora respeita a moeda global configurada pelo Profile do usuário.
     const success = await createInvoice({
       job_id: job.id,
       payer_id: user.id,
       receiver_id: receiverId !== 'pending' ? receiverId : undefined,
       amount: amount,
+      currency: currency || 'USD',
       description: job.title,
       status: 'escrow',
+      type: 'service',
     })
 
     if (success) {
-      // Logic to finalize the job status
       if (bid) {
         acceptBid(job.id, bid.id)
 
-        // Notify Executor
         addNotification({
           userId: bid.executorId,
           title: 'Proposal Accepted & Paid!',
@@ -77,25 +81,32 @@ export default function PaymentCheckout() {
       toast({
         variant: 'destructive',
         title: 'Payment error',
-        description: 'Please try again.',
+        description: 'Não foi possível processar a fatura. Tente novamente.',
       })
     }
   }
 
   return (
-    <div className="max-w-3xl mx-auto py-8 px-4">
+    <div className="max-w-3xl mx-auto py-8 px-4 sm:px-6">
       <div className="mb-8 text-center">
         <h1 className="text-3xl font-bold tracking-tight">
-          {t('checkout.secure')}
+          {t('checkout.secure', 'Checkout Seguro')}
         </h1>
-        <p className="text-muted-foreground">{t('payment.finalize_desc')}</p>
+        <p className="text-muted-foreground mt-2">
+          {t(
+            'payment.finalize_desc',
+            'Revise as informações e finalize o pagamento para iniciar o trabalho.',
+          )}
+        </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         <div className="md:col-span-2 space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>{t('checkout.payment_method')}</CardTitle>
+              <CardTitle>
+                {t('checkout.payment_method', 'Método de Pagamento')}
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <RadioGroup
@@ -107,66 +118,79 @@ export default function PaymentCheckout() {
                   <RadioGroupItem value="credit-card" id="cc" />
                   <Label
                     htmlFor="cc"
-                    className="flex items-center gap-2 cursor-pointer w-full"
+                    className="flex items-center gap-2 cursor-pointer w-full font-medium"
                   >
-                    <CreditCard className="h-5 w-5" /> {t('checkout.cc')}
+                    <CreditCard className="h-5 w-5 text-blue-600" />{' '}
+                    {t('checkout.cc', 'Cartão de Crédito')}
                   </Label>
                 </div>
               </RadioGroup>
 
               {paymentMethod === 'credit-card' && (
-                <div className="mt-4 p-4 bg-muted/30 rounded-lg text-sm text-center text-muted-foreground">
-                  {t('payment.simulation_cc')}
+                <div className="mt-6 p-4 bg-muted/30 border border-dashed rounded-lg text-sm text-center text-muted-foreground">
+                  {t(
+                    'payment.simulation_cc',
+                    'Modo Simulação Ativo. Nenhuma cobrança real será processada no seu cartão neste ambiente.',
+                  )}
                 </div>
               )}
             </CardContent>
           </Card>
 
-          <div className="flex items-center gap-2 text-sm text-muted-foreground bg-blue-50 p-4 rounded-lg border border-blue-100">
-            <Lock className="h-4 w-4 text-blue-600" />
-            <p>{t('payment.protected_desc')}</p>
+          <div className="flex items-center gap-3 text-sm text-muted-foreground bg-blue-50/50 p-4 rounded-lg border border-blue-100">
+            <Lock className="h-5 w-5 text-blue-600 shrink-0" />
+            <p className="leading-relaxed">
+              {t(
+                'payment.protected_desc',
+                'Seu pagamento fica protegido em custódia (Escrow) e só será liberado ao profissional após a sua aprovação final do serviço executado.',
+              )}
+            </p>
           </div>
         </div>
 
         <div>
-          <Card>
-            <CardHeader>
-              <CardTitle>{t('payment.order_summary')}</CardTitle>
+          <Card className="sticky top-6">
+            <CardHeader className="bg-muted/10 border-b">
+              <CardTitle>
+                {t('payment.order_summary', 'Resumo do Pedido')}
+              </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-5 pt-6">
               <div className="space-y-1">
-                <p className="text-sm font-medium text-muted-foreground">
-                  {t('payment.service')}
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                  {t('payment.service', 'Serviço Contratado')}
                 </p>
-                <p className="font-semibold">{job.title}</p>
+                <p className="font-semibold text-[15px]">{job.title}</p>
               </div>
               <div className="space-y-1">
-                <p className="text-sm font-medium text-muted-foreground">
-                  {t('payment.professional')}
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                  {t('payment.professional', 'Profissional / Empresa')}
                 </p>
-                <p className="font-semibold">{receiverName}</p>
+                <p className="font-semibold text-[15px]">{receiverName}</p>
               </div>
-              <div className="border-t pt-4 flex justify-between items-center">
-                <span className="font-bold">{t('checkout.total')}</span>
-                <span className="text-2xl font-bold text-primary">
+              <div className="border-t pt-5 mt-2 flex flex-col gap-1">
+                <span className="text-sm font-medium text-muted-foreground">
+                  {t('checkout.total', 'Total a Pagar')}
+                </span>
+                <span className="text-3xl font-bold text-primary tracking-tight">
                   {formatCurrency(amount)}
                 </span>
               </div>
             </CardContent>
-            <CardFooter>
+            <CardFooter className="pt-2 pb-6 px-6">
               <Button
-                className="w-full"
+                className="w-full h-12 text-base shadow-sm"
                 size="lg"
                 onClick={handlePayment}
                 disabled={isProcessing}
               >
                 {isProcessing ? (
                   <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />{' '}
-                    {t('checkout.processing')}
+                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />{' '}
+                    {t('checkout.processing', 'Processando Fatura...')}
                   </>
                 ) : (
-                  <>{t('payment.pay_hire')}</>
+                  <>{t('payment.pay_hire', 'Pagar e Contratar')}</>
                 )}
               </Button>
             </CardFooter>

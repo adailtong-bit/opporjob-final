@@ -195,6 +195,13 @@ export default function ConstructionCheckout() {
                 <p className="font-semibold text-sm md:text-base break-words">
                   {plan.name}
                 </p>
+                {plan.features && plan.features.length > 0 && (
+                  <ul className="text-xs text-muted-foreground list-disc pl-4 mt-2 space-y-1">
+                    {plan.features.map((f, i) => (
+                      <li key={i}>{f}</li>
+                    ))}
+                  </ul>
+                )}
               </div>
               <div className="space-y-1">
                 <p className="text-xs md:text-sm font-medium text-muted-foreground break-words">

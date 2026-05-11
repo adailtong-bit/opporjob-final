@@ -60,14 +60,14 @@ export const useConstructionPlansStore = create<ConstructionPlansState>(
     addPlan: async (plan) => {
       const { error } = await supabase.from('construction_plans').insert([
         {
-          name: plan.name,
-          description: plan.description,
-          price: plan.price,
-          billing_cycle: plan.billingCycle,
-          max_projects: plan.maxProjects,
-          work_size: plan.workSize,
-          complexity: plan.complexity,
-          features: plan.features,
+          name: plan.name || '',
+          description: plan.description || '',
+          price: plan.price || 0,
+          billing_cycle: plan.billingCycle || 'monthly',
+          max_projects: plan.maxProjects || 1,
+          work_size: plan.workSize || 'Pequena',
+          complexity: plan.complexity || 'Low',
+          features: plan.features || [],
           active: plan.active !== false,
           target_audience: plan.targetAudience || 'contractor',
         },

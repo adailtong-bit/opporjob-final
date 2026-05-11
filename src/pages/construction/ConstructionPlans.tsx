@@ -1,147 +1,172 @@
-import { useConstructionPlansStore } from '@/stores/useConstructionPlansStore'
-import { useAuthStore } from '@/stores/useAuthStore'
 import { useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { useConstructionPlansStore } from '@/stores/useConstructionPlansStore'
+import { useLanguageStore } from '@/stores/useLanguageStore'
+import { useAuthStore } from '@/stores/useAuthStore'
 import {
   Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
-  CardDescription,
-  CardContent,
-  CardFooter,
 } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { useNavigate } from 'react-router-dom'
-import { Check, HardHat, Building2, Crown } from 'lucide-react'
-import { useLanguageStore } from '@/stores/useLanguageStore'
+import { Badge } from '@/components/ui/badge'
+import { Check, HardHat } from 'lucide-react'
 
 export default function ConstructionPlans() {
-  const { plans, fetchPlans } = useConstructionPlansStore()
+  const navigate = useNavigate()
+  const { plans, fetchPlans, loading } = useConstructionPlansStore()
+  const { t, formatCurrency } = useLanguageStore()
   const { user } = useAuthStore()
 
   useEffect(() => {
     fetchPlans()
   }, [fetchPlans])
-  const navigate = useNavigate()
-  const { formatCurrency } = useLanguageStore()
 
-  const isAdmin = user?.role === 'admin' || user?.isPremium
+  // Retorna os planos sincronizados da base de dados e que estão ativos
+  const activePlans = plans.filter((p) => p.active)
 
-  const availablePlans = plans.filter(
-    (p) => p.active && p.targetAudience === 'contractor',
-  )
-
-  const getIcon = (complexity?: string) => {
-    switch (complexity) {
-      case 'High':
-        return <Crown className="h-6 w-6 md:h-8 md:w-8 text-amber-500 mb-2" />
-      case 'Medium':
-        return (
-          <Building2 className="h-6 w-6 md:h-8 md:w-8 text-blue-500 mb-2" />
-        )
-      default:
-        return (
-          <HardHat className="h-6 w-6 md:h-8 md:w-8 text-orange-500 mb-2" />
-        )
+  const getCycleLabel = (val: string) => {
+    const labels: Record<string, string> = {
+      monthly: 'Mensal',
+      quarterly: 'Trimestral',
+      'semi-annually': 'Semestral',
+      yearly: 'Anual',
     }
+    return labels[val] || val
+  }
+
+  if (loading) {
+    return (
+      <div className="p-10 text-center text-muted-foreground">
+        Carregando planos sincronizados...
+      </div>
+    )
   }
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6 md:space-y-8 py-8 md:py-10 px-4">
-      <div className="text-center space-y-3 md:space-y-4 max-w-2xl mx-auto px-2">
-        <h1 className="text-2xl md:text-4xl font-bold tracking-tight break-words">
+    <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+      <div className="text-center mb-16">
+        <HardHat className="h-16 w-16 text-primary mx-auto mb-4" />
+        <h1 className="text-4xl font-extrabold tracking-tight text-foreground">
           Planos de Gestão de Obras
         </h1>
-        <p className="text-sm md:text-xl text-muted-foreground break-words">
-          Escolha o plano ideal para o tamanho e complexidade do seu projeto.
-          Desbloqueie ferramentas avançadas de controle.
+        <p className="mt-4 text-xl text-muted-foreground max-w-2xl mx-auto">
+          Escolha o plano ideal que se adapta perfeitamente às suas
+          necessidades, seja você profissional ou cliente.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pt-4 md:pt-8">
-        {availablePlans.map((plan) => (
-          <Card
-            key={plan.id}
-            className={`flex flex-col relative border-border hover:border-primary/50 transition-colors w-full overflow-hidden`}
-          >
-            <CardHeader className="pb-4">
-              {getIcon(plan.complexity)}
-              <CardTitle className="text-lg md:text-xl leading-tight break-words">
-                {plan.name}
-              </CardTitle>
-              <div className="mt-2 md:mt-4 flex flex-wrap items-baseline gap-1">
-                <span className="text-2xl md:text-3xl font-bold tracking-tight break-all sm:break-words">
-                  {isAdmin ? 'Grátis' : formatCurrency(plan.price)}
-                </span>
-                {!isAdmin && (
-                  <span className="text-xs md:text-sm text-muted-foreground whitespace-nowrap">
-                    /{plan.billingCycle === 'monthly' ? 'mês' : 'ciclo'}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {activePlans.length > 0 ? (
+          activePlans.map((plan) => (
+            <Card
+              key={plan.id}
+              className="flex flex-col relative overflow-hidden border-2 hover:border-primary/50 transition-colors duration-300"
+            >
+              {plan.targetAudience === 'contractor' && (
+                <div className="absolute top-0 right-0 bg-blue-600 text-white px-3 py-1 text-xs font-bold rounded-bl-lg shadow-sm">
+                  Profissionais
+                </div>
+              )}
+              {plan.targetAudience === 'employer' && (
+                <div className="absolute top-0 right-0 bg-emerald-600 text-white px-3 py-1 text-xs font-bold rounded-bl-lg shadow-sm">
+                  Clientes
+                </div>
+              )}
+              {plan.targetAudience === 'both' && (
+                <div className="absolute top-0 right-0 bg-slate-800 text-white px-3 py-1 text-xs font-bold rounded-bl-lg shadow-sm">
+                  Global
+                </div>
+              )}
+              <CardHeader className="pb-4">
+                <CardTitle className="text-2xl">{plan.name}</CardTitle>
+                <CardDescription className="min-h-[40px] text-sm mt-2">
+                  {plan.description}
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="flex-1 space-y-6">
+                <div className="flex items-baseline gap-1">
+                  <span className="text-4xl font-extrabold tracking-tight text-foreground">
+                    {formatCurrency(plan.price)}
                   </span>
-                )}
-              </div>
-              <CardDescription className="mt-2 min-h-[40px] text-xs md:text-sm leading-relaxed break-words">
-                {plan.description}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="flex-1">
-              <ul className="space-y-3">
-                {plan.workSize && (
-                  <li className="flex items-start gap-2.5">
-                    <Check className="h-4 w-4 md:h-5 md:w-5 text-green-500 shrink-0 mt-0.5" />
-                    <span className="text-xs md:text-sm leading-tight text-muted-foreground break-words flex-1">
-                      Tamanho da Obra:{' '}
-                      <strong className="text-foreground block mt-0.5 sm:inline sm:mt-0">
-                        {plan.workSize}
-                      </strong>
+                  <span className="text-muted-foreground font-medium">
+                    /{getCycleLabel(plan.billingCycle)}
+                  </span>
+                </div>
+
+                <div className="space-y-4 bg-muted/30 p-4 rounded-lg">
+                  <div className="flex justify-between items-center text-sm border-b pb-2">
+                    <span className="text-muted-foreground font-medium">
+                      Limite de Obras
                     </span>
-                  </li>
-                )}
-                {plan.maxProjects && (
-                  <li className="flex items-start gap-2.5">
-                    <Check className="h-4 w-4 md:h-5 md:w-5 text-green-500 shrink-0 mt-0.5" />
-                    <span className="text-xs md:text-sm leading-tight text-muted-foreground break-words flex-1">
-                      Limite de Projetos Ativos:{' '}
-                      <strong className="text-foreground block mt-0.5 sm:inline sm:mt-0">
-                        {plan.maxProjects}
-                      </strong>
+                    <Badge variant="outline" className="bg-background">
+                      {plan.maxProjects}
+                    </Badge>
+                  </div>
+                  <div className="flex justify-between items-center text-sm border-b pb-2">
+                    <span className="text-muted-foreground font-medium">
+                      Porte
                     </span>
-                  </li>
-                )}
-                {plan.complexity && (
-                  <li className="flex items-start gap-2.5">
-                    <Check className="h-4 w-4 md:h-5 md:w-5 text-green-500 shrink-0 mt-0.5" />
-                    <span className="text-xs md:text-sm leading-tight text-muted-foreground break-words flex-1">
-                      Complexidade de Gestão:{' '}
-                      <strong className="text-foreground block mt-0.5 sm:inline sm:mt-0">
-                        {plan.complexity === 'Low'
-                          ? 'Baixa'
-                          : plan.complexity === 'Medium'
-                            ? 'Média'
-                            : 'Alta'}
-                      </strong>
+                    <span className="font-semibold text-foreground">
+                      {plan.workSize}
                     </span>
-                  </li>
-                )}
-                {plan.features?.map((feature, i) => (
-                  <li key={i} className="flex items-start gap-2.5">
-                    <Check className="h-4 w-4 md:h-5 md:w-5 text-green-500 shrink-0 mt-0.5" />
-                    <span className="text-xs md:text-sm leading-tight text-muted-foreground break-words flex-1">
-                      {feature}
+                  </div>
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="text-muted-foreground font-medium">
+                      Complexidade
                     </span>
-                  </li>
-                ))}
-              </ul>
-            </CardContent>
-            <CardFooter className="pt-2 md:pt-4">
-              <Button
-                className="w-full text-sm"
-                size="lg"
-                onClick={() => navigate(`/construction/checkout/${plan.id}`)}
-              >
-                {isAdmin ? 'Ativar (Admin)' : 'Selecionar Plano'}
-              </Button>
-            </CardFooter>
-          </Card>
-        ))}
+                    <span className="font-semibold text-foreground">
+                      {plan.complexity}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="pt-2">
+                  <p className="text-sm font-semibold mb-3">
+                    O que está incluso:
+                  </p>
+                  <ul className="space-y-3">
+                    {plan.features?.map((feature, i) => (
+                      <li key={i} className="flex gap-3 text-sm">
+                        <Check className="h-5 w-5 text-primary shrink-0" />
+                        <span className="text-muted-foreground leading-relaxed">
+                          {feature}
+                        </span>
+                      </li>
+                    ))}
+                    {(!plan.features || plan.features.length === 0) && (
+                      <li className="text-sm text-muted-foreground italic">
+                        Funcionalidades básicas do sistema.
+                      </li>
+                    )}
+                  </ul>
+                </div>
+              </CardContent>
+              <CardFooter className="pt-6">
+                <Button
+                  className="w-full h-12 text-base font-semibold"
+                  size="lg"
+                  onClick={() => navigate(`/construction/checkout/${plan.id}`)}
+                >
+                  Assinar Agora
+                </Button>
+              </CardFooter>
+            </Card>
+          ))
+        ) : (
+          <div className="col-span-full flex flex-col items-center justify-center py-16 text-muted-foreground border-2 border-dashed rounded-xl">
+            <p className="text-lg font-medium">
+              Nenhum plano disponível no momento.
+            </p>
+            <p className="text-sm">
+              Os administradores estão configurando as melhores opções para
+              você.
+            </p>
+          </div>
+        )}
       </div>
     </div>
   )
