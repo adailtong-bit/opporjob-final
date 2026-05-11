@@ -21,19 +21,10 @@ export function CurrencyInput({
   const { currentLanguage, currentCurrency } = useLanguageStore()
 
   React.useEffect(() => {
-    const locale =
-      currentLanguage === 'pt'
-        ? 'pt-BR'
-        : currentLanguage === 'es'
-          ? 'es-ES'
-          : 'en-US'
-    const resolvedCurrency =
-      currentCurrency ||
-      (currentLanguage === 'pt'
-        ? 'BRL'
-        : currentLanguage === 'es'
-          ? 'EUR'
-          : 'USD')
+    const resolvedCurrency = currentCurrency || 'USD'
+    let locale = 'en-US'
+    if (resolvedCurrency === 'BRL') locale = 'pt-BR'
+    else if (resolvedCurrency === 'EUR') locale = 'es-ES'
 
     const formatted = new Intl.NumberFormat(locale, {
       style: 'currency',

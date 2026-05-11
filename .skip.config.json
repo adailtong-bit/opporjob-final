@@ -38,5 +38,10 @@
   ],
   "deployment": {
     "lastDevBuildRef": "aace6b0"
+  },
+  "migrations": {
+    "applied": [
+      "0001-pnpm-workspace-allow-builds"
+    ]
   }
 }

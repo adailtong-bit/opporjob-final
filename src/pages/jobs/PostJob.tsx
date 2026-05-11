@@ -108,7 +108,7 @@ const SUBCATEGORIES: Record<string, { en: any[]; pt: any[]; es: any[] }> = {
 export default function PostJob() {
   const { currentLanguage, currentCurrency, t } = useLanguageStore()
   const lang = currentLanguage as 'en' | 'pt' | 'es'
-  const countryCode = lang === 'pt' ? 'BR' : lang === 'en' ? 'US' : 'ES'
+  const countryCode = lang === 'pt' ? 'BR' : 'US'
   const { toast } = useToast()
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -248,7 +248,7 @@ export default function PostJob() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>
-                          {t('post.budget_est')} ({currentCurrency || 'BRL'})
+                          {t('post.budget_est')} ({currentCurrency || 'USD'})
                         </FormLabel>
                         <FormControl>
                           <div className="relative">

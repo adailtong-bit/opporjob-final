@@ -50,7 +50,7 @@ export default function Register() {
   const { toast } = useToast()
   const { t, currentLanguage } = useLanguageStore()
 
-  const [country, setCountry] = useState<CountryCode>('BR')
+  const [country, setCountry] = useState<CountryCode>('US')
 
   const createRegisterSchema = (country: CountryCode) => {
     const { phone, zip } = getCountryValidation(country)
@@ -62,7 +62,7 @@ export default function Register() {
         password: z.string().min(6, t('val.required')),
         confirmPassword: z.string(),
         role: z.enum(['contractor', 'executor']),
-        entityType: z.enum(['pf', 'pj']),
+        entityType: z.enum(['individual', 'company']),
         country: z.enum(['BR', 'US']),
         businessArea: z.string().optional(),
         // Address Fields
@@ -107,8 +107,8 @@ export default function Register() {
       password: '',
       confirmPassword: '',
       role: 'contractor',
-      entityType: 'pf',
-      country: 'BR',
+      entityType: 'individual',
+      country: 'US',
       street: '',
       number: '',
       complement: '',
@@ -225,8 +225,8 @@ export default function Register() {
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="BR">Brasil</SelectItem>
                     <SelectItem value="US">United States</SelectItem>
+                    <SelectItem value="BR">Brazil</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />
@@ -298,21 +298,21 @@ export default function Register() {
                     className="flex gap-4"
                   >
                     <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="pf" id="pf" />
+                      <RadioGroupItem value="individual" id="individual" />
                       <label
-                        htmlFor="pf"
+                        htmlFor="individual"
                         className="flex items-center gap-2 cursor-pointer"
                       >
-                        <UserCircle className="h-4 w-4" /> Individual (PF)
+                        <UserCircle className="h-4 w-4" /> Individual
                       </label>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="pj" id="pj" />
+                      <RadioGroupItem value="company" id="company" />
                       <label
-                        htmlFor="pj"
+                        htmlFor="company"
                         className="flex items-center gap-2 cursor-pointer"
                       >
-                        <Building2 className="h-4 w-4" /> Company (PJ)
+                        <Building2 className="h-4 w-4" /> Company
                       </label>
                     </div>
                   </RadioGroup>
@@ -329,14 +329,14 @@ export default function Register() {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>
-                    {entityType === 'pj'
+                    {entityType === 'company'
                       ? t('settings.form.company')
                       : t('settings.form.name')}
                   </FormLabel>
                   <FormControl>
                     <Input
                       placeholder={
-                        entityType === 'pj' ? 'My Company LLC' : 'John Doe'
+                        entityType === 'company' ? 'My Company LLC' : 'John Doe'
                       }
                       {...field}
                     />

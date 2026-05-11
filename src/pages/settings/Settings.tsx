@@ -46,7 +46,7 @@ const createSettingsSchema = (country: CountryCode) => {
     name: z.string().min(2, 'Required'),
     country: z.enum(['BR', 'US']),
     phone: phone,
-    entityType: z.enum(['pf', 'pj']),
+    entityType: z.enum(['individual', 'company']),
     role: z.enum(['contractor', 'executor']),
     street: z.string().min(3, 'Required'),
     number:
@@ -71,16 +71,16 @@ export default function Settings() {
   const [profile, setProfile] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
-  const [country, setCountry] = useState<CountryCode>('BR')
+  const [country, setCountry] = useState<CountryCode>('US')
 
   const form = useForm({
     resolver: (values, context, options) =>
       zodResolver(createSettingsSchema(country))(values, context, options),
     defaultValues: {
       name: '',
-      country: 'BR',
+      country: 'US',
       phone: '',
-      entityType: 'pf',
+      entityType: 'individual',
       role: 'contractor',
       street: '',
       number: '',
@@ -109,13 +109,13 @@ export default function Settings() {
         .single()
       if (error) throw error
       setProfile(data)
-      const c = (data.country as CountryCode) || 'BR'
+      const c = (data.country as CountryCode) || 'US'
       setCountry(c)
       form.reset({
         name: data.name || '',
         country: c,
         phone: data.phone ? formatPhone(data.phone, c) : '',
-        entityType: data.entity_type || 'pf',
+        entityType: data.entity_type || 'individual',
         role: data.role || 'contractor',
         street: data.street || '',
         number: data.number || '',
@@ -255,10 +255,10 @@ export default function Settings() {
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              <SelectItem value="pf">
-                                Individual (PF)
+                              <SelectItem value="individual">
+                                Individual
                               </SelectItem>
-                              <SelectItem value="pj">Company (PJ)</SelectItem>
+                              <SelectItem value="company">Company</SelectItem>
                             </SelectContent>
                           </Select>
                         </FormItem>
@@ -336,8 +336,8 @@ export default function Settings() {
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              <SelectItem value="BR">Brasil</SelectItem>
                               <SelectItem value="US">United States</SelectItem>
+                              <SelectItem value="BR">Brazil</SelectItem>
                             </SelectContent>
                           </Select>
                           <FormMessage />

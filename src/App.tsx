@@ -74,6 +74,7 @@ import { useLanguageStore } from '@/stores/useLanguageStore'
 import { EvaluationModal } from '@/components/EvaluationModal'
 import { AuthProvider, useAuth } from '@/hooks/use-auth'
 import { usePWA } from '@/hooks/use-pwa'
+import { useLanguageStore } from '@/stores/useLanguageStore'
 import logoImg from '@/assets/corepm-f1280.png'
 import { PushNotificationPrompt } from '@/components/PushNotificationPrompt'
 
@@ -111,6 +112,7 @@ const AuthSync = () => {
   const { user, loading } = useAuth()
   const { setDomainUser } = useAuthStore()
   const { subscribeToPushNotifications } = usePWA()
+  const setCurrency = useLanguageStore((state) => state.setCurrency)
 
   useEffect(() => {
     if (!loading) {
@@ -131,12 +133,12 @@ const AuthSync = () => {
               name: data?.name || user.user_metadata?.name || 'User',
               email: user.email!,
               role: (data?.role as any) || (isAdmin ? 'admin' : 'contractor'),
-              entityType: (data?.entity_type as any) || 'pf',
+              entityType: (data?.entity_type as any) || 'individual',
               companyName: data?.company_name || undefined,
               phone: data?.phone || undefined,
               taxId: data?.tax_id || undefined,
               address: {
-                country: data?.country || 'BR',
+                country: data?.country || 'US',
                 street: data?.street || '',
                 number: data?.number || '',
                 complement: data?.complement || '',
@@ -153,6 +155,10 @@ const AuthSync = () => {
               subscriptionTier: isAdmin ? 'business' : 'free',
               planName: isAdmin ? 'Enterprise' : 'Basic',
             })
+
+            if (data?.country) {
+              setCurrency(data.country === 'BR' ? 'BRL' : 'USD')
+            }
 
             if (window.Notification && Notification.permission === 'granted') {
               subscribeToPushNotifications(user.id)

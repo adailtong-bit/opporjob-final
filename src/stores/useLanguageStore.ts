@@ -40,9 +40,11 @@ export const useLanguageStore = create<LanguageState>()(
         return text
       },
       formatCurrency: (value) => {
-        // Enforce USD globally to maintain system standards as requested
-        const currency = 'USD'
-        const locale = 'en-US'
+        const currency = get().currentCurrency || 'USD'
+
+        let locale = 'en-US'
+        if (currency === 'BRL') locale = 'pt-BR'
+        else if (currency === 'EUR') locale = 'es-ES'
 
         return new Intl.NumberFormat(locale, {
           style: 'currency',
@@ -54,9 +56,9 @@ export const useLanguageStore = create<LanguageState>()(
         return format(date, formatStr, { locale })
       },
       getDateLocale: () => {
-        const lang = get().currentLanguage
-        if (lang === 'pt') return ptBR
-        if (lang === 'es') return es
+        const currency = get().currentCurrency
+        if (currency === 'BRL') return ptBR
+        if (currency === 'EUR') return es
         return enUS
       },
     }),
