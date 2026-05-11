@@ -3,9 +3,13 @@ import { useSearchParams, useNavigate } from 'react-router-dom'
 import { useMaterialStore, Material } from '@/stores/useMaterialStore'
 import { useProjectStore } from '@/stores/useProjectStore'
 import { useAuthStore } from '@/stores/useAuthStore'
+import { useVendorStore } from '@/stores/useVendorStore'
+import { useInventoryStore } from '@/stores/useInventoryStore'
+import { supabase } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import {
   Card,
   CardContent,
@@ -66,9 +70,9 @@ export default function MaterialsMarketplace() {
   const urlStageId = searchParams.get('stageId')
 
   const navigate = useNavigate()
-  const { materials, vendors, addOrder, importMaterialList, addVendor } =
-    useMaterialStore()
+  const { materials, importMaterialList } = useMaterialStore()
   const { projects, addAllocatedCost, updateStageActuals } = useProjectStore()
+  const { vendors, fetchVendors, addVendor: addGlobalVendor } = useVendorStore()
   const { user } = useAuthStore()
   const { toast } = useToast()
   const { t, formatCurrency } = useLanguageStore()
@@ -95,6 +99,9 @@ export default function MaterialsMarketplace() {
     urlStageId || 'none',
   )
   const [checkoutVendorId, setCheckoutVendorId] = useState<string>('')
+  const [paymentType, setPaymentType] = useState<'instant' | 'invoice'>(
+    'instant',
+  )
 
   // New Vendor State
   const [isNewVendorOpen, setIsNewVendorOpen] = useState(false)
@@ -109,6 +116,10 @@ export default function MaterialsMarketplace() {
     quantity: 1,
     category: 'Diversos',
   })
+
+  useEffect(() => {
+    fetchVendors()
+  }, [fetchVendors])
 
   useEffect(() => {
     if (urlProjectId) setCheckoutProjectId(urlProjectId)
@@ -200,13 +211,15 @@ export default function MaterialsMarketplace() {
     0,
   )
 
-  const handleAddNewVendor = () => {
+  const handleAddNewVendor = async () => {
     if (!newVendorName.trim()) return
-    const v = addVendor({ name: newVendorName })
-    setCheckoutVendorId(v.id)
-    setIsNewVendorOpen(false)
-    setNewVendorName('')
-    toast({ title: 'Vendor registered successfully!' })
+    const v = await addGlobalVendor({ name: newVendorName, status: 'active' })
+    if (v) {
+      setCheckoutVendorId(v.id)
+      setIsNewVendorOpen(false)
+      setNewVendorName('')
+      toast({ title: 'Fornecedor registrado com sucesso!' })
+    }
   }
 
   const handleAddCustomMaterial = () => {
@@ -255,7 +268,7 @@ export default function MaterialsMarketplace() {
     })
   }
 
-  const handleCheckoutSubmit = () => {
+  const handleCheckoutSubmit = async () => {
     if (!checkoutProjectId) {
       toast({
         variant: 'destructive',
@@ -275,41 +288,75 @@ export default function MaterialsMarketplace() {
 
     const selectedVendor = vendors.find((v) => v.id === checkoutVendorId)
     const selectedProject = projects.find((p) => p.id === checkoutProjectId)
+    const status = paymentType === 'instant' ? 'paid' : 'pending'
 
-    const orderItems = cart.map((item) => ({
-      material: item.material,
-      quantity: item.quantity,
-      unitPrice: item.unitPrice,
-      total: item.quantity * item.unitPrice,
-      brand: item.brand,
-      color: item.color,
-    }))
+    // Register in Supabase invoices (Payables)
+    const { error: invoiceError } = await supabase
+      .from('invoices')
+      .insert({
+        project_id: checkoutProjectId,
+        task_id: checkoutStageId !== 'none' ? checkoutStageId : null,
+        payer_id: user?.id,
+        vendor_id: checkoutVendorId,
+        amount: cartTotal,
+        status: status,
+        description: `Pedido de Materiais - ${selectedVendor?.name || 'Diversos'}`,
+        type: 'material',
+        due_date:
+          paymentType === 'invoice'
+            ? new Date(Date.now() + 30 * 86400000).toISOString()
+            : null,
+        payment_date:
+          paymentType === 'instant' ? new Date().toISOString() : null,
+      })
+      .select()
+      .single()
 
-    // Always force pending_approval as per User Story
-    addOrder({
-      projectId: checkoutProjectId,
-      stageId: checkoutStageId !== 'none' ? checkoutStageId : undefined,
-      vendorId: checkoutVendorId,
-      vendorName: selectedVendor?.name,
-      items: orderItems,
-      total: cartTotal,
-      status: 'pending_approval',
-      requesterId: user?.id,
-      requesterName: user?.name,
+    if (invoiceError) {
+      toast({
+        variant: 'destructive',
+        title: 'Erro',
+        description: 'Falha ao registrar fatura. ' + invoiceError.message,
+      })
+      return
+    }
+
+    // Update Inventory via InventoryStore
+    const projectItems = useInventoryStore
+      .getState()
+      .getItemsByProject(checkoutProjectId)
+    cart.forEach((item) => {
+      const existing = projectItems.find(
+        (i) => i.materialName === item.material.name,
+      )
+      if (existing) {
+        useInventoryStore
+          .getState()
+          .updateQuantity(existing.id, existing.quantity + item.quantity)
+      } else {
+        useInventoryStore.getState().addItem({
+          projectId: checkoutProjectId,
+          materialName: item.material.name,
+          quantity: item.quantity,
+          unit: item.material.unit,
+          minStock: 10,
+          location: `Obra - ${selectedProject?.name || 'Local'}`,
+        })
+      }
     })
 
-    // Integrar com o painel financeiro da obra
+    // Update Project Finance Budget/Cost
     addAllocatedCost(checkoutProjectId, {
       description: `Pedido de Materiais: ${selectedVendor?.name || 'Diversos'}`,
       amount: cartTotal,
-      type: 'actual',
+      type: paymentType === 'instant' ? 'actual' : 'estimated',
       category: 'material',
       costClass: 'capex',
       date: new Date(),
       stageId: checkoutStageId !== 'none' ? checkoutStageId : undefined,
     })
 
-    if (checkoutStageId !== 'none') {
+    if (paymentType === 'instant' && checkoutStageId !== 'none') {
       updateStageActuals(
         checkoutProjectId,
         checkoutStageId,
@@ -318,27 +365,12 @@ export default function MaterialsMarketplace() {
       )
     }
 
-    // Also push to projects invoices to keep financial sync
-    const newInvoice = {
-      id: Math.random().toString(36).substr(2, 9),
-      partnerId: checkoutVendorId,
-      contractorName: user?.name || 'Contratante',
-      partnerName: selectedVendor?.name || 'Fornecedor',
-      description: `Pedido de Materiais - ${selectedVendor?.name || 'Diversos'}`,
-      totalAmount: cartTotal,
-      date: new Date(),
-      status: 'generated' as const,
-    }
-
-    // Using a dynamic update via Zustand state directly if needed, but since we don't have addInvoice exposed,
-    // we can use updateProject to append it safely.
-    useProjectStore.getState().updateProject(checkoutProjectId, {
-      invoices: [...(selectedProject?.invoices || []), newInvoice],
-    })
-
     toast({
       title: 'Pedido Registrado',
-      description: `A compra de ${formatCurrency(cartTotal)} foi enviada e integrada ao financeiro da obra.`,
+      description:
+        paymentType === 'instant'
+          ? 'Compra liquidada, orçamento atualizado e itens no estoque.'
+          : 'Itens no estoque. Fatura pendente enviada para Contas a Pagar.',
     })
 
     setCart([])
@@ -865,6 +897,58 @@ export default function MaterialsMarketplace() {
                 </TableBody>
               </Table>
             </div>
+
+            <div className="space-y-4 pt-4 border-t mt-4">
+              <Label className="text-sm font-semibold">
+                Forma de Pagamento / Lançamento Financeiro
+              </Label>
+              <RadioGroup
+                value={paymentType}
+                onValueChange={(v) =>
+                  setPaymentType(v as 'instant' | 'invoice')
+                }
+                className="grid grid-cols-1 sm:grid-cols-2 gap-4"
+              >
+                <div className="flex items-start space-x-3 border p-4 rounded-lg cursor-pointer hover:bg-muted/50 transition-colors">
+                  <RadioGroupItem
+                    value="instant"
+                    id="instant"
+                    className="mt-1"
+                  />
+                  <div className="grid gap-1 w-full">
+                    <Label
+                      htmlFor="instant"
+                      className="cursor-pointer font-medium w-full text-base"
+                    >
+                      Pagar Agora (Caixa/Cartão)
+                    </Label>
+                    <p className="text-xs text-muted-foreground leading-relaxed">
+                      Liquidação imediata. O valor será descontado diretamente
+                      do saldo e orçamento atualizado.
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-start space-x-3 border p-4 rounded-lg cursor-pointer hover:bg-muted/50 transition-colors">
+                  <RadioGroupItem
+                    value="invoice"
+                    id="invoice"
+                    className="mt-1"
+                  />
+                  <div className="grid gap-1 w-full">
+                    <Label
+                      htmlFor="invoice"
+                      className="cursor-pointer font-medium w-full text-base"
+                    >
+                      Faturar (Boleto/A Prazo)
+                    </Label>
+                    <p className="text-xs text-muted-foreground leading-relaxed">
+                      Gerar um lançamento no Contas a Pagar aguardando
+                      conciliação da conta corrente.
+                    </p>
+                  </div>
+                </div>
+              </RadioGroup>
+            </div>
           </div>
 
           <DialogFooter className="flex-col sm:flex-row items-center justify-between border-t pt-4 gap-4">
@@ -887,12 +971,13 @@ export default function MaterialsMarketplace() {
                 disabled={!isCartValid || !isAllocationValid}
                 className="w-full sm:w-auto"
               >
-                Request Approval
+                Confirmar e Integrar
               </Button>
             </div>
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
       {/* Custom Material Dialog */}
       <Dialog
         open={isCustomMaterialOpen}

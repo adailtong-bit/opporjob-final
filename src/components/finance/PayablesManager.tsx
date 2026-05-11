@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase/client'
 import { useAuthStore } from '@/stores/useAuthStore'
+import { useProjectStore } from '@/stores/useProjectStore'
 import {
   Table,
   TableBody,
@@ -37,6 +38,8 @@ export function PayablesManager() {
   const { user } = useAuthStore()
   const { formatCurrency, formatDate } = useLanguageStore()
   const { toast } = useToast()
+  const { updateStageActuals, projects, updateAllocatedCost } =
+    useProjectStore()
 
   const [payables, setPayables] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
@@ -86,6 +89,8 @@ export function PayablesManager() {
   const handleSave = async () => {
     if (!editingInvoice) return
 
+    const isNowPaid = status === 'paid' && editingInvoice.status !== 'paid'
+
     const { error } = await supabase
       .from('invoices')
       .update({
@@ -97,6 +102,32 @@ export function PayablesManager() {
 
     if (!error) {
       toast({ title: 'Fatura atualizada com sucesso!' })
+
+      if (isNowPaid && editingInvoice.project_id) {
+        if (editingInvoice.task_id) {
+          updateStageActuals(
+            editingInvoice.project_id,
+            editingInvoice.task_id,
+            'material',
+            editingInvoice.amount,
+          )
+        }
+        // Convert estimated cost to actual
+        const proj = projects.find((p) => p.id === editingInvoice.project_id)
+        const cost = proj?.allocatedCosts?.find(
+          (c) =>
+            c.amount === editingInvoice.amount &&
+            c.type === 'estimated' &&
+            (c.description.includes(editingInvoice.vendor?.name) ||
+              c.description.includes('Pedido')),
+        )
+        if (cost) {
+          updateAllocatedCost(editingInvoice.project_id, cost.id, {
+            type: 'actual',
+          })
+        }
+      }
+
       fetchPayables()
       setEditingInvoice(null)
     } else {

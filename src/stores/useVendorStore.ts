@@ -25,7 +25,7 @@ interface VendorState {
   vendors: Vendor[]
   loading: boolean
   fetchVendors: () => Promise<void>
-  addVendor: (vendor: Partial<Vendor>) => Promise<void>
+  addVendor: (vendor: Partial<Vendor>) => Promise<Vendor | null>
   updateVendor: (id: string, vendor: Partial<Vendor>) => Promise<void>
   deleteVendor: (id: string) => Promise<void>
 }
@@ -53,7 +53,9 @@ export const useVendorStore = create<VendorState>((set, get) => ({
       .single()
     if (!error && data) {
       set({ vendors: [...get().vendors, data as Vendor] })
+      return data as Vendor
     }
+    return null
   },
   updateVendor: async (id, vendor) => {
     const { data, error } = await supabase
