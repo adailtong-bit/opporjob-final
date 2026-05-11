@@ -314,6 +314,7 @@ export interface Project {
   integrations: Integration[]
   allocatedCosts?: CostItem[]
   checkingAccounts?: CheckingAccount[]
+  preferredVendorId?: string
   financialMovements?: FinancialMovement[]
   sqFt?: number
   constructionItems: ConstructionItem[]
@@ -564,6 +565,7 @@ interface ProjectState {
   ) => void
   deleteComplianceDocument: (projectId: string, docId: string) => void
   updateAlertLeadTime: (projectId: string, days: number) => void
+  updateProjectPreferredVendor: (projectId: string, vendorId?: string) => void
 
   // Ledger Entries
   addLedgerEntry: (
@@ -643,6 +645,22 @@ export const ESTIMATION_TEMPLATES = {
     { name: 'est.item.painting', stage: 'M4' },
     { name: 'est.item.cabinets', stage: 'M4' },
   ],
+}
+
+const recalculateTotalSpent = (p: Partial<Project>) => {
+  const stagesSpent = (p.stages || []).reduce(
+    (acc, s) => acc + s.actualMaterial + s.actualLabor,
+    0,
+  )
+  const allocatedSpent = (p.allocatedCosts || []).reduce(
+    (acc, c) => acc + c.amount,
+    0,
+  )
+  const laborAdjs = (p.laborAdjustments || []).reduce(
+    (acc, c) => acc + c.amount,
+    0,
+  )
+  return stagesSpent + allocatedSpent + laborAdjs
 }
 
 const mockProjects: Project[] = [
@@ -1013,14 +1031,20 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
           complianceDocuments: [],
           alertLeadTimeDays: 30,
           ledgerEntries: [],
+          preferredVendorId: undefined,
         },
       ],
     })),
   updateProject: (id, data) =>
     set((state) => ({
-      projects: state.projects.map((p) =>
-        p.id === id ? { ...p, ...data } : p,
-      ),
+      projects: state.projects.map((p) => {
+        if (p.id === id) {
+          const updated = { ...p, ...data }
+          updated.totalSpent = recalculateTotalSpent(updated)
+          return updated
+        }
+        return p
+      }),
     })),
   addStage: (projectId, stage) =>
     set((state) => ({
@@ -1151,19 +1175,19 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
                 ...s,
                 actualMaterial:
                   type === 'material'
-                    ? s.actualMaterial + amount
+                    ? Math.max(0, s.actualMaterial + amount)
                     : s.actualMaterial,
                 actualLabor:
-                  type === 'labor' ? s.actualLabor + amount : s.actualLabor,
+                  type === 'labor'
+                    ? Math.max(0, s.actualLabor + amount)
+                    : s.actualLabor,
               }
             }
             return s
           })
-          const totalSpent = newStages.reduce(
-            (acc, s) => acc + s.actualMaterial + s.actualLabor,
-            0,
-          )
-          return { ...p, stages: newStages, totalSpent }
+          const updated = { ...p, stages: newStages }
+          updated.totalSpent = recalculateTotalSpent(updated)
+          return updated
         }
         return p
       }),
@@ -1558,19 +1582,9 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
             ...(p.allocatedCosts || []),
             { ...cost, id: Math.random().toString(36).substr(2, 9) },
           ]
-          const totalAllocated = newAllocatedCosts.reduce(
-            (acc, c) => acc + c.amount,
-            0,
-          )
-          const stagesSpent = (p.stages || []).reduce(
-            (acc, s) => acc + s.actualMaterial + s.actualLabor,
-            0,
-          )
-          return {
-            ...p,
-            allocatedCosts: newAllocatedCosts,
-            totalSpent: stagesSpent + totalAllocated,
-          }
+          const updated = { ...p, allocatedCosts: newAllocatedCosts }
+          updated.totalSpent = recalculateTotalSpent(updated)
+          return updated
         }
         return p
       }),
@@ -1582,17 +1596,9 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
           const newCosts = p.allocatedCosts?.map((c) =>
             c.id === id ? { ...c, ...data } : c,
           )
-          const totalAllocated =
-            newCosts?.reduce((acc, c) => acc + c.amount, 0) || 0
-          const stagesSpent = (p.stages || []).reduce(
-            (acc, s) => acc + s.actualMaterial + s.actualLabor,
-            0,
-          )
-          return {
-            ...p,
-            allocatedCosts: newCosts,
-            totalSpent: stagesSpent + totalAllocated,
-          }
+          const updated = { ...p, allocatedCosts: newCosts }
+          updated.totalSpent = recalculateTotalSpent(updated)
+          return updated
         }
         return p
       }),
@@ -1602,17 +1608,9 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
       projects: state.projects.map((p) => {
         if (p.id === projectId) {
           const newCosts = p.allocatedCosts?.filter((c) => c.id !== id)
-          const totalAllocated =
-            newCosts?.reduce((acc, c) => acc + c.amount, 0) || 0
-          const stagesSpent = (p.stages || []).reduce(
-            (acc, s) => acc + s.actualMaterial + s.actualLabor,
-            0,
-          )
-          return {
-            ...p,
-            allocatedCosts: newCosts,
-            totalSpent: stagesSpent + totalAllocated,
-          }
+          const updated = { ...p, allocatedCosts: newCosts }
+          updated.totalSpent = recalculateTotalSpent(updated)
+          return updated
         }
         return p
       }),
@@ -1735,13 +1733,15 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
     set((state) => ({
       projects: state.projects.map((p) => {
         if (p.id === projectId) {
+          const existingQuote = p.quotes?.find((q) => q.id === quoteId)
+          if (!existingQuote || existingQuote.status === status) return p // Race condition prevention
+
           const quotes = (p.quotes || []).map((q) =>
             q.id === quoteId ? { ...q, status } : q,
           )
 
           let invoices = p.invoices || []
           let allocatedCosts = p.allocatedCosts || []
-          let totalSpent = p.totalSpent || 0
 
           if (status === 'approved') {
             const quote = quotes.find((q) => q.id === quoteId)
@@ -1775,18 +1775,12 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
 
               invoices = [...invoices, invoice]
               allocatedCosts = [...allocatedCosts, costItem]
-
-              const stagesSpent = (p.stages || []).reduce(
-                (acc, s) => acc + s.actualMaterial + s.actualLabor,
-                0,
-              )
-              totalSpent =
-                stagesSpent +
-                allocatedCosts.reduce((acc, c) => acc + c.amount, 0)
             }
           }
 
-          return { ...p, quotes, invoices, allocatedCosts, totalSpent }
+          const updated = { ...p, quotes, invoices, allocatedCosts }
+          updated.totalSpent = recalculateTotalSpent(updated)
+          return updated
         }
         return p
       }),
@@ -1835,21 +1829,13 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
             stageId: quote.stageId,
           }
 
-          const stagesSpent = (p.stages || []).reduce(
-            (acc, s) => acc + s.actualMaterial + s.actualLabor,
-            0,
-          )
-          const totalAllocated = [...(p.allocatedCosts || []), costItem].reduce(
-            (acc, c) => acc + c.amount,
-            0,
-          )
-
-          return {
+          const updated = {
             ...p,
             invoices: [...(p.invoices || []), invoice],
             allocatedCosts: [...(p.allocatedCosts || []), costItem],
-            totalSpent: stagesSpent + totalAllocated,
           }
+          updated.totalSpent = recalculateTotalSpent(updated)
+          return updated
         }
         return p
       }),
@@ -1899,10 +1885,15 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
           const measurement = p.measurements?.find(
             (m) => m.id === measurementId,
           )
-          if (!measurement) return p
+          if (!measurement || measurement.status === 'approved') return p // Race condition prevention
 
           const newMeasurements = p.measurements?.map((m) =>
             m.id === measurementId ? { ...m, status: 'approved' as const } : m,
+          )
+
+          const clampedProgress = Math.min(
+            100,
+            Math.max(0, measurement.requestedPercentage),
           )
 
           // Update substage progress
@@ -1914,11 +1905,9 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
                   if (sub.id === measurement.subStageId) {
                     return {
                       ...sub,
-                      progress: measurement.requestedPercentage,
+                      progress: clampedProgress,
                       status:
-                        measurement.requestedPercentage === 100
-                          ? 'completed'
-                          : sub.status,
+                        clampedProgress === 100 ? 'completed' : sub.status,
                     }
                   }
                   return sub
@@ -1931,16 +1920,14 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
           // Add allocated cost
           const costItem: CostItem = {
             id: Math.random().toString(36).substr(2, 9),
-            description: `Medição Aprovada (${measurement.requestedPercentage}%)`,
-            amount: measurement.amount,
+            description: `Medição Aprovada (${clampedProgress}%)`,
+            amount: Math.max(0, measurement.amount),
             type: 'actual',
             category: 'labor',
             costClass: 'capex',
             date: new Date(),
             stageId: measurement.stageId,
           }
-
-          const totalSpent = (p.totalSpent || 0) + measurement.amount
 
           // Generate Invoice
           const invoice: ProjectInvoice = {
@@ -1956,14 +1943,15 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
             status: 'generated',
           }
 
-          return {
+          const updated = {
             ...p,
             measurements: newMeasurements,
             stages: newStages,
             allocatedCosts: [...(p.allocatedCosts || []), costItem],
-            totalSpent,
             invoices: [...(p.invoices || []), invoice],
           }
+          updated.totalSpent = recalculateTotalSpent(updated)
+          return updated
         }
         return p
       }),
@@ -2055,6 +2043,13 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
     set((state) => ({
       projects: state.projects.map((p) =>
         p.id === projectId ? { ...p, alertLeadTimeDays: days } : p,
+      ),
+    })),
+
+  updateProjectPreferredVendor: (projectId, vendorId) =>
+    set((state) => ({
+      projects: state.projects.map((p) =>
+        p.id === projectId ? { ...p, preferredVendorId: vendorId } : p,
       ),
     })),
 

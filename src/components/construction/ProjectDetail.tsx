@@ -51,11 +51,14 @@ import { ProjectQuotes } from '@/components/construction/ProjectQuotes'
 import { ProjectChat } from '@/components/construction/ProjectChat'
 import { ProjectCompliance } from '@/components/construction/ProjectCompliance'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-import { ShieldAlert } from 'lucide-react'
+import { ShieldAlert, Store } from 'lucide-react'
+import { useMaterialStore } from '@/stores/useMaterialStore'
 
 export default function ProjectDetail() {
   const { id } = useParams<{ id: string }>()
-  const { getProject, setProjectSqFt } = useProjectStore()
+  const { getProject, setProjectSqFt, updateProjectPreferredVendor } =
+    useProjectStore()
+  const { vendors } = useMaterialStore()
   const { toast } = useToast()
   const { t, formatDate, currentLanguage } = useLanguageStore()
 
@@ -144,6 +147,34 @@ export default function ProjectDetail() {
             {formatDate(project.startDate, 'P')} -{' '}
             {formatDate(project.endDate, 'P')}
           </span>
+
+          <div className="flex items-center gap-1 bg-blue-50/50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300 px-3 py-1 rounded-full whitespace-nowrap border border-blue-100 dark:border-blue-800">
+            <Store className="h-3 w-3" />
+            <span className="font-medium mr-1 text-xs">
+              Fornecedor Preferencial:
+            </span>
+            <Select
+              value={project.preferredVendorId || 'none'}
+              onValueChange={(val) =>
+                updateProjectPreferredVendor(
+                  project.id,
+                  val === 'none' ? undefined : val,
+                )
+              }
+            >
+              <SelectTrigger className="h-6 w-[140px] text-xs border-none bg-transparent shadow-none focus:ring-0 px-1">
+                <SelectValue placeholder="Nenhum" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">Nenhum</SelectItem>
+                {vendors.map((v) => (
+                  <SelectItem key={v.id} value={v.id}>
+                    {v.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
 
         {/* Action Buttons */}
@@ -245,11 +276,15 @@ export default function ProjectDetail() {
                   </span>
                   <Input
                     type="number"
+                    min={0}
                     className="h-7 w-20 text-right"
                     value={project.sqFt || ''}
                     placeholder="0"
                     onChange={(e) =>
-                      setProjectSqFt(project.id, parseFloat(e.target.value))
+                      setProjectSqFt(
+                        project.id,
+                        Math.max(0, parseFloat(e.target.value) || 0),
+                      )
                     }
                   />
                 </div>

@@ -49,15 +49,16 @@ export function ProjectBudget({ projectId }: ProjectBudgetProps) {
   if (!project) return null
 
   const handleAddItem = () => {
-    if (!newItem.description || newItem.unitCost <= 0) return
+    if (!newItem.description || newItem.unitCost < 0 || newItem.quantity <= 0)
+      return
 
     addBudgetItem(projectId, {
       description: newItem.description,
       category: newItem.category as any,
       costClass: newItem.costClass as any,
-      unitCost: newItem.unitCost,
-      quantity: newItem.quantity,
-      totalCost: newItem.unitCost * newItem.quantity,
+      unitCost: Math.max(0, newItem.unitCost),
+      quantity: Math.max(1, newItem.quantity),
+      totalCost: Math.max(0, newItem.unitCost) * Math.max(1, newItem.quantity),
     })
     setNewItem({
       description: '',

@@ -148,7 +148,12 @@ export default function MaterialsMarketplace() {
   }
 
   const confirmAddToCart = () => {
-    if (!configuringMaterial || configQuantity <= 0) return
+    if (
+      !configuringMaterial ||
+      configQuantity <= 0 ||
+      configuringMaterial.price < 0
+    )
+      return
 
     setCart((prev) => [
       ...prev,
@@ -156,7 +161,7 @@ export default function MaterialsMarketplace() {
         id: Math.random().toString(36).substring(2),
         material: configuringMaterial,
         quantity: configQuantity,
-        unitPrice: configuringMaterial.price,
+        unitPrice: Math.max(0, configuringMaterial.price),
         brand: configBrand.trim(),
         color: configColor.trim(),
       },
@@ -176,7 +181,8 @@ export default function MaterialsMarketplace() {
           if (item.id === id) {
             return {
               ...item,
-              [field]: field === 'quantity' ? Math.max(0, value) : value,
+              [field]:
+                field === 'quantity' ? Math.max(0, value) : Math.max(0, value),
             }
           }
           return item
@@ -206,7 +212,7 @@ export default function MaterialsMarketplace() {
   const handleAddCustomMaterial = () => {
     if (
       !customMaterial.name ||
-      customMaterial.price <= 0 ||
+      customMaterial.price < 0 ||
       customMaterial.quantity <= 0
     )
       return
@@ -312,6 +318,24 @@ export default function MaterialsMarketplace() {
       )
     }
 
+    // Also push to projects invoices to keep financial sync
+    const newInvoice = {
+      id: Math.random().toString(36).substr(2, 9),
+      partnerId: checkoutVendorId,
+      contractorName: user?.name || 'Contratante',
+      partnerName: selectedVendor?.name || 'Fornecedor',
+      description: `Pedido de Materiais - ${selectedVendor?.name || 'Diversos'}`,
+      totalAmount: cartTotal,
+      date: new Date(),
+      status: 'generated' as const,
+    }
+
+    // Using a dynamic update via Zustand state directly if needed, but since we don't have addInvoice exposed,
+    // we can use updateProject to append it safely.
+    useProjectStore.getState().updateProject(checkoutProjectId, {
+      invoices: [...(selectedProject?.invoices || []), newInvoice],
+    })
+
     toast({
       title: 'Pedido Registrado',
       description: `A compra de ${formatCurrency(cartTotal)} foi enviada e integrada ao financeiro da obra.`,
@@ -334,8 +358,23 @@ export default function MaterialsMarketplace() {
     }
   }
 
-  const selectedProjectStages =
-    projects.find((p) => p.id === checkoutProjectId)?.stages || []
+  const selectedProject = projects.find((p) => p.id === checkoutProjectId)
+  const selectedProjectStages = selectedProject?.stages || []
+
+  // Effect to automatically filter by preferred vendor
+  useEffect(() => {
+    if (selectedProject?.preferredVendorId) {
+      const preferredVendor = vendors.find(
+        (v) => v.id === selectedProject.preferredVendorId,
+      )
+      if (preferredVendor) {
+        setVendorFilter(preferredVendor.name)
+        setCheckoutVendorId(preferredVendor.id)
+      }
+    } else {
+      setVendorFilter('all')
+    }
+  }, [checkoutProjectId, selectedProject?.preferredVendorId, vendors])
 
   const isCartValid = cart.length > 0 && cart.every((i) => i.quantity > 0)
   const isAllocationValid = !!checkoutProjectId
@@ -407,13 +446,23 @@ export default function MaterialsMarketplace() {
         </Select>
         <Select value={vendorFilter} onValueChange={setVendorFilter}>
           <SelectTrigger className="w-[180px] bg-background">
-            <SelectValue placeholder="Default Vendor" />
+            <SelectValue placeholder="Fornecedor" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Vendors</SelectItem>
-            {[...new Set(materials.map((m) => m.supplier))].map((sup) => (
+            <SelectItem value="all">Todos Fornecedores</SelectItem>
+            {Array.from(
+              new Set([
+                ...materials.map((m) => m.supplier),
+                ...vendors.map((v) => v.name),
+              ]),
+            ).map((sup) => (
               <SelectItem key={sup} value={sup}>
-                {sup}
+                {sup}{' '}
+                {selectedProject?.preferredVendorId &&
+                vendors.find((v) => v.id === selectedProject.preferredVendorId)
+                  ?.name === sup
+                  ? ' (Preferencial)'
+                  : ''}
               </SelectItem>
             ))}
           </SelectContent>
