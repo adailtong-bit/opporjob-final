@@ -119,102 +119,117 @@ export default function ProjectDetail() {
         </Alert>
       )}
 
-      {/* Centered Header */}
-      <div className="flex flex-col items-center text-center gap-4 py-4 relative min-w-0">
-        <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="icon"
-            asChild
-            className="absolute left-0 top-4 md:top-auto md:static"
-          >
-            <Link to="/construction/dashboard">
-              <ArrowLeft className="h-4 w-4" />
-            </Link>
-          </Button>
-          <Badge
-            variant={project.status === 'in_progress' ? 'default' : 'secondary'}
-          >
-            {t(`status.${project.status}`)}
-          </Badge>
-        </div>
-
-        <h1 className="text-4xl font-bold tracking-tight text-foreground truncate max-w-full">
-          {project.name}
-        </h1>
-
-        <div className="flex flex-wrap justify-center gap-4 text-sm text-muted-foreground">
-          <span className="flex items-center gap-1 bg-muted/50 px-3 py-1 rounded-full whitespace-nowrap">
-            <MapPin className="h-3 w-3" />
-            {project.address
-              ? `${project.address.city} - ${project.address.state}`
-              : project.location}
-          </span>
-          <span className="flex items-center gap-1 bg-muted/50 px-3 py-1 rounded-full whitespace-nowrap">
-            <CalendarIcon className="h-3 w-3" />{' '}
-            {formatDate(project.startDate, 'P')} -{' '}
-            {formatDate(project.endDate, 'P')}
-          </span>
-
-          <div className="flex items-center gap-1 bg-blue-50/50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300 px-3 py-1 rounded-full whitespace-nowrap border border-blue-100 dark:border-blue-800">
-            <Store className="h-3 w-3" />
-            <span className="font-medium mr-1 text-xs">
-              Fornecedor Preferencial:
-            </span>
-            <Select
-              value={project.preferredVendorId || 'none'}
-              onValueChange={(val) =>
-                updateProjectPreferredVendor(
-                  project.id,
-                  val === 'none' ? undefined : val,
-                )
-              }
+      {/* Refactored Header */}
+      <div className="flex flex-col gap-6 py-6 min-w-0">
+        {/* Top Bar: Navigation, Status & Actions */}
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 w-full">
+          <div className="flex items-center gap-3">
+            <Button
+              variant="outline"
+              size="icon"
+              asChild
+              className="shrink-0 bg-background hover:bg-muted"
             >
-              <SelectTrigger className="h-6 w-[140px] text-xs border-none bg-transparent shadow-none focus:ring-0 px-1">
-                <SelectValue placeholder="Nenhum" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">Nenhum</SelectItem>
-                {vendors.map((v) => (
-                  <SelectItem key={v.id} value={v.id}>
-                    {v.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+              <Link to="/construction/dashboard">
+                <ArrowLeft className="h-4 w-4" />
+              </Link>
+            </Button>
+            <Badge
+              variant={
+                project.status === 'in_progress' ? 'default' : 'secondary'
+              }
+              className="px-3 py-1.5 text-sm"
+            >
+              {t(`status.${project.status}`)}
+            </Badge>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex flex-wrap items-center gap-2 w-full md:w-auto justify-start md:justify-end">
+            <Button
+              asChild
+              variant="default"
+              className="bg-blue-600 hover:bg-blue-700 text-white shadow-sm"
+            >
+              <Link to={`/construction/materials?projectId=${project.id}`}>
+                <ShoppingCart className="mr-2 h-4 w-4" /> Nova Compra
+              </Link>
+            </Button>
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => setIsSyncOpen(true)}
+              title={t('proj.sync.btn')}
+              className="bg-background hover:bg-muted"
+            >
+              <Link2 className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => setIsChatOpen(true)}
+              title="Chat do Projeto"
+              className="bg-background hover:bg-muted"
+            >
+              <MessageSquare className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => setIsTeamManagerOpen(true)}
+              className="hidden sm:flex bg-background hover:bg-muted"
+            >
+              <HardHat className="mr-2 h-4 w-4" /> {t('proj.team.btn')}
+            </Button>
           </div>
         </div>
 
-        {/* Action Buttons */}
-        <div className="absolute right-0 top-4 md:top-auto flex gap-2">
-          <Button
-            asChild
-            variant="default"
-            className="bg-blue-600 hover:bg-blue-700 text-white shadow-sm hidden sm:flex"
-          >
-            <Link to={`/construction/materials?projectId=${project.id}`}>
-              <ShoppingCart className="mr-2 h-4 w-4" /> Nova Compra
-            </Link>
-          </Button>
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => setIsSyncOpen(true)}
-            title={t('proj.sync.btn')}
-          >
-            <Link2 className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => setIsChatOpen(true)}
-            title="Chat do Projeto"
-          >
-            <MessageSquare className="h-4 w-4" />
-          </Button>
-          <Button variant="outline" onClick={() => setIsTeamManagerOpen(true)}>
-            <HardHat className="mr-2 h-4 w-4" /> {t('proj.team.btn')}
-          </Button>
+        {/* Title & Info */}
+        <div className="flex flex-col items-center md:items-start gap-3 w-full">
+          <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-foreground truncate max-w-full text-center md:text-left w-full px-2 md:px-0">
+            {project.name}
+          </h1>
+
+          <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 text-sm text-muted-foreground w-full">
+            <span className="flex items-center gap-1.5 bg-muted/50 px-3 py-1.5 rounded-full whitespace-nowrap border">
+              <MapPin className="h-3.5 w-3.5" />
+              {project.address
+                ? `${project.address.city} - ${project.address.state}`
+                : project.location}
+            </span>
+            <span className="flex items-center gap-1.5 bg-muted/50 px-3 py-1.5 rounded-full whitespace-nowrap border">
+              <CalendarIcon className="h-3.5 w-3.5" />{' '}
+              {formatDate(project.startDate, 'P')} -{' '}
+              {formatDate(project.endDate, 'P')}
+            </span>
+
+            <div className="flex items-center gap-1.5 bg-blue-50/50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300 px-3 py-1.5 rounded-full whitespace-nowrap border border-blue-100 dark:border-blue-800">
+              <Store className="h-3.5 w-3.5" />
+              <span className="font-medium mr-1 text-xs">
+                Fornecedor Preferencial:
+              </span>
+              <Select
+                value={project.preferredVendorId || 'none'}
+                onValueChange={(val) =>
+                  updateProjectPreferredVendor(
+                    project.id,
+                    val === 'none' ? undefined : val,
+                  )
+                }
+              >
+                <SelectTrigger className="h-6 w-[140px] text-xs border-none bg-transparent shadow-none focus:ring-0 px-1 hover:bg-blue-100/50 dark:hover:bg-blue-800/30 rounded">
+                  <SelectValue placeholder="Nenhum" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">Nenhum</SelectItem>
+                  {vendors.map((v) => (
+                    <SelectItem key={v.id} value={v.id}>
+                      {v.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
         </div>
       </div>
 

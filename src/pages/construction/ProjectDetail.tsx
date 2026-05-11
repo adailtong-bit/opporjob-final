@@ -206,196 +206,207 @@ export default function ProjectDetail() {
         </Alert>
       )}
 
-      {/* Centered Header */}
-      <div className="flex flex-col items-center text-center gap-4 py-4 relative min-w-0">
-        <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="icon"
-            asChild
-            className="absolute left-0 top-4 md:top-auto md:static"
-          >
-            <Link to="/construction/dashboard">
-              <ArrowLeft className="h-4 w-4" />
-            </Link>
-          </Button>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Badge
-                variant={
-                  project.status === 'in_progress' ? 'default' : 'secondary'
-                }
-                className="cursor-pointer hover:opacity-80 flex items-center gap-1"
-              >
-                {t(`status.${project.status}`)}{' '}
-                <ChevronDown className="h-3 w-3" />
-              </Badge>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent>
-              <DropdownMenuItem
-                onClick={() =>
-                  updateProject(project.id, { status: 'planning' })
-                }
-              >
-                Planejamento
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() =>
-                  updateProject(project.id, { status: 'in_progress' })
-                }
-              >
-                Em Progresso
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => updateProject(project.id, { status: 'paused' })}
-              >
-                Pausado
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={handleCompleteProject}
-                className="text-green-600 font-medium"
-              >
-                Concluir Projeto
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
+      {/* Refactored Header */}
+      <div className="flex flex-col gap-6 py-6 min-w-0">
+        {/* Top Bar: Navigation, Status & Actions */}
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 w-full">
+          <div className="flex items-center gap-3">
+            <Button
+              variant="outline"
+              size="icon"
+              asChild
+              className="shrink-0 bg-background hover:bg-muted"
+            >
+              <Link to="/construction/dashboard">
+                <ArrowLeft className="h-4 w-4" />
+              </Link>
+            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Badge
+                  variant={
+                    project.status === 'in_progress' ? 'default' : 'secondary'
+                  }
+                  className="cursor-pointer hover:opacity-80 flex items-center gap-1 px-3 py-1.5 text-sm"
+                >
+                  {t(`status.${project.status}`)}{' '}
+                  <ChevronDown className="h-3 w-3" />
+                </Badge>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem
+                  onClick={() =>
+                    updateProject(project.id, { status: 'planning' })
+                  }
+                >
+                  Planejamento
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() =>
+                    updateProject(project.id, { status: 'in_progress' })
+                  }
+                >
+                  Em Progresso
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() =>
+                    updateProject(project.id, { status: 'paused' })
+                  }
+                >
+                  Pausado
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={handleCompleteProject}
+                  className="text-green-600 font-medium"
+                >
+                  Concluir Projeto
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
 
-        <h1 className="text-4xl font-bold tracking-tight text-foreground truncate max-w-full px-8">
-          {project.name}
-        </h1>
-
-        <div className="flex flex-wrap justify-center gap-4 text-sm text-muted-foreground">
-          <span className="flex items-center gap-1 bg-muted/50 px-3 py-1 rounded-full whitespace-nowrap">
-            <MapPin className="h-3 w-3" />
-            {project.address
-              ? `${project.address.city} - ${project.address.state}`
-              : project.location}
-          </span>
-          <span className="flex items-center gap-1 bg-muted/50 px-3 py-1 rounded-full whitespace-nowrap">
-            <CalendarIcon className="h-3 w-3" />{' '}
-            {formatDate(project.startDate, 'P')} -{' '}
-            {formatDate(project.endDate, 'P')}
-          </span>
-        </div>
-
-        {/* Action Buttons */}
-        <div className="absolute right-0 top-4 md:top-auto flex gap-2">
-          <Button
-            asChild
-            variant="default"
-            className="bg-blue-600 hover:bg-blue-700 text-white shadow-sm hidden sm:flex"
-          >
-            <Link to={`/construction/materials?projectId=${project.id}`}>
-              <ShoppingCart className="mr-2 h-4 w-4" /> Nova Compra
-            </Link>
-          </Button>
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                size="icon"
-                className="relative"
-                title="Notificações"
-              >
-                <Bell className="h-4 w-4" />
-                {(expiring15DaysDocs.length > 0 ||
-                  budgetOverruns.length > 0) && (
-                  <span className="absolute -top-1 -right-1 flex h-3 w-3">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
-                  </span>
-                )}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent align="end" className="w-80 p-4">
-              <div className="space-y-4">
-                <h4 className="font-semibold text-sm">Alertas do Projeto</h4>
-                <div className="space-y-2 max-h-[300px] overflow-auto">
-                  {expiring15DaysDocs.length === 0 &&
-                    budgetOverruns.length === 0 && (
-                      <p className="text-sm text-muted-foreground">
-                        Tudo certo! Nenhuma notificação.
-                      </p>
-                    )}
-                  {expiring15DaysDocs.map((doc) => (
-                    <div
-                      key={doc.id}
-                      className="flex gap-2 items-start bg-yellow-50 p-2 rounded-md border border-yellow-200"
-                    >
-                      <AlertTriangle className="h-4 w-4 text-yellow-600 mt-0.5 shrink-0" />
-                      <div>
-                        <p className="text-xs font-medium text-yellow-900">
-                          Documento Vencendo
+          {/* Action Buttons */}
+          <div className="flex flex-wrap items-center gap-2 w-full md:w-auto justify-start md:justify-end">
+            <Button
+              asChild
+              variant="default"
+              className="bg-blue-600 hover:bg-blue-700 text-white shadow-sm"
+            >
+              <Link to={`/construction/materials?projectId=${project.id}`}>
+                <ShoppingCart className="mr-2 h-4 w-4" /> Nova Compra
+              </Link>
+            </Button>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="relative bg-background hover:bg-muted"
+                  title="Notificações"
+                >
+                  <Bell className="h-4 w-4" />
+                  {(expiring15DaysDocs.length > 0 ||
+                    budgetOverruns.length > 0) && (
+                    <span className="absolute -top-1 -right-1 flex h-3 w-3">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+                    </span>
+                  )}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent align="end" className="w-80 p-4">
+                <div className="space-y-4">
+                  <h4 className="font-semibold text-sm">Alertas do Projeto</h4>
+                  <div className="space-y-2 max-h-[300px] overflow-auto">
+                    {expiring15DaysDocs.length === 0 &&
+                      budgetOverruns.length === 0 && (
+                        <p className="text-sm text-muted-foreground">
+                          Tudo certo! Nenhuma notificação.
                         </p>
-                        <p className="text-[10px] text-yellow-800">
-                          {doc.name} vence em{' '}
-                          {Math.ceil(
-                            (new Date(doc.expirationDate).getTime() -
-                              todayDate.getTime()) /
-                              (1000 * 60 * 60 * 24),
-                          )}{' '}
-                          dias.
-                        </p>
+                      )}
+                    {expiring15DaysDocs.map((doc) => (
+                      <div
+                        key={doc.id}
+                        className="flex gap-2 items-start bg-yellow-50 p-2 rounded-md border border-yellow-200"
+                      >
+                        <AlertTriangle className="h-4 w-4 text-yellow-600 mt-0.5 shrink-0" />
+                        <div>
+                          <p className="text-xs font-medium text-yellow-900">
+                            Documento Vencendo
+                          </p>
+                          <p className="text-[10px] text-yellow-800">
+                            {doc.name} vence em{' '}
+                            {Math.ceil(
+                              (new Date(doc.expirationDate).getTime() -
+                                todayDate.getTime()) /
+                                (1000 * 60 * 60 * 24),
+                            )}{' '}
+                            dias.
+                          </p>
+                        </div>
                       </div>
-                    </div>
-                  ))}
-                  {budgetOverruns.map((entry) => (
-                    <div
-                      key={entry.id}
-                      className="flex gap-2 items-start bg-red-50 p-2 rounded-md border border-red-200"
-                    >
-                      <TrendingUp className="h-4 w-4 text-red-600 mt-0.5 shrink-0" />
-                      <div>
-                        <p className="text-xs font-medium text-red-900">
-                          Estouro de Orçamento
-                        </p>
-                        <p className="text-[10px] text-red-800">
-                          {entry.description}: Custo final (
-                          {formatCurrency(entry.finalCost)}) excedeu o previsto
-                          ({formatCurrency(entry.estimatedCost)}).
-                        </p>
+                    ))}
+                    {budgetOverruns.map((entry) => (
+                      <div
+                        key={entry.id}
+                        className="flex gap-2 items-start bg-red-50 p-2 rounded-md border border-red-200"
+                      >
+                        <TrendingUp className="h-4 w-4 text-red-600 mt-0.5 shrink-0" />
+                        <div>
+                          <p className="text-xs font-medium text-red-900">
+                            Estouro de Orçamento
+                          </p>
+                          <p className="text-[10px] text-red-800">
+                            {entry.description}: Custo final (
+                            {formatCurrency(entry.finalCost)}) excedeu o
+                            previsto ({formatCurrency(entry.estimatedCost)}).
+                          </p>
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
-              </div>
-            </PopoverContent>
-          </Popover>
+              </PopoverContent>
+            </Popover>
 
-          <Button
-            variant="outline"
-            size="icon"
-            asChild
-            title="Apontamento (Mobile)"
-          >
-            <Link to="/construction/field-entry">
-              <Smartphone className="h-4 w-4 text-primary" />
-            </Link>
-          </Button>
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => setIsSyncOpen(true)}
-            title={t('proj.sync.btn')}
-          >
-            <Link2 className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => setIsChatOpen(true)}
-            title="Chat do Projeto"
-          >
-            <MessageSquare className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="outline"
-            className="hidden sm:flex"
-            onClick={() => setIsTeamManagerOpen(true)}
-          >
-            <HardHat className="mr-2 h-4 w-4" /> {t('proj.team.btn')}
-          </Button>
+            <Button
+              variant="outline"
+              size="icon"
+              asChild
+              title="Apontamento (Mobile)"
+              className="bg-background hover:bg-muted"
+            >
+              <Link to="/construction/field-entry">
+                <Smartphone className="h-4 w-4 text-primary" />
+              </Link>
+            </Button>
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => setIsSyncOpen(true)}
+              title={t('proj.sync.btn')}
+              className="bg-background hover:bg-muted"
+            >
+              <Link2 className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => setIsChatOpen(true)}
+              title="Chat do Projeto"
+              className="bg-background hover:bg-muted"
+            >
+              <MessageSquare className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => setIsTeamManagerOpen(true)}
+              className="hidden sm:flex bg-background hover:bg-muted"
+            >
+              <HardHat className="mr-2 h-4 w-4" /> {t('proj.team.btn')}
+            </Button>
+          </div>
+        </div>
+
+        {/* Title & Info */}
+        <div className="flex flex-col items-center md:items-start gap-3 w-full">
+          <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-foreground truncate max-w-full text-center md:text-left w-full px-2 md:px-0">
+            {project.name}
+          </h1>
+
+          <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 text-sm text-muted-foreground w-full">
+            <span className="flex items-center gap-1.5 bg-muted/50 px-3 py-1.5 rounded-full whitespace-nowrap border">
+              <MapPin className="h-3.5 w-3.5" />
+              {project.address
+                ? `${project.address.city} - ${project.address.state}`
+                : project.location}
+            </span>
+            <span className="flex items-center gap-1.5 bg-muted/50 px-3 py-1.5 rounded-full whitespace-nowrap border">
+              <CalendarIcon className="h-3.5 w-3.5" />{' '}
+              {formatDate(project.startDate, 'P')} -{' '}
+              {formatDate(project.endDate, 'P')}
+            </span>
+          </div>
         </div>
       </div>
 

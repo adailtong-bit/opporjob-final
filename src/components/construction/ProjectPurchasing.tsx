@@ -22,18 +22,21 @@ export function ProjectPurchasing({ projectId }: { projectId: string }) {
 
   return (
     <div className="space-y-6 min-w-0 animate-fade-in">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-card p-4 rounded-xl border shadow-sm gap-4">
-        <div>
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center bg-card p-5 rounded-xl border shadow-sm gap-4">
+        <div className="space-y-1">
           <h3 className="text-lg font-semibold tracking-tight flex items-center gap-2">
             <ShoppingCart className="h-5 w-5 text-primary" /> Histórico de
             Compras
           </h3>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-muted-foreground max-w-xl">
             Acompanhe os pedidos de materiais alocados exclusivamente para esta
             obra.
           </p>
         </div>
-        <Button asChild>
+        <Button
+          asChild
+          className="w-full md:w-auto shrink-0 bg-blue-600 hover:bg-blue-700 text-white shadow-sm"
+        >
           <Link to={`/construction/materials?projectId=${projectId}`}>
             <ShoppingCart className="mr-2 h-4 w-4" /> Nova Compra
           </Link>
