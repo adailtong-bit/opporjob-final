@@ -38,9 +38,11 @@ import {
   Calendar,
   Plus,
   Lock,
+  Receipt,
 } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import { Link } from 'react-router-dom'
+import { PayablesManager } from '@/components/finance/PayablesManager'
 import {
   Dialog,
   DialogContent,
@@ -213,10 +215,11 @@ export default function FinanceDashboard() {
       </div>
 
       <Tabs defaultValue="overview" className="space-y-4">
-        <TabsList>
+        <TabsList className="overflow-x-auto flex-nowrap w-full justify-start h-auto p-1 scrollbar-none">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           {isPJ && <TabsTrigger value="cashflow">Cash Flow</TabsTrigger>}
           <TabsTrigger value="scheduled">Scheduled</TabsTrigger>
+          <TabsTrigger value="payables">Contas a Pagar</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-4">
@@ -401,6 +404,10 @@ export default function FinanceDashboard() {
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="payables" className="space-y-4 mt-4">
+          <PayablesManager />
         </TabsContent>
 
         <TabsContent value="scheduled" className="space-y-4">

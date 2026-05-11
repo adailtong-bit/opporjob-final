@@ -9,6 +9,15 @@ export interface Vendor {
   document: string | null
   category: string | null
   status: string | null
+  website: string | null
+  street: string | null
+  number: string | null
+  neighborhood: string | null
+  city: string | null
+  state: string | null
+  zip_code: string | null
+  pix_key: string | null
+  bank_data: any | null
   created_at: string
 }
 

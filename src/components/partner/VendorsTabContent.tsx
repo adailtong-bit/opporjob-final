@@ -24,12 +24,19 @@ import {
   Edit2,
   Trash2,
   PackageOpen,
+  MapPin,
+  Building2,
+  CreditCard,
+  Globe,
+  Phone,
+  Mail,
 } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import { Badge } from '@/components/ui/badge'
 import { useLanguageStore } from '@/stores/useLanguageStore'
 // @ts-expect-error
 import { useMaterialStore } from '@/stores/useMaterialStore'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
 export function VendorsTabContent() {
   const { vendors, fetchVendors, addVendor, updateVendor, deleteVendor } =
@@ -37,18 +44,29 @@ export function VendorsTabContent() {
   const { toast } = useToast()
   const { formatCurrency, formatDate } = useLanguageStore()
 
-  // Try to safely access orders from material store if it exists
   const materialOrders = useMaterialStore((state: any) => state.orders || [])
 
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingVendor, setEditingVendor] = useState<Vendor | null>(null)
-  const [formData, setFormData] = useState({
+
+  const defaultFormData = {
     name: '',
+    document: '',
     email: '',
     phone: '',
+    website: '',
     category: '',
-  })
+    street: '',
+    number: '',
+    neighborhood: '',
+    city: '',
+    state: '',
+    zip_code: '',
+    pix_key: '',
+    bank_data: { bank: '', agency: '', account: '', accountType: '' },
+  }
 
+  const [formData, setFormData] = useState(defaultFormData)
   const [viewHistoryVendor, setViewHistoryVendor] = useState<Vendor | null>(
     null,
   )
@@ -59,18 +77,21 @@ export function VendorsTabContent() {
 
   const handleSave = async () => {
     if (!formData.name) {
-      toast({ title: 'Nome é obrigatório', variant: 'destructive' })
+      toast({
+        title: 'Razão Social / Nome é obrigatório',
+        variant: 'destructive',
+      })
       return
     }
     if (editingVendor) {
       await updateVendor(editingVendor.id, formData)
-      toast({ title: 'Fornecedor atualizado' })
+      toast({ title: 'Fornecedor atualizado com sucesso' })
     } else {
       await addVendor(formData)
-      toast({ title: 'Fornecedor cadastrado' })
+      toast({ title: 'Fornecedor cadastrado com sucesso' })
     }
     setIsModalOpen(false)
-    setFormData({ name: '', email: '', phone: '', category: '' })
+    setFormData(defaultFormData)
     setEditingVendor(null)
   }
 
@@ -78,9 +99,19 @@ export function VendorsTabContent() {
     setEditingVendor(vendor)
     setFormData({
       name: vendor.name,
+      document: vendor.document || '',
       email: vendor.email || '',
       phone: vendor.phone || '',
+      website: vendor.website || '',
       category: vendor.category || '',
+      street: vendor.street || '',
+      number: vendor.number || '',
+      neighborhood: vendor.neighborhood || '',
+      city: vendor.city || '',
+      state: vendor.state || '',
+      zip_code: vendor.zip_code || '',
+      pix_key: vendor.pix_key || '',
+      bank_data: vendor.bank_data || defaultFormData.bank_data,
     })
     setIsModalOpen(true)
   }
@@ -111,15 +142,17 @@ export function VendorsTabContent() {
         <div>
           <h2 className="text-xl font-bold flex items-center gap-2">
             <Store className="h-5 w-5 text-primary" /> Gestão de Fornecedores
+            Corporativos
           </h2>
           <p className="text-muted-foreground text-sm mt-1">
-            Cadastre parceiros e acompanhe o histórico de compras e custos.
+            Cadastre parceiros com dados completos de faturamento, logística e
+            pagamento.
           </p>
         </div>
         <Button
           onClick={() => {
             setEditingVendor(null)
-            setFormData({ name: '', email: '', phone: '', category: '' })
+            setFormData(defaultFormData)
             setIsModalOpen(true)
           }}
           className="w-full md:w-auto"
@@ -135,11 +168,12 @@ export function VendorsTabContent() {
             <p className="text-lg font-medium text-foreground mb-1">
               Nenhum fornecedor cadastrado
             </p>
-            <p className="text-sm mb-4">
-              Adicione lojas e distribuidores para vincular às suas compras.
+            <p className="text-sm mb-4 text-center max-w-sm">
+              Adicione lojas e distribuidores com dados completos de faturamento
+              (CNPJ, Endereço, Banco/PIX).
             </p>
             <Button variant="outline" onClick={() => setIsModalOpen(true)}>
-              Cadastrar Primeiro Fornecedor
+              Cadastrar Fornecedor
             </Button>
           </CardContent>
         </Card>
@@ -158,13 +192,16 @@ export function VendorsTabContent() {
                   >
                     {vendor.name}
                   </CardTitle>
-                  <CardDescription className="mt-1">
+                  <CardDescription className="mt-1 flex flex-col gap-1">
                     <Badge
                       variant="secondary"
-                      className="text-[10px] font-normal"
+                      className="text-[10px] font-normal w-fit"
                     >
                       {vendor.category || 'Geral'}
                     </Badge>
+                    {vendor.document && (
+                      <span className="text-xs">CNPJ: {vendor.document}</span>
+                    )}
                   </CardDescription>
                 </div>
                 <div className="flex gap-1 absolute right-4 top-4 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -187,24 +224,30 @@ export function VendorsTabContent() {
                 </div>
               </CardHeader>
               <CardContent className="flex-1 flex flex-col justify-between pb-4">
-                <div className="text-sm space-y-1.5 mb-4 bg-muted/30 p-3 rounded-lg">
-                  <p className="flex justify-between items-center">
-                    <span className="text-muted-foreground text-xs uppercase tracking-wider">
-                      Email
-                    </span>{' '}
-                    <span
-                      className="font-medium truncate ml-2"
-                      title={vendor.email || ''}
-                    >
+                <div className="text-sm space-y-2 mb-4 bg-muted/30 p-3 rounded-lg border border-transparent group-hover:border-muted transition-colors">
+                  <p className="flex items-center gap-2 text-xs">
+                    <Mail className="h-3 w-3 text-muted-foreground shrink-0" />
+                    <span className="truncate" title={vendor.email || ''}>
                       {vendor.email || '-'}
                     </span>
                   </p>
-                  <p className="flex justify-between items-center">
-                    <span className="text-muted-foreground text-xs uppercase tracking-wider">
-                      Tel
-                    </span>{' '}
-                    <span className="font-medium">{vendor.phone || '-'}</span>
+                  <p className="flex items-center gap-2 text-xs">
+                    <Phone className="h-3 w-3 text-muted-foreground shrink-0" />
+                    <span>{vendor.phone || '-'}</span>
                   </p>
+                  {vendor.city && (
+                    <p className="flex items-center gap-2 text-xs">
+                      <MapPin className="h-3 w-3 text-muted-foreground shrink-0" />
+                      <span className="truncate">
+                        {vendor.city} - {vendor.state}
+                      </span>
+                    </p>
+                  )}
+                  {vendor.pix_key && (
+                    <p className="flex items-center gap-2 text-xs text-emerald-600 dark:text-emerald-400 font-medium">
+                      <CreditCard className="h-3 w-3" /> PIX Cadastrado
+                    </p>
+                  )}
                 </div>
                 <Button
                   variant="outline"
@@ -221,66 +264,281 @@ export function VendorsTabContent() {
 
       {/* Add/Edit Modal */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>
-              {editingVendor ? 'Editar Fornecedor' : 'Novo Fornecedor'}
+        <DialogContent className="max-w-3xl max-h-[90vh] flex flex-col p-0">
+          <DialogHeader className="p-6 pb-4 border-b">
+            <DialogTitle className="text-xl">
+              {editingVendor
+                ? 'Editar Fornecedor'
+                : 'Cadastrar Novo Fornecedor'}
             </DialogTitle>
+            <CardDescription>
+              Preencha os dados corporativos para emissão de faturas e
+              pagamentos.
+            </CardDescription>
           </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label>
-                Nome da Empresa / Loja{' '}
-                <span className="text-destructive">*</span>
-              </Label>
-              <Input
-                value={formData.name}
-                onChange={(e) =>
-                  setFormData({ ...formData, name: e.target.value })
-                }
-                placeholder="Ex: Casa do Construtor"
-                autoFocus
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Categoria</Label>
-                <Input
-                  value={formData.category}
-                  onChange={(e) =>
-                    setFormData({ ...formData, category: e.target.value })
-                  }
-                  placeholder="Ex: Elétrica"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>Telefone</Label>
-                <Input
-                  value={formData.phone}
-                  onChange={(e) =>
-                    setFormData({ ...formData, phone: e.target.value })
-                  }
-                  placeholder="(00) 00000-0000"
-                />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label>Email</Label>
-              <Input
-                type="email"
-                value={formData.email}
-                onChange={(e) =>
-                  setFormData({ ...formData, email: e.target.value })
-                }
-                placeholder="contato@empresa.com"
-              />
-            </div>
+
+          <div className="flex-1 overflow-y-auto p-6">
+            <Tabs defaultValue="geral" className="w-full">
+              <TabsList className="grid w-full grid-cols-3 mb-6">
+                <TabsTrigger value="geral">
+                  <Building2 className="w-4 h-4 mr-2" /> Geral & Contato
+                </TabsTrigger>
+                <TabsTrigger value="endereco">
+                  <MapPin className="w-4 h-4 mr-2" /> Endereço
+                </TabsTrigger>
+                <TabsTrigger value="financeiro">
+                  <CreditCard className="w-4 h-4 mr-2" /> Financeiro
+                </TabsTrigger>
+              </TabsList>
+
+              <TabsContent
+                value="geral"
+                className="space-y-4 animate-in fade-in-50"
+              >
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-2 sm:col-span-2">
+                    <Label>
+                      Razão Social / Nome{' '}
+                      <span className="text-destructive">*</span>
+                    </Label>
+                    <Input
+                      value={formData.name}
+                      onChange={(e) =>
+                        setFormData({ ...formData, name: e.target.value })
+                      }
+                      placeholder="Nome completo da empresa"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>CNPJ / CPF</Label>
+                    <Input
+                      value={formData.document}
+                      onChange={(e) =>
+                        setFormData({ ...formData, document: e.target.value })
+                      }
+                      placeholder="00.000.000/0001-00"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Categoria de Fornecimento</Label>
+                    <Input
+                      value={formData.category}
+                      onChange={(e) =>
+                        setFormData({ ...formData, category: e.target.value })
+                      }
+                      placeholder="Ex: Materiais Elétricos, Locação..."
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>E-mail Comercial</Label>
+                    <Input
+                      type="email"
+                      value={formData.email}
+                      onChange={(e) =>
+                        setFormData({ ...formData, email: e.target.value })
+                      }
+                      placeholder="faturamento@empresa.com"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Telefone / WhatsApp</Label>
+                    <Input
+                      value={formData.phone}
+                      onChange={(e) =>
+                        setFormData({ ...formData, phone: e.target.value })
+                      }
+                      placeholder="(00) 00000-0000"
+                    />
+                  </div>
+                  <div className="space-y-2 sm:col-span-2">
+                    <Label>Site Institucional</Label>
+                    <div className="flex">
+                      <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 bg-muted text-muted-foreground">
+                        <Globe className="w-4 h-4" />
+                      </span>
+                      <Input
+                        className="rounded-l-none"
+                        value={formData.website}
+                        onChange={(e) =>
+                          setFormData({ ...formData, website: e.target.value })
+                        }
+                        placeholder="www.empresa.com.br"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </TabsContent>
+
+              <TabsContent
+                value="endereco"
+                className="space-y-4 animate-in fade-in-50"
+              >
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div className="space-y-2 sm:col-span-1">
+                    <Label>CEP</Label>
+                    <Input
+                      value={formData.zip_code}
+                      onChange={(e) =>
+                        setFormData({ ...formData, zip_code: e.target.value })
+                      }
+                      placeholder="00000-000"
+                    />
+                  </div>
+                  <div className="space-y-2 sm:col-span-2">
+                    <Label>Logradouro / Rua</Label>
+                    <Input
+                      value={formData.street}
+                      onChange={(e) =>
+                        setFormData({ ...formData, street: e.target.value })
+                      }
+                      placeholder="Avenida Principal..."
+                    />
+                  </div>
+                  <div className="space-y-2 sm:col-span-1">
+                    <Label>Número</Label>
+                    <Input
+                      value={formData.number}
+                      onChange={(e) =>
+                        setFormData({ ...formData, number: e.target.value })
+                      }
+                      placeholder="1234"
+                    />
+                  </div>
+                  <div className="space-y-2 sm:col-span-2">
+                    <Label>Bairro</Label>
+                    <Input
+                      value={formData.neighborhood}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          neighborhood: e.target.value,
+                        })
+                      }
+                      placeholder="Centro"
+                    />
+                  </div>
+                  <div className="space-y-2 sm:col-span-2">
+                    <Label>Cidade</Label>
+                    <Input
+                      value={formData.city}
+                      onChange={(e) =>
+                        setFormData({ ...formData, city: e.target.value })
+                      }
+                      placeholder="São Paulo"
+                    />
+                  </div>
+                  <div className="space-y-2 sm:col-span-1">
+                    <Label>Estado (UF)</Label>
+                    <Input
+                      value={formData.state}
+                      onChange={(e) =>
+                        setFormData({ ...formData, state: e.target.value })
+                      }
+                      placeholder="SP"
+                      maxLength={2}
+                    />
+                  </div>
+                </div>
+              </TabsContent>
+
+              <TabsContent
+                value="financeiro"
+                className="space-y-4 animate-in fade-in-50"
+              >
+                <div className="bg-emerald-50 dark:bg-emerald-950/20 p-4 rounded-lg border border-emerald-100 dark:border-emerald-900 mb-4">
+                  <div className="space-y-2">
+                    <Label className="text-emerald-800 dark:text-emerald-400">
+                      Chave PIX Principal
+                    </Label>
+                    <Input
+                      value={formData.pix_key}
+                      onChange={(e) =>
+                        setFormData({ ...formData, pix_key: e.target.value })
+                      }
+                      placeholder="CNPJ, Email, Celular ou Chave Aleatória"
+                      className="border-emerald-200 dark:border-emerald-800"
+                    />
+                  </div>
+                </div>
+
+                <h4 className="font-semibold text-sm mb-2 mt-6">
+                  Dados Bancários Tradicionais
+                </h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Banco</Label>
+                    <Input
+                      value={formData.bank_data.bank}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          bank_data: {
+                            ...formData.bank_data,
+                            bank: e.target.value,
+                          },
+                        })
+                      }
+                      placeholder="Ex: Itaú (341)"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Agência</Label>
+                    <Input
+                      value={formData.bank_data.agency}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          bank_data: {
+                            ...formData.bank_data,
+                            agency: e.target.value,
+                          },
+                        })
+                      }
+                      placeholder="0000-0"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Conta</Label>
+                    <Input
+                      value={formData.bank_data.account}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          bank_data: {
+                            ...formData.bank_data,
+                            account: e.target.value,
+                          },
+                        })
+                      }
+                      placeholder="00000-0"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Tipo de Conta</Label>
+                    <Input
+                      value={formData.bank_data.accountType}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          bank_data: {
+                            ...formData.bank_data,
+                            accountType: e.target.value,
+                          },
+                        })
+                      }
+                      placeholder="Corrente / Poupança"
+                    />
+                  </div>
+                </div>
+              </TabsContent>
+            </Tabs>
           </div>
-          <DialogFooter>
+
+          <DialogFooter className="p-6 pt-4 border-t">
             <Button variant="ghost" onClick={() => setIsModalOpen(false)}>
               Cancelar
             </Button>
-            <Button onClick={handleSave}>Salvar Fornecedor</Button>
+            <Button onClick={handleSave}>Salvar Cadastro Completo</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -297,8 +555,8 @@ export function VendorsTabContent() {
               Histórico - {viewHistoryVendor?.name}
             </DialogTitle>
             <CardDescription>
-              Visualização centralizada de todas as compras realizadas com este
-              fornecedor.
+              Visualização centralizada de todas as compras e integração
+              financeira.
             </CardDescription>
           </DialogHeader>
           <div className="flex-1 overflow-y-auto pr-2 py-4 space-y-4">
@@ -371,9 +629,15 @@ export function VendorsTabContent() {
                         ))}
                       </ul>
                       <div className="mt-4 pt-3 border-t flex justify-between items-center">
-                        <span className="text-sm font-medium text-muted-foreground">
-                          Valor Total do Pedido
-                        </span>
+                        <div className="flex flex-col gap-1">
+                          <span className="text-sm font-medium text-muted-foreground">
+                            Valor Total do Pedido
+                          </span>
+                          <span className="text-[10px] text-muted-foreground flex items-center gap-1">
+                            <CreditCard className="w-3 h-3" /> Integrado ao
+                            fluxo de "Contas a Pagar"
+                          </span>
+                        </div>
                         <span className="font-bold text-lg text-primary tabular-nums">
                           {formatCurrency(order.total)}
                         </span>
