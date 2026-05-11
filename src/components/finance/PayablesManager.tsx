@@ -30,9 +30,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Check, Clock, Upload, Receipt, DollarSign } from 'lucide-react'
+import {
+  Check,
+  Clock,
+  Upload,
+  Receipt,
+  DollarSign,
+  Lock,
+  Activity,
+} from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import { Card, CardContent } from '@/components/ui/card'
+import { format } from 'date-fns'
 
 export function PayablesManager() {
   const { user } = useAuthStore()
@@ -44,6 +53,7 @@ export function PayablesManager() {
   const [payables, setPayables] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [editingInvoice, setEditingInvoice] = useState<any>(null)
+  const [auditLogs, setAuditLogs] = useState<any[]>([])
 
   const [status, setStatus] = useState('')
   const [paymentDate, setPaymentDate] = useState('')
@@ -75,7 +85,7 @@ export function PayablesManager() {
     }
   }, [user])
 
-  const handleEdit = (inv: any) => {
+  const handleEdit = async (inv: any) => {
     setEditingInvoice(inv)
     setStatus(inv.status || 'pending')
     setPaymentDate(
@@ -84,6 +94,16 @@ export function PayablesManager() {
         : '',
     )
     setReceiptUrl(inv.receipt_url || '')
+
+    const { data: logs } = await supabase
+      .from('audit_logs')
+      .select('*, profiles!user_id(name, email)')
+      .eq('entity_type', 'invoices')
+      .eq('entity_id', inv.id)
+      .order('created_at', { ascending: false })
+      .limit(10)
+
+    setAuditLogs(logs || [])
   }
 
   const handleSave = async () => {
@@ -313,9 +333,19 @@ export function PayablesManager() {
         open={!!editingInvoice}
         onOpenChange={(open) => !open && setEditingInvoice(null)}
       >
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Gerenciar Pagamento</DialogTitle>
+            <DialogTitle className="flex items-center gap-2">
+              Gerenciar Pagamento
+              {editingInvoice?.status === 'paid' && (
+                <Badge
+                  variant="outline"
+                  className="ml-2 bg-emerald-50 text-emerald-600 border-emerald-200"
+                >
+                  <Lock className="w-3 h-3 mr-1" /> Fatura Fechada
+                </Badge>
+              )}
+            </DialogTitle>
             <DialogDescription>
               Atualize o status desta fatura e anexe comprovantes.
             </DialogDescription>
@@ -339,7 +369,11 @@ export function PayablesManager() {
           <div className="grid gap-4 py-2">
             <div className="space-y-2">
               <Label>Status do Pagamento</Label>
-              <Select value={status} onValueChange={setStatus}>
+              <Select
+                value={status}
+                onValueChange={setStatus}
+                disabled={editingInvoice?.status === 'paid'}
+              >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -354,6 +388,11 @@ export function PayablesManager() {
                   <SelectItem value="paid">Pago / Liquidado</SelectItem>
                 </SelectContent>
               </Select>
+              {editingInvoice?.status === 'paid' && (
+                <p className="text-[10px] text-emerald-600 font-medium">
+                  Esta fatura já foi liquidada e o status não pode ser alterado.
+                </p>
+              )}
             </div>
             <div className="space-y-2">
               <Label>Data de Pagamento Efetivado</Label>
@@ -361,6 +400,7 @@ export function PayablesManager() {
                 type="date"
                 value={paymentDate}
                 onChange={(e) => setPaymentDate(e.target.value)}
+                disabled={editingInvoice?.status === 'paid'}
               />
               <p className="text-[10px] text-muted-foreground">
                 Preencha apenas se o pagamento já foi realizado.
@@ -379,6 +419,33 @@ export function PayablesManager() {
                 </Button>
               </div>
             </div>
+
+            {auditLogs.length > 0 && (
+              <div className="space-y-2 border-t pt-4 mt-2">
+                <Label className="flex items-center gap-2">
+                  <Activity className="w-4 h-4" /> Histórico de Auditoria
+                </Label>
+                <div className="space-y-2 mt-2">
+                  {auditLogs.map((log) => (
+                    <div
+                      key={log.id}
+                      className="text-xs border p-2 rounded bg-muted/20"
+                    >
+                      <div className="flex justify-between font-medium mb-1">
+                        <span>{log.action}</span>
+                        <span className="text-muted-foreground">
+                          {format(new Date(log.created_at), 'dd/MM/yyyy HH:mm')}
+                        </span>
+                      </div>
+                      <p className="text-muted-foreground">
+                        Por:{' '}
+                        {log.profiles?.name || log.profiles?.email || 'Sistema'}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
           <DialogFooter className="mt-4 border-t pt-4">
             <Button variant="ghost" onClick={() => setEditingInvoice(null)}>

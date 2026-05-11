@@ -51,9 +51,11 @@ import {
   Trash2,
   Store,
   Plus,
+  ShieldCheck,
 } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import { useLanguageStore } from '@/stores/useLanguageStore'
+import { Progress } from '@/components/ui/progress'
 
 interface CartItem {
   id: string
@@ -413,6 +415,12 @@ export default function MaterialsMarketplace() {
 
   const activeProjects = projects.filter((p) => p.status === 'in_progress')
 
+  const totalBudget = selectedProject ? selectedProject.totalBudget : 0
+  const budgetUsed = selectedProject ? selectedProject.totalSpent : 0
+  const budgetRemaining = totalBudget - budgetUsed
+  const willExceedBudget =
+    selectedProject && budgetUsed + cartTotal > totalBudget
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
@@ -738,6 +746,50 @@ export default function MaterialsMarketplace() {
               </div>
             </div>
 
+            {/* Budget Integrity Section */}
+            {selectedProject && (
+              <div className="bg-card p-4 rounded-lg border space-y-3">
+                <div className="flex justify-between items-center">
+                  <Label className="text-sm font-semibold flex items-center gap-2">
+                    <ShieldCheck className="h-4 w-4 text-primary" /> Integridade
+                    do Orçamento
+                  </Label>
+                  <Badge
+                    variant={willExceedBudget ? 'destructive' : 'outline'}
+                    className={
+                      !willExceedBudget
+                        ? 'text-emerald-600 border-emerald-200 bg-emerald-50'
+                        : ''
+                    }
+                  >
+                    {willExceedBudget
+                      ? 'Excede Orçamento'
+                      : 'Dentro do Orçamento'}
+                  </Badge>
+                </div>
+                <div className="space-y-1">
+                  <div className="flex justify-between text-xs text-muted-foreground">
+                    <span>Disponível: {formatCurrency(budgetRemaining)}</span>
+                    <span>Total: {formatCurrency(totalBudget)}</span>
+                  </div>
+                  <Progress
+                    value={Math.min(
+                      100,
+                      ((budgetUsed + cartTotal) / (totalBudget || 1)) * 100,
+                    )}
+                    className="h-2"
+                  />
+                </div>
+                {willExceedBudget && (
+                  <p className="text-xs text-red-500 font-medium">
+                    Aviso: Esta compra ultrapassará o saldo do orçamento
+                    aprovado (Falta{' '}
+                    {formatCurrency(budgetUsed + cartTotal - totalBudget)}).
+                  </p>
+                )}
+              </div>
+            )}
+
             {/* Vendor Section */}
             <div className="bg-blue-50/50 p-4 rounded-lg border border-blue-100 space-y-4">
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
@@ -968,10 +1020,16 @@ export default function MaterialsMarketplace() {
               </Button>
               <Button
                 onClick={handleCheckoutSubmit}
-                disabled={!isCartValid || !isAllocationValid}
+                disabled={
+                  !isCartValid ||
+                  !isAllocationValid ||
+                  (willExceedBudget && paymentType === 'instant')
+                }
                 className="w-full sm:w-auto"
               >
-                Confirmar e Integrar
+                {willExceedBudget && paymentType === 'instant'
+                  ? 'Orçamento Insuficiente'
+                  : 'Confirmar e Integrar'}
               </Button>
             </div>
           </DialogFooter>
