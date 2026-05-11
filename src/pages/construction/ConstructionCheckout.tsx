@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { useAdminPricingStore } from '@/stores/useAdminPricingStore'
+import { useConstructionPlansStore } from '@/stores/useConstructionPlansStore'
 import { useAuthStore } from '@/stores/useAuthStore'
 import {
   Card,
@@ -20,8 +20,12 @@ import { CreditCard, Loader2, ShieldCheck, Lock } from 'lucide-react'
 
 export default function ConstructionCheckout() {
   const { planId } = useParams()
-  const { plans } = useAdminPricingStore()
+  const { plans, fetchPlans } = useConstructionPlansStore()
   const { user, activateConstructionSubscription } = useAuthStore()
+
+  useEffect(() => {
+    fetchPlans()
+  }, [fetchPlans])
   const navigate = useNavigate()
   const { toast } = useToast()
   const { formatCurrency, t } = useLanguageStore()

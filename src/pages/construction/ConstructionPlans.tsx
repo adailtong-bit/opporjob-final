@@ -1,5 +1,6 @@
-import { useAdminPricingStore } from '@/stores/useAdminPricingStore'
+import { useConstructionPlansStore } from '@/stores/useConstructionPlansStore'
 import { useAuthStore } from '@/stores/useAuthStore'
+import { useEffect } from 'react'
 import {
   Card,
   CardHeader,
@@ -14,8 +15,12 @@ import { Check, HardHat, Building2, Crown } from 'lucide-react'
 import { useLanguageStore } from '@/stores/useLanguageStore'
 
 export default function ConstructionPlans() {
-  const { plans } = useAdminPricingStore()
+  const { plans, fetchPlans } = useConstructionPlansStore()
   const { user } = useAuthStore()
+
+  useEffect(() => {
+    fetchPlans()
+  }, [fetchPlans])
   const navigate = useNavigate()
   const { formatCurrency } = useLanguageStore()
 

@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import { useProjectStore } from '@/stores/useProjectStore'
+import { useAuthStore } from '@/stores/useAuthStore'
+import { useInvoices } from '@/hooks/use-invoices'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -17,13 +19,14 @@ import { useLanguageStore } from '@/stores/useLanguageStore'
 
 export default function TeamInvoicing() {
   const { projects, generateInvoice } = useProjectStore()
+  const { user } = useAuthStore()
+  const { createInvoice } = useInvoices(user?.id)
   const { toast } = useToast()
   const { formatCurrency } = useLanguageStore()
 
-  // Mock logged in team member ID (Contractor/Worker)
   // In real app, derived from auth
-  const currentWorkerId = 'member-1'
-  const currentWorkerName = 'João Pintor'
+  const currentWorkerId = user?.id || 'member-1'
+  const currentWorkerName = user?.name || 'Profissional'
 
   const [selectedTasks, setSelectedTasks] = useState<string[]>([])
 
@@ -55,12 +58,22 @@ export default function TeamInvoicing() {
     )
   }
 
-  const handleInvoice = () => {
+  const handleInvoice = async () => {
     if (selectedTasks.length === 0) return
 
-    selectedTasks.forEach((taskId) => {
+    for (const taskId of selectedTasks) {
       const task = billableTasks.find((t) => t.id === taskId)
       if (task) {
+        await createInvoice({
+          project_id: task.projectId,
+          task_id: task.id,
+          payer_id: undefined,
+          receiver_id: user?.id,
+          amount: task.taskPrice || 0,
+          description: `Fatura referente a tarefa: ${task.name}`,
+          status: 'pending',
+        })
+
         generateInvoice(
           task.projectId,
           task.stageId,
@@ -68,7 +81,7 @@ export default function TeamInvoicing() {
           'team_to_partner',
         )
       }
-    })
+    }
 
     toast({
       title: 'Fatura Gerada',

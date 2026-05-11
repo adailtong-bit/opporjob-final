@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useJobStore } from '@/stores/useJobStore'
 import { useAuthStore } from '@/stores/useAuthStore'
-import { usePaymentStore } from '@/stores/usePaymentStore'
+import { useInvoices } from '@/hooks/use-invoices'
 import { useNotificationStore } from '@/stores/useNotificationStore'
 import { useLanguageStore } from '@/stores/useLanguageStore'
 import { Button } from '@/components/ui/button'
@@ -23,7 +23,7 @@ export default function PaymentCheckout() {
   const navigate = useNavigate()
   const { getJob, acceptBid } = useJobStore()
   const { user } = useAuthStore()
-  const { processPayment } = usePaymentStore()
+  const { createInvoice } = useInvoices(user?.id)
   const { addNotification } = useNotificationStore()
   const { toast } = useToast()
   const { t, formatCurrency } = useLanguageStore()
@@ -46,14 +46,14 @@ export default function PaymentCheckout() {
   const handlePayment = async () => {
     setIsProcessing(true)
 
-    // Simulate payment processing
-    const success = await processPayment(
-      job.id,
-      job.title,
-      amount,
-      { id: user.id, name: user.name },
-      { id: receiverId, name: receiverName },
-    )
+    const success = await createInvoice({
+      job_id: job.id,
+      payer_id: user.id,
+      receiver_id: receiverId !== 'pending' ? receiverId : undefined,
+      amount: amount,
+      description: job.title,
+      status: 'escrow',
+    })
 
     if (success) {
       // Logic to finalize the job status

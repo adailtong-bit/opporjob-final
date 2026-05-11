@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useAuthStore } from '@/stores/useAuthStore'
-import { usePaymentStore } from '@/stores/usePaymentStore'
+import { useInvoices } from '@/hooks/use-invoices'
 import {
   Card,
   CardContent,
@@ -56,8 +56,7 @@ import { CurrencyInput } from '@/components/CurrencyInput'
 
 export default function FinanceDashboard() {
   const { user } = useAuthStore()
-  const { getTransactionsByUser, schedulePayment, getScheduledPayments } =
-    usePaymentStore()
+  const { invoices, createInvoice } = useInvoices(user?.id)
   const { toast } = useToast()
   const { formatCurrency, formatDate } = useLanguageStore()
 
@@ -93,22 +92,22 @@ export default function FinanceDashboard() {
   }
 
   const isPJ = user.entityType === 'pj'
-  const transactions = getTransactionsByUser(user.id)
-  const scheduled = getScheduledPayments(user.id)
+  const transactions = invoices.filter((t) => t.status !== 'scheduled')
+  const scheduled = invoices.filter((t) => t.status === 'scheduled')
 
   const totalEarnings = transactions
-    .filter((t) => t.receiverId === user.id && t.status === 'completed')
+    .filter((t) => t.receiver_id === user.id && t.status === 'completed')
     .reduce((acc, curr) => acc + curr.amount, 0)
 
   const totalSpent = transactions
-    .filter((t) => t.payerId === user.id)
+    .filter((t) => t.payer_id === user.id)
     .reduce((acc, curr) => acc + curr.amount, 0)
 
   const pendingAmount = transactions
     .filter(
       (t) =>
-        (t.receiverId === user.id || t.payerId === user.id) &&
-        t.status === 'escrow',
+        (t.receiver_id === user.id || t.payer_id === user.id) &&
+        (t.status === 'escrow' || t.status === 'pending'),
     )
     .reduce((acc, curr) => acc + curr.amount, 0)
 
@@ -130,19 +129,14 @@ export default function FinanceDashboard() {
     saida: { label: 'Expenses', color: 'hsl(var(--destructive))' },
   }
 
-  const handleSchedule = () => {
-    schedulePayment(
-      {
-        jobTitle: scheduleData.title,
-        payerId: user.id,
-        payerName: user.name,
-        receiverId: 'mock-receiver',
-        receiverName: 'External Supplier',
-        amount: scheduleData.amount,
-        category: 'other',
-      },
-      new Date(scheduleData.date),
-    )
+  const handleSchedule = async () => {
+    await createInvoice({
+      payer_id: user.id,
+      amount: scheduleData.amount,
+      description: scheduleData.title,
+      status: 'scheduled',
+      due_date: new Date(scheduleData.date).toISOString(),
+    })
 
     setIsScheduleOpen(false)
     toast({ title: 'Payment Scheduled!' })
@@ -289,16 +283,16 @@ export default function FinanceDashboard() {
                       transactions.slice(0, 5).map((tx) => (
                         <TableRow key={tx.id}>
                           <TableCell>
-                            {formatDate(tx.date, 'MM/dd/yy')}
+                            {formatDate(tx.created_at, 'MM/dd/yy')}
                           </TableCell>
                           <TableCell className="font-medium">
-                            {tx.jobTitle}
+                            {tx.description}
                           </TableCell>
                           <TableCell className="font-semibold">
                             {formatCurrency(tx.amount)}
                           </TableCell>
                           <TableCell>
-                            {tx.payerId === user.id ? (
+                            {tx.payer_id === user.id ? (
                               <span className="text-red-500 font-medium">
                                 Expense
                               </span>
@@ -487,13 +481,15 @@ export default function FinanceDashboard() {
                       <TableCell className="font-medium text-purple-700">
                         <div className="flex items-center gap-2">
                           <Calendar className="h-4 w-4" />
-                          {tx.scheduledDate
-                            ? formatDate(tx.scheduledDate, 'MM/dd/yyyy')
+                          {tx.due_date
+                            ? formatDate(tx.due_date, 'MM/dd/yyyy')
                             : '-'}
                         </div>
                       </TableCell>
-                      <TableCell>{tx.jobTitle}</TableCell>
-                      <TableCell>{tx.receiverName}</TableCell>
+                      <TableCell>{tx.description}</TableCell>
+                      <TableCell>
+                        {tx.receiver_id === user.id ? 'You' : 'External'}
+                      </TableCell>
                       <TableCell>{formatCurrency(tx.amount)}</TableCell>
                       <TableCell>
                         <Badge

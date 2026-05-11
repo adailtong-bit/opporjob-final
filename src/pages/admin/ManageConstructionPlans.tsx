@@ -1,8 +1,8 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
-  useAdminPricingStore,
-  SubscriptionPlan,
-} from '@/stores/useAdminPricingStore'
+  useConstructionPlansStore,
+  ConstructionPlan,
+} from '@/stores/useConstructionPlansStore'
 import { Button } from '@/components/ui/button'
 import {
   Table,
@@ -25,11 +25,16 @@ import { useLanguageStore } from '@/stores/useLanguageStore'
 import { ConstructionPlanFormModal } from '@/components/admin/ConstructionPlanFormModal'
 
 export default function ManageConstructionPlans() {
-  const { plans, deletePlan, togglePlanStatus } = useAdminPricingStore()
+  const { plans, fetchPlans, deletePlan, togglePlanStatus } =
+    useConstructionPlansStore()
   const { t, formatCurrency } = useLanguageStore()
 
+  useEffect(() => {
+    fetchPlans()
+  }, [fetchPlans])
+
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const [editingPlan, setEditingPlan] = useState<SubscriptionPlan | null>(null)
+  const [editingPlan, setEditingPlan] = useState<ConstructionPlan | null>(null)
 
   const constructionPlans = plans.filter(
     (p) => p.targetAudience === 'contractor',
@@ -40,7 +45,7 @@ export default function ManageConstructionPlans() {
     setIsModalOpen(true)
   }
 
-  const openEdit = (plan: SubscriptionPlan) => {
+  const openEdit = (plan: ConstructionPlan) => {
     setEditingPlan(plan)
     setIsModalOpen(true)
   }
