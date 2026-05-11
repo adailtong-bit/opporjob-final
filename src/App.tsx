@@ -74,7 +74,6 @@ import { useLanguageStore } from '@/stores/useLanguageStore'
 import { EvaluationModal } from '@/components/EvaluationModal'
 import { AuthProvider, useAuth } from '@/hooks/use-auth'
 import { usePWA } from '@/hooks/use-pwa'
-import { useLanguageStore } from '@/stores/useLanguageStore'
 import logoImg from '@/assets/corepm-f1280.png'
 import { PushNotificationPrompt } from '@/components/PushNotificationPrompt'
 
