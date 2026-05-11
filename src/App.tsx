@@ -542,22 +542,6 @@ const App = () => {
                     </AdminRoute>
                   }
                 />
-                <Route
-                  path="/admin/plans"
-                  element={
-                    <AdminRoute>
-                      <ManagePlans />
-                    </AdminRoute>
-                  }
-                />
-                <Route
-                  path="/admin/construction-plans"
-                  element={
-                    <AdminRoute>
-                      <ManageConstructionPlans />
-                    </AdminRoute>
-                  }
-                />
                 <Route path="/plans" element={<PlansList />} />
                 <Route path="/plans/:id" element={<PlanDetail />} />
                 <Route path="/post-job" element={<PostJob />} />

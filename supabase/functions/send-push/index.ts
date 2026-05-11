@@ -10,7 +10,7 @@ if (VAPID_PUBLIC_KEY && VAPID_PRIVATE_KEY) {
   webpush.setVapidDetails(
     'mailto:support@opporjob.com',
     VAPID_PUBLIC_KEY,
-    VAPID_PRIVATE_KEY
+    VAPID_PRIVATE_KEY,
   )
 }
 
@@ -23,21 +23,27 @@ Deno.serve(async (req: Request) => {
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-      { global: { headers: { Authorization: req.headers.get('Authorization')! } } }
+      {
+        global: {
+          headers: { Authorization: req.headers.get('Authorization')! },
+        },
+      },
     )
 
-    const { data: { user } } = await supabaseClient.auth.getUser()
+    const {
+      data: { user },
+    } = await supabaseClient.auth.getUser()
     if (!user) throw new Error('Unauthorized')
 
     const payload = await req.json()
-    
+
     const { data: profile } = await supabaseClient
       .from('profiles')
       .select('is_admin')
       .eq('id', user.id)
       .single()
 
-    const isAdmin = profile?.is_admin || false;
+    const isAdmin = profile?.is_admin || false
     let query = supabaseClient.from('push_subscriptions').select('*')
 
     if (payload.userId === 'ALL' && isAdmin) {
@@ -50,9 +56,12 @@ Deno.serve(async (req: Request) => {
     const { data: subscriptions } = await query
 
     if (!subscriptions || subscriptions.length === 0) {
-      return new Response(JSON.stringify({ message: 'No subscriptions found' }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      })
+      return new Response(
+        JSON.stringify({ message: 'No subscriptions found' }),
+        {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        },
+      )
     }
 
     const pushPayload = JSON.stringify({
@@ -70,22 +79,30 @@ Deno.serve(async (req: Request) => {
         endpoint: sub.endpoint,
         keys: {
           auth: sub.auth,
-          p256dh: sub.p256dh
-        }
+          p256dh: sub.p256dh,
+        },
       }
-      return webpush.sendNotification(pushSubscription, pushPayload).catch(err => {
-        console.error('Error sending push to endpoint:', sub.endpoint, err)
-        if (err.statusCode === 410 || err.statusCode === 404) {
-          return supabaseClient.from('push_subscriptions').delete().eq('id', sub.id)
-        }
-      })
+      return webpush
+        .sendNotification(pushSubscription, pushPayload)
+        .catch((err) => {
+          console.error('Error sending push to endpoint:', sub.endpoint, err)
+          if (err.statusCode === 410 || err.statusCode === 404) {
+            return supabaseClient
+              .from('push_subscriptions')
+              .delete()
+              .eq('id', sub.id)
+          }
+        })
     })
 
     await Promise.all(sendPromises)
 
-    return new Response(JSON.stringify({ success: true, count: subscriptions.length }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    })
+    return new Response(
+      JSON.stringify({ success: true, count: subscriptions.length }),
+      {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      },
+    )
   } catch (error: any) {
     return new Response(JSON.stringify({ error: error.message }), {
       status: 400,
