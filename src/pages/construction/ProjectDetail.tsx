@@ -72,6 +72,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover'
+import { ShoppingCart } from 'lucide-react'
 
 export default function ProjectDetail() {
   const { id } = useParams<{ id: string }>()
@@ -280,6 +281,15 @@ export default function ProjectDetail() {
 
         {/* Action Buttons */}
         <div className="absolute right-0 top-4 md:top-auto flex gap-2">
+          <Button
+            asChild
+            variant="default"
+            className="bg-blue-600 hover:bg-blue-700 text-white shadow-sm hidden sm:flex"
+          >
+            <Link to={`/construction/materials?projectId=${project.id}`}>
+              <ShoppingCart className="mr-2 h-4 w-4" /> Nova Compra
+            </Link>
+          </Button>
           <Popover>
             <PopoverTrigger asChild>
               <Button

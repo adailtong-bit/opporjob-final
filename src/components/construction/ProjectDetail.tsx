@@ -51,8 +51,16 @@ import { ProjectQuotes } from '@/components/construction/ProjectQuotes'
 import { ProjectChat } from '@/components/construction/ProjectChat'
 import { ProjectCompliance } from '@/components/construction/ProjectCompliance'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-import { ShieldAlert, Store } from 'lucide-react'
+import { ShieldAlert, Store, ShoppingCart } from 'lucide-react'
 import { useMaterialStore } from '@/stores/useMaterialStore'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { ProjectPurchasing } from '@/components/construction/ProjectPurchasing'
 
 export default function ProjectDetail() {
   const { id } = useParams<{ id: string }>()
@@ -180,6 +188,15 @@ export default function ProjectDetail() {
         {/* Action Buttons */}
         <div className="absolute right-0 top-4 md:top-auto flex gap-2">
           <Button
+            asChild
+            variant="default"
+            className="bg-blue-600 hover:bg-blue-700 text-white shadow-sm hidden sm:flex"
+          >
+            <Link to={`/construction/materials?projectId=${project.id}`}>
+              <ShoppingCart className="mr-2 h-4 w-4" /> Nova Compra
+            </Link>
+          </Button>
+          <Button
             variant="outline"
             size="icon"
             onClick={() => setIsSyncOpen(true)}
@@ -210,6 +227,9 @@ export default function ProjectDetail() {
           <TabsList className="w-full max-w-6xl flex-nowrap justify-start md:justify-center min-w-[900px] mb-8 h-auto p-1">
             <TabsTrigger value="financial" className="flex-1">
               Financeiro
+            </TabsTrigger>
+            <TabsTrigger value="purchasing" className="flex-1">
+              Compras
             </TabsTrigger>
             <TabsTrigger value="stages" className="flex-1">
               {t('proj.detail.schedule')}
@@ -247,6 +267,14 @@ export default function ProjectDetail() {
           className="w-full min-w-0 animate-fade-in"
         >
           <ProjectFinance projectId={project.id} />
+        </TabsContent>
+
+        {/* Purchasing Tab */}
+        <TabsContent
+          value="purchasing"
+          className="w-full min-w-0 animate-fade-in"
+        >
+          <ProjectPurchasing projectId={project.id} />
         </TabsContent>
 
         {/* Compliance Tab */}
