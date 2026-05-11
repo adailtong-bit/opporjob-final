@@ -1,4 +1,4 @@
-const CACHE_NAME = 'opporjob-cache-v5'
+const CACHE_NAME = 'opporjob-cache-v6'
 
 self.addEventListener('install', (event) => {
   self.skipWaiting()
@@ -41,5 +41,56 @@ self.addEventListener('fetch', (event) => {
         return response
       })
       .catch(() => caches.match(event.request)),
+  )
+})
+
+// Push event listener for Push Notifications
+self.addEventListener('push', function (event) {
+  if (event.data) {
+    try {
+      const data = event.data.json()
+      const options = {
+        body: data.body || 'Você tem uma nova notificação.',
+        icon: '/og-image.png',
+        badge: '/og-image.png',
+        data: {
+          url: data.url || '/',
+        },
+      }
+      event.waitUntil(
+        self.registration.showNotification(data.title || 'OPPORJOB', options),
+      )
+    } catch (e) {
+      console.error('Error parsing push data', e)
+    }
+  }
+})
+
+// Notification click listener
+self.addEventListener('notificationclick', function (event) {
+  event.notification.close()
+  const urlToOpen = new URL(
+    event.notification.data.url || '/',
+    self.location.origin,
+  ).href
+
+  event.waitUntil(
+    clients
+      .matchAll({ type: 'window', includeUncontrolled: true })
+      .then((windowClients) => {
+        let matchingClient = null
+        for (let i = 0; i < windowClients.length; i++) {
+          const windowClient = windowClients[i]
+          if (windowClient.url === urlToOpen) {
+            matchingClient = windowClient
+            break
+          }
+        }
+        if (matchingClient) {
+          return matchingClient.focus()
+        } else {
+          return clients.openWindow(urlToOpen)
+        }
+      }),
   )
 })

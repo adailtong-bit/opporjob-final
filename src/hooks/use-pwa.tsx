@@ -1,10 +1,22 @@
 import { useState, useEffect, useCallback } from 'react'
 import { toast } from 'sonner'
+import { supabase } from '@/lib/supabase/client'
 
 interface ShareData {
   title?: string
   text?: string
   url?: string
+}
+
+function urlBase64ToUint8Array(base64String: string) {
+  const padding = '='.repeat((4 - (base64String.length % 4)) % 4)
+  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/')
+  const rawData = window.atob(base64)
+  const outputArray = new Uint8Array(rawData.length)
+  for (let i = 0; i < rawData.length; ++i) {
+    outputArray[i] = rawData.charCodeAt(i)
+  }
+  return outputArray
 }
 
 export function usePWA() {
@@ -13,11 +25,8 @@ export function usePWA() {
 
   useEffect(() => {
     const handleBeforeInstallPrompt = (e: any) => {
-      // Prevent the mini-infobar from appearing on mobile
       e.preventDefault()
-      // Stash the event so it can be triggered later.
       setDeferredPrompt(e)
-      // Update UI to notify the user they can install the PWA
       setIsInstallable(true)
     }
 
@@ -38,9 +47,7 @@ export function usePWA() {
       )
       return
     }
-    // Show the install prompt
     deferredPrompt.prompt()
-    // Wait for the user to respond to the prompt
     const { outcome } = await deferredPrompt.userChoice
     if (outcome === 'accepted') {
       setIsInstallable(false)
@@ -63,7 +70,6 @@ export function usePWA() {
         console.error('Erro ao compartilhar:', err)
       }
     } else {
-      // Fallback
       if (data.url) {
         navigator.clipboard.writeText(data.url)
         toast.success('Link copiado para a área de transferência!')
@@ -95,11 +101,64 @@ export function usePWA() {
     }
   }, [])
 
+  const subscribeToPushNotifications = useCallback(async (userId: string) => {
+    if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+      return { error: 'Push notifications not supported' }
+    }
+
+    const vapidKey = import.meta.env.VITE_VAPID_PUBLIC_KEY
+    if (!vapidKey) {
+      console.warn('VITE_VAPID_PUBLIC_KEY not found. Mocking push sub.')
+      return { success: true, mocked: true }
+    }
+
+    try {
+      const registration = await navigator.serviceWorker.ready
+      let subscription = await registration.pushManager.getSubscription()
+
+      if (!subscription) {
+        const permission = await Notification.requestPermission()
+        if (permission !== 'granted') {
+          return { error: 'Permission denied' }
+        }
+
+        const convertedVapidKey = urlBase64ToUint8Array(vapidKey)
+        subscription = await registration.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: convertedVapidKey,
+        })
+      }
+
+      if (subscription) {
+        const subData = subscription.toJSON()
+        const { error } = await supabase.from('push_subscriptions').upsert(
+          {
+            user_id: userId,
+            endpoint: subData.endpoint!,
+            auth: subData.keys?.auth!,
+            p256dh: subData.keys?.p256dh!,
+          },
+          { onConflict: 'endpoint' },
+        )
+
+        if (error) {
+          console.error('Supabase upsert error:', error)
+          return { error }
+        }
+        return { success: true }
+      }
+    } catch (err) {
+      console.error('Push sub error:', err)
+      return { error: err }
+    }
+  }, [])
+
   return {
     isInstallable,
     installPWA,
     shareContent,
     setBadge,
     clearBadge,
+    subscribeToPushNotifications,
   }
 }

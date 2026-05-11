@@ -71,7 +71,9 @@ import { supabase } from '@/lib/supabase/client'
 import { useLanguageStore } from '@/stores/useLanguageStore'
 import { EvaluationModal } from '@/components/EvaluationModal'
 import { AuthProvider, useAuth } from '@/hooks/use-auth'
+import { usePWA } from '@/hooks/use-pwa'
 import logoImg from '@/assets/corepm-f1280.png'
+import { PushNotificationPrompt } from '@/components/PushNotificationPrompt'
 
 const ScrollToTop = () => {
   const { pathname } = useLocation()
@@ -86,6 +88,7 @@ const ScrollToTop = () => {
 const AuthSync = () => {
   const { user, loading } = useAuth()
   const { setDomainUser } = useAuthStore()
+  const { subscribeToPushNotifications } = usePWA()
 
   useEffect(() => {
     if (!loading) {
@@ -128,6 +131,10 @@ const AuthSync = () => {
               subscriptionTier: isAdmin ? 'business' : 'free',
               planName: isAdmin ? 'Enterprise' : 'Basic',
             })
+
+            if (window.Notification && Notification.permission === 'granted') {
+              subscribeToPushNotifications(user.id)
+            }
           })
       } else {
         setDomainUser(null)
@@ -420,6 +427,7 @@ const App = () => {
         <TooltipProvider>
           <Toaster />
           <Sonner />
+          <PushNotificationPrompt />
           <Routes>
             <Route element={<Layout />}>
               {/* Public/App-Like Routes */}
