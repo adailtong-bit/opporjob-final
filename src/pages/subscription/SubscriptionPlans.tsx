@@ -1,5 +1,6 @@
+import { useEffect } from 'react'
 import { useAuthStore } from '@/stores/useAuthStore'
-import { useAdminPricingStore } from '@/stores/useAdminPricingStore'
+import { useConstructionPlansStore } from '@/stores/useConstructionPlansStore'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -16,35 +17,50 @@ import { useLanguageStore } from '@/stores/useLanguageStore'
 
 export default function SubscriptionPlans() {
   const { user, upgradeSubscription } = useAuthStore()
-  const { plans } = useAdminPricingStore()
+  const { plans, fetchPlans } = useConstructionPlansStore()
   const { toast } = useToast()
   const { formatCurrency, t } = useLanguageStore()
 
+  useEffect(() => {
+    fetchPlans()
+  }, [fetchPlans])
+
   const handleSubscribe = (tierName: string) => {
-    upgradeSubscription('pro')
+    if (upgradeSubscription) {
+      upgradeSubscription('pro')
+    }
     toast({
-      title: t('sub.updated.title'),
-      description: t('sub.updated.desc', { tierName }),
+      title: t('sub.updated.title') || 'Plano Atualizado',
+      description:
+        t('sub.updated.desc', { tierName }) ||
+        `Seu plano foi atualizado para ${tierName}.`,
     })
   }
 
-  // Filter plans based on standardized target audience logic and user roles
+  // Filter plans straight from the real unified database table, avoiding mock conflicts
   const availablePlans = plans.filter((p) => {
     if (!p.active) return false
 
     if (user) {
-      if (user.role === 'executor') {
-        return p.targetAudience === 'executor'
-      } else if (user.role === 'contractor') {
-        return p.targetAudience === 'contractor'
+      if (user.role === 'executor' || user.role === 'contractor') {
+        return (
+          p.targetAudience === 'contractor' ||
+          p.targetAudience === 'executor' ||
+          p.targetAudience === 'both'
+        )
+      } else if (user.role === 'employer' || user.role === 'client') {
+        return (
+          p.targetAudience === 'employer' ||
+          p.targetAudience === 'contractor' ||
+          p.targetAudience === 'both'
+        )
       } else if (user.role === 'partner') {
-        return p.targetAudience === 'advertiser'
+        return p.targetAudience === 'advertiser' || p.targetAudience === 'both'
       } else if (user.role === 'admin') {
         return true
       }
     }
 
-    // Default view for public visitors
     return true
   })
 
@@ -52,10 +68,11 @@ export default function SubscriptionPlans() {
     <div className="space-y-8 max-w-6xl mx-auto py-8 px-4">
       <div className="text-center space-y-4">
         <h1 className="text-4xl font-bold tracking-tight">
-          {t('sub.plans.title')}
+          {t('sub.plans.title') || 'Planos de Assinatura'}
         </h1>
         <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-          {t('sub.plans.subtitle')}
+          {t('sub.plans.subtitle') ||
+            'Escolha o plano ideal que se adapta às suas necessidades.'}
         </p>
       </div>
 
@@ -72,7 +89,7 @@ export default function SubscriptionPlans() {
             {plan.popular && (
               <div className="absolute -top-4 left-0 right-0 flex justify-center">
                 <Badge className="bg-primary text-primary-foreground px-4 py-1 text-sm shadow-sm">
-                  {t('sub.plans.most_popular')}
+                  {t('sub.plans.most_popular') || 'Mais Popular'}
                 </Badge>
               </div>
             )}
@@ -91,14 +108,16 @@ export default function SubscriptionPlans() {
               </CardTitle>
               <div className="flex flex-row flex-wrap items-baseline justify-center gap-1.5 w-full">
                 <span className="text-xl md:text-2xl font-bold tracking-tight break-words max-w-full">
-                  {formatCurrency(plan.price)}
+                  {formatCurrency
+                    ? formatCurrency(plan.price)
+                    : `$${plan.price}`}
                 </span>
                 {plan.price !== 0 && (
                   <span className="text-muted-foreground text-sm font-medium whitespace-nowrap shrink-0">
                     /
                     {plan.billingCycle === 'monthly'
-                      ? t('sub.plans.month')
-                      : t('sub.plans.cycle')}
+                      ? t('sub.plans.month') || 'mês'
+                      : t('sub.plans.cycle') || 'ciclo'}
                   </span>
                 )}
               </div>
@@ -116,6 +135,11 @@ export default function SubscriptionPlans() {
                     </span>
                   </li>
                 ))}
+                {(!plan.features || plan.features.length === 0) && (
+                  <li className="text-sm text-muted-foreground italic text-center w-full">
+                    Recursos básicos inclusos
+                  </li>
+                )}
               </ul>
             </CardContent>
             <CardFooter className="pt-0 mt-auto shrink-0 w-full">
@@ -124,11 +148,16 @@ export default function SubscriptionPlans() {
                 variant={plan.popular ? 'default' : 'outline'}
                 onClick={() => handleSubscribe(plan.name)}
               >
-                {t('sub.plans.subscribe')}
+                {t('sub.plans.subscribe') || 'Assinar Agora'}
               </Button>
             </CardFooter>
           </Card>
         ))}
+        {availablePlans.length === 0 && (
+          <div className="col-span-full py-16 text-center text-muted-foreground border-2 border-dashed rounded-xl">
+            Nenhum plano configurado no sistema no momento.
+          </div>
+        )}
       </div>
     </div>
   )

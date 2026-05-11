@@ -64,6 +64,8 @@ export default function ManageConstructionPlans() {
       contractor: 'Profissional',
       employer: 'Cliente',
       both: 'Ambos',
+      advertiser: 'Anunciante',
+      executor: 'Executor',
     }
     return labels[val] || val
   }
@@ -130,14 +132,26 @@ export default function ManageConstructionPlans() {
                     <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
                       {getAudienceLabel(plan.targetAudience)}
                     </span>
+                    {plan.popular && (
+                      <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-primary text-primary-foreground">
+                        Popular
+                      </span>
+                    )}
                   </TableCell>
                   <TableCell>
                     <div className="font-semibold text-[15px]">
-                      {formatCurrency(plan.price)}
+                      {formatCurrency
+                        ? formatCurrency(plan.price)
+                        : `$${plan.price}`}
                     </div>
                     <div className="text-xs text-muted-foreground capitalize">
                       {getCycleLabel(plan.billingCycle)}
                     </div>
+                    {plan.validityDays && (
+                      <div className="text-xs text-muted-foreground">
+                        Validade: {plan.validityDays} dias
+                      </div>
+                    )}
                   </TableCell>
                   <TableCell>
                     <div className="text-sm">

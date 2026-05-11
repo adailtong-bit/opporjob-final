@@ -18,6 +18,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { Switch } from '@/components/ui/switch'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
   useConstructionPlansStore,
   ConstructionPlan,
@@ -45,6 +47,14 @@ export function ConstructionPlanFormModal({
     complexity: 'Low',
     features: [],
     targetAudience: 'contractor',
+    validityDays: 30,
+    pushEnabled: false,
+    priorityWeight: 1,
+    earlyAccessHours: 0,
+    visibilityBoost: 1,
+    skillMatchingRule: 'strict',
+    skillWeight: 1,
+    popular: false,
   })
 
   const [newFeature, setNewFeature] = useState('')
@@ -63,6 +73,14 @@ export function ConstructionPlanFormModal({
         complexity: 'Low',
         features: [],
         targetAudience: 'contractor',
+        validityDays: 30,
+        pushEnabled: false,
+        priorityWeight: 1,
+        earlyAccessHours: 0,
+        visibilityBoost: 1,
+        skillMatchingRule: 'flexible',
+        skillWeight: 1,
+        popular: false,
       })
     }
   }, [planToEdit, open])
@@ -97,193 +115,407 @@ export function ConstructionPlanFormModal({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col p-0">
-        <DialogHeader className="p-6 pb-4 border-b">
-          <DialogTitle>
-            {planToEdit ? 'Editar Plano' : 'Novo Plano'}
-          </DialogTitle>
-        </DialogHeader>
-        <ScrollArea className="flex-1 p-6">
-          <div className="space-y-5">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Nome do Plano</Label>
-                <Input
-                  value={formData.name}
-                  onChange={(e) =>
-                    setFormData({ ...formData, name: e.target.value })
-                  }
-                  placeholder="Ex: Plano Profissional"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>Público Alvo</Label>
-                <Select
-                  value={formData.targetAudience}
-                  onValueChange={(v) =>
-                    setFormData({ ...formData, targetAudience: v })
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="contractor">
-                      Profissional / Contratado
-                    </SelectItem>
-                    <SelectItem value="employer">
-                      Cliente / Contratante
-                    </SelectItem>
-                    <SelectItem value="both">Ambos</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
+      <DialogContent className="max-w-3xl h-[85vh] p-0 flex flex-col overflow-hidden">
+        <div className="px-6 py-4 border-b">
+          <DialogHeader>
+            <DialogTitle>
+              {planToEdit ? 'Editar Plano Unificado' : 'Novo Plano Unificado'}
+            </DialogTitle>
+          </DialogHeader>
+        </div>
 
-            <div className="space-y-2">
-              <Label>Descrição</Label>
-              <Textarea
-                rows={2}
-                value={formData.description}
-                onChange={(e) =>
-                  setFormData({ ...formData, description: e.target.value })
-                }
-                placeholder="Descrição resumida do que o plano oferece."
-              />
-            </div>
+        <Tabs
+          defaultValue="basic"
+          className="flex-1 flex flex-col overflow-hidden"
+        >
+          <div className="px-6 pt-4">
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="basic">Dados Básicos</TabsTrigger>
+              <TabsTrigger value="rules">Regras e Prioridades</TabsTrigger>
+              <TabsTrigger value="notifications">Notificações</TabsTrigger>
+            </TabsList>
+          </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <Label>Preço (Valor Base)</Label>
-                <Input
-                  type="number"
-                  step="0.01"
-                  value={formData.price}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      price: parseFloat(e.target.value) || 0,
-                    })
-                  }
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>Ciclo de Cobrança</Label>
-                <Select
-                  value={formData.billingCycle}
-                  onValueChange={(v) =>
-                    setFormData({ ...formData, billingCycle: v })
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="monthly">Mensal</SelectItem>
-                    <SelectItem value="quarterly">Trimestral</SelectItem>
-                    <SelectItem value="semi-annually">Semestral</SelectItem>
-                    <SelectItem value="yearly">Anual</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label>Limite de Projetos</Label>
-                <Input
-                  type="number"
-                  value={formData.maxProjects}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      maxProjects: parseInt(e.target.value) || 0,
-                    })
-                  }
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Porte da Obra</Label>
-                <Select
-                  value={formData.workSize}
-                  onValueChange={(v) =>
-                    setFormData({ ...formData, workSize: v })
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Pequena">Pequena</SelectItem>
-                    <SelectItem value="Media">Média</SelectItem>
-                    <SelectItem value="Grande">Grande</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label>Complexidade</Label>
-                <Select
-                  value={formData.complexity}
-                  onValueChange={(v) =>
-                    setFormData({ ...formData, complexity: v })
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Low">Baixa</SelectItem>
-                    <SelectItem value="Medium">Média</SelectItem>
-                    <SelectItem value="High">Alta</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            <div className="space-y-3 pt-4 border-t">
-              <Label>Funcionalidades Inclusas</Label>
-              <div className="flex gap-2">
-                <Input
-                  value={newFeature}
-                  onChange={(e) => setNewFeature(e.target.value)}
-                  placeholder="Ex: Emissão de faturas ilimitada"
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      e.preventDefault()
-                      addFeature()
+          <ScrollArea className="flex-1 p-6 h-full">
+            <TabsContent value="basic" className="space-y-6 mt-0">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Nome do Plano</Label>
+                  <Input
+                    value={formData.name}
+                    onChange={(e) =>
+                      setFormData({ ...formData, name: e.target.value })
                     }
-                  }}
-                />
-                <Button type="button" variant="secondary" onClick={addFeature}>
-                  <Plus className="h-4 w-4 mr-2" /> Adicionar
-                </Button>
-              </div>
-              <div className="space-y-2 mt-4">
-                {formData.features?.map((feat, idx) => (
-                  <div
-                    key={idx}
-                    className="flex items-center justify-between bg-muted/50 p-2.5 rounded-md text-sm border group"
+                    placeholder="Ex: Profissional / Gold"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Público Alvo</Label>
+                  <Select
+                    value={formData.targetAudience}
+                    onValueChange={(v) =>
+                      setFormData({ ...formData, targetAudience: v })
+                    }
                   >
-                    <span>{feat}</span>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-6 w-6 text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
-                      onClick={() => removeFeature(idx)}
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="contractor">
+                        Profissional / Executor
+                      </SelectItem>
+                      <SelectItem value="employer">
+                        Cliente / Contratante
+                      </SelectItem>
+                      <SelectItem value="advertiser">
+                        Anunciante (Advertiser)
+                      </SelectItem>
+                      <SelectItem value="both">Global / Todos</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Descrição</Label>
+                <Textarea
+                  rows={2}
+                  value={formData.description}
+                  onChange={(e) =>
+                    setFormData({ ...formData, description: e.target.value })
+                  }
+                  placeholder="Descrição resumida do que o plano oferece."
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Label>Preço (Valor Base Local)</Label>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    value={formData.price}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        price: parseFloat(e.target.value) || 0,
+                      })
+                    }
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Ciclo de Cobrança</Label>
+                  <Select
+                    value={formData.billingCycle}
+                    onValueChange={(v) =>
+                      setFormData({ ...formData, billingCycle: v })
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="monthly">Mensal</SelectItem>
+                      <SelectItem value="quarterly">Trimestral</SelectItem>
+                      <SelectItem value="semi-annually">Semestral</SelectItem>
+                      <SelectItem value="yearly">Anual</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Validade (Dias)</Label>
+                  <Input
+                    type="number"
+                    value={formData.validityDays}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        validityDays: parseInt(e.target.value) || 30,
+                      })
+                    }
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Label>Limite de Projetos</Label>
+                  <Input
+                    type="number"
+                    value={formData.maxProjects}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        maxProjects: parseInt(e.target.value) || 0,
+                      })
+                    }
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Porte da Obra</Label>
+                  <Select
+                    value={formData.workSize}
+                    onValueChange={(v) =>
+                      setFormData({ ...formData, workSize: v })
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Pequena">Pequena</SelectItem>
+                      <SelectItem value="Media">Média</SelectItem>
+                      <SelectItem value="Grande">Grande</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Complexidade</Label>
+                  <Select
+                    value={formData.complexity}
+                    onValueChange={(v) =>
+                      setFormData({ ...formData, complexity: v })
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Low">Baixa</SelectItem>
+                      <SelectItem value="Medium">Média</SelectItem>
+                      <SelectItem value="High">Alta</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="space-y-3 pt-4 border-t">
+                <Label>Funcionalidades Inclusas</Label>
+                <div className="flex gap-2">
+                  <Input
+                    value={newFeature}
+                    onChange={(e) => setNewFeature(e.target.value)}
+                    placeholder="Ex: Emissão de faturas ilimitada"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault()
+                        addFeature()
+                      }
+                    }}
+                  />
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    onClick={addFeature}
+                  >
+                    <Plus className="h-4 w-4 mr-2" /> Adicionar
+                  </Button>
+                </div>
+                <div className="space-y-2 mt-4">
+                  {formData.features?.map((feat, idx) => (
+                    <div
+                      key={idx}
+                      className="flex items-center justify-between bg-muted/50 p-2.5 rounded-md text-sm border group"
                     >
-                      <X className="h-4 w-4" />
-                    </Button>
+                      <span>{feat}</span>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6 text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
+                        onClick={() => removeFeature(idx)}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
+                  {(!formData.features || formData.features.length === 0) && (
+                    <div className="text-sm text-muted-foreground text-center py-4 bg-muted/30 border border-dashed rounded-md">
+                      Nenhuma funcionalidade adicionada.
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex gap-6 pt-4 border-t">
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    id="popular"
+                    checked={formData.popular}
+                    onCheckedChange={(checked) =>
+                      setFormData({ ...formData, popular: checked })
+                    }
+                  />
+                  <Label htmlFor="popular" className="cursor-pointer">
+                    Destaque "Popular"
+                  </Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    id="active"
+                    checked={formData.active !== false}
+                    onCheckedChange={(checked) =>
+                      setFormData({ ...formData, active: checked })
+                    }
+                  />
+                  <Label htmlFor="active" className="cursor-pointer">
+                    Plano Ativo na Loja
+                  </Label>
+                </div>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="rules" className="space-y-6 mt-0">
+              <div className="bg-muted/30 p-4 rounded-lg border">
+                <h3 className="text-lg font-medium mb-1">
+                  Regras de Acesso e Prioridade
+                </h3>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Configure os privilégios baseados no perfil.
+                </p>
+
+                <div className="space-y-6">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>Peso de Prioridade (Ex: 1 a 100)</Label>
+                      <Input
+                        type="number"
+                        value={formData.priorityWeight}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            priorityWeight: Number(e.target.value),
+                          })
+                        }
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Acesso Antecipado (Horas)</Label>
+                      <Input
+                        type="number"
+                        value={formData.earlyAccessHours}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            earlyAccessHours: Number(e.target.value),
+                          })
+                        }
+                      />
+                    </div>
                   </div>
-                ))}
-                {(!formData.features || formData.features.length === 0) && (
-                  <div className="text-sm text-muted-foreground text-center py-4 bg-muted/30 border border-dashed rounded-md">
-                    Nenhuma funcionalidade adicionada.
+
+                  <div className="space-y-2 border-t pt-4">
+                    <Label className="text-base">
+                      Lógica de Match por Habilidade
+                    </Label>
+                    <Select
+                      value={formData.skillMatchingRule || 'flexible'}
+                      onValueChange={(val) =>
+                        setFormData({ ...formData, skillMatchingRule: val })
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="strict">
+                          Estrito (Exige match exato)
+                        </SelectItem>
+                        <SelectItem value="flexible">
+                          Flexível (Permite variação)
+                        </SelectItem>
+                        <SelectItem value="all">
+                          Acesso Total (Ignora bloqueios)
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Peso da Habilidade [1 a 10]</Label>
+                    <Input
+                      type="number"
+                      min={1}
+                      max={10}
+                      value={formData.skillWeight}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          skillWeight: Number(e.target.value),
+                        })
+                      }
+                    />
+                  </div>
+
+                  <div className="space-y-2 border-t pt-4">
+                    <Label>Boost de Visibilidade dos Anúncios</Label>
+                    <Input
+                      type="number"
+                      value={formData.visibilityBoost}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          visibilityBoost: Number(e.target.value),
+                        })
+                      }
+                    />
+                  </div>
+                </div>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="notifications" className="space-y-6 mt-0">
+              <div className="bg-muted/30 p-4 rounded-lg border space-y-4">
+                <h3 className="text-lg font-medium mb-1">
+                  Comunicações Automatizadas
+                </h3>
+                <div className="flex items-center space-x-2 border p-3 rounded-lg bg-background">
+                  <Switch
+                    id="pushEnabled"
+                    checked={formData.pushEnabled}
+                    onCheckedChange={(checked) =>
+                      setFormData({ ...formData, pushEnabled: checked })
+                    }
+                  />
+                  <Label htmlFor="pushEnabled" className="cursor-pointer">
+                    Habilitar Notificações Push Especiais
+                  </Label>
+                </div>
+
+                {formData.pushEnabled && (
+                  <div className="space-y-4 pt-2">
+                    <div className="space-y-2">
+                      <Label>Antecedência da Notificação (Horas)</Label>
+                      <Input
+                        type="number"
+                        value={formData.pushLeadTimeHours}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            pushLeadTimeHours: Number(e.target.value),
+                          })
+                        }
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Texto da Notificação (Template)</Label>
+                      <Textarea
+                        value={formData.pushMessageText}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            pushMessageText: e.target.value,
+                          })
+                        }
+                        placeholder="Ex: Aproveite seu acesso antecipado às vagas recém-publicadas!"
+                        className="min-h-[100px]"
+                      />
+                    </div>
                   </div>
                 )}
               </div>
-            </div>
-          </div>
-        </ScrollArea>
+            </TabsContent>
+          </ScrollArea>
+        </Tabs>
         <DialogFooter className="p-6 pt-4 border-t bg-muted/20">
           <Button variant="outline" onClick={onClose}>
             Cancelar

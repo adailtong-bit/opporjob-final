@@ -42,7 +42,6 @@ import ManageCategories from '@/pages/admin/ManageCategories'
 import ManageCategoryDetail from '@/pages/admin/ManageCategoryDetail'
 import ManageAds from '@/pages/admin/ManageAds'
 import ManageMarketing from '@/pages/admin/ManageMarketing'
-import ManagePlans from '@/pages/admin/ManagePlans'
 import ManageConstructionPlans from '@/pages/admin/ManageConstructionPlans'
 import ConstructionDashboard from '@/pages/construction/ConstructionDashboard'
 import ProjectDetail from '@/pages/construction/ProjectDetail'
@@ -484,36 +483,33 @@ const App = () => {
                   path="/partner/dashboard"
                   element={<PartnerDashboard />}
                 />
-
                 <Route path="/profile/:id" element={<UserProfile />} />
-
                 <Route path="/my-jobs" element={<MyJobs />} />
-
                 {/* Admin Routes strictly protected */}
                 <Route
-                  path="/admin/users"
+                  path="/admin/marketing"
                   element={
                     <AdminRoute>
-                      <ManageUsers />
+                      <ManageMarketing />
                     </AdminRoute>
                   }
                 />
                 <Route
-                  path="/admin/audit"
+                  path="/admin/plans"
                   element={
                     <AdminRoute>
-                      <AuditLogs />
+                      <Navigate to="/admin/construction-plans" replace />
                     </AdminRoute>
                   }
                 />
                 <Route
-                  path="/admin/categories"
+                  path="/admin/construction-plans"
                   element={
                     <AdminRoute>
-                      <ManageCategories />
+                      <ManageConstructionPlans />
                     </AdminRoute>
                   }
-                />
+                />{' '}
                 <Route
                   path="/admin/categories/:id"
                   element={
@@ -562,16 +558,12 @@ const App = () => {
                     </AdminRoute>
                   }
                 />
-
                 <Route path="/plans" element={<PlansList />} />
                 <Route path="/plans/:id" element={<PlanDetail />} />
-
                 <Route path="/post-job" element={<PostJob />} />
                 <Route path="/disputes/new/:id" element={<Dispute />} />
-
                 {/* Approvals Workflow */}
                 <Route path="/approvals" element={<ApprovalDashboard />} />
-
                 {/* Construction Management Routes */}
                 <Route
                   path="/construction/dashboard"
@@ -623,18 +615,15 @@ const App = () => {
                   path="/construction/checkout/:planId"
                   element={<ConstructionCheckout />}
                 />
-
                 {/* Training & Gamification Routes */}
                 <Route path="/training" element={<TrainingCenter />} />
                 <Route path="/leaderboard" element={<Leaderboard />} />
-
                 {/* Payment Routes */}
                 <Route
                   path="/payment/checkout/:jobId/:bidId"
                   element={<PaymentCheckout />}
                 />
                 <Route path="/payment/success" element={<PaymentSuccess />} />
-
                 {/* Finance Routes */}
                 <Route path="/subscription" element={<SubscriptionPlans />} />
                 <Route path="/credits" element={<CreditsStore />} />
@@ -644,14 +633,12 @@ const App = () => {
                   path="/finance/accounting"
                   element={<AccountingExport />}
                 />
-
                 {/* Common Routes */}
                 <Route path="/documents" element={<Documents />} />
                 <Route path="/reports" element={<Reports />} />
                 <Route path="/team" element={<Team />} />
                 <Route path="/settings" element={<Settings />} />
                 <Route path="/testing" element={<TestingHub />} />
-
                 <Route path="/messages" element={<Messages />} />
               </Route>
             </Route>
