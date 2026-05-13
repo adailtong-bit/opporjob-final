@@ -80,24 +80,34 @@ export function usePWA() {
   }, [])
 
   const setBadge = useCallback(async (count: number) => {
-    if ('setAppBadge' in navigator) {
-      try {
+    try {
+      if ('setAppBadge' in navigator) {
         await (navigator as any).setAppBadge(count)
-      } catch (err) {
-        console.error('Erro ao configurar badge:', err)
+        toast.success(`Badge de notificação definido para ${count}`)
+      } else {
+        toast.error(
+          'Badging API não suportada nativamente neste dispositivo/navegador. Verifique se o PWA está instalado.',
+        )
       }
-    } else {
-      toast.error('Badging API não é suportada pelo seu navegador.')
+    } catch (err: any) {
+      console.error('Erro ao configurar badge:', err)
+      toast.error(`Erro ao configurar badge: ${err.message || 'Não suportado'}`)
     }
   }, [])
 
   const clearBadge = useCallback(async () => {
-    if ('clearAppBadge' in navigator) {
-      try {
+    try {
+      if ('clearAppBadge' in navigator) {
         await (navigator as any).clearAppBadge()
-      } catch (err) {
-        console.error('Erro ao limpar badge:', err)
+        toast.success('Badge de notificação limpo com sucesso')
+      } else {
+        toast.error(
+          'Badging API não suportada nativamente neste dispositivo/navegador. Verifique se o PWA está instalado.',
+        )
       }
+    } catch (err: any) {
+      console.error('Erro ao limpar badge:', err)
+      toast.error(`Erro ao limpar badge: ${err.message || 'Não suportado'}`)
     }
   }, [])
 
