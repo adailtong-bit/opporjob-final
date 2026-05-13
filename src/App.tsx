@@ -240,8 +240,24 @@ const App = () => {
 
     // --- PWA Enhancements (Offline, Badging, Splash Screen, Native Icons) ---
     // Using a version cache buster to force mobile OS to discard old gray icons
-    const cacheBuster = '?v=5'
+    const cacheBuster = '?v=6'
     const cacheBustedLogoUrl = absoluteLogoUrl + cacheBuster
+
+    // Remove any Skip-injected favicons
+    document
+      .querySelectorAll('link[rel="icon"], link[rel="shortcut icon"]')
+      .forEach((el) => {
+        const href = el.getAttribute('href')
+        if (
+          href &&
+          (href.includes('goskip') ||
+            href.includes('skip') ||
+            href === '/vite.svg' ||
+            href === '/favicon.ico')
+        ) {
+          el.remove()
+        }
+      })
 
     // Register Service Worker for Offline Mode
     if ('serviceWorker' in navigator) {
