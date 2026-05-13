@@ -2,12 +2,15 @@ import { Link } from 'react-router-dom'
 import { Tag, Wrench, Briefcase, Key, Gift } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
+import { useLanguageStore } from '@/stores/useLanguageStore'
 
 export function CategoryTiles() {
+  const { t } = useLanguageStore()
+
   const tiles = [
     {
       id: 'desapego',
-      label: 'Desapego',
+      label: t('home.tiles.desapego') || 'Sale',
       icon: Tag,
       path: '/find-jobs?type=product',
       color: 'text-green-600',
@@ -17,7 +20,7 @@ export function CategoryTiles() {
     },
     {
       id: 'doacao',
-      label: 'Doação',
+      label: t('category.donation'),
       icon: Gift,
       path: '/find-jobs?type=community',
       color: 'text-rose-500',
@@ -27,7 +30,7 @@ export function CategoryTiles() {
     },
     {
       id: 'jobs',
-      label: 'Vagas',
+      label: t('home.tiles.jobs') || 'Jobs',
       icon: Briefcase,
       path: '/find-jobs?type=job',
       color: 'text-orange-600',
@@ -37,7 +40,7 @@ export function CategoryTiles() {
     },
     {
       id: 'services',
-      label: 'Serviços',
+      label: t('sidebar.services'),
       icon: Wrench,
       path: '/services',
       color: 'text-blue-600',
@@ -47,7 +50,7 @@ export function CategoryTiles() {
     },
     {
       id: 'rentals',
-      label: 'Aluguéis',
+      label: t('category.rental'),
       icon: Key,
       path: '/find-jobs?type=rental',
       color: 'text-purple-600',

@@ -977,6 +977,48 @@ export const translations: Translations = {
     'admin.categories.add_title': 'Adicionar Categoria',
     'admin.categories.add_desc': 'Crie uma nova categoria principal.',
     'admin.categories.placeholder': 'Nome da categoria',
+    'admin.categories.add_success': 'Categoria adicionada com sucesso',
+    'admin.categories.delete_success': 'Categoria removida com sucesso',
+    'admin.categories.subcats_count': 'Qtd. Subcategorias',
+    'admin.categories.subcats': 'subcategoria(s)',
+    'admin.categories.delete_title': 'Excluir categoria?',
+    'admin.categories.delete_desc':
+      'Esta ação removerá a categoria e todas as suas subcategorias associadas. Esta ação não pode ser desfeita.',
+    'admin.categories.empty': 'Nenhuma categoria encontrada.',
+    'admin.categories.not_found': 'Categoria não encontrada',
+    'admin.categories.back': 'Voltar para Categorias',
+    'admin.categories.name_empty': 'O nome da categoria não pode ser vazio',
+    'admin.categories.update_success': 'Categoria atualizada com sucesso',
+    'admin.subcat.name_empty': 'O nome da subcategoria não pode ser vazio',
+    'admin.subcat.add_success': 'Subcategoria adicionada',
+    'admin.subcat.update_success': 'Subcategoria atualizada',
+    'admin.subcat.delete_success': 'Subcategoria removida',
+    'admin.categories.edit_title': 'Editar Categoria',
+    'admin.categories.managing': 'Gerenciando:',
+    'admin.categories.details_title': 'Detalhes da Categoria',
+    'admin.categories.details_desc':
+      'Altere as informações principais desta categoria.',
+    'admin.categories.name_label': 'Nome da Categoria',
+    'admin.categories.save': 'Salvar Alterações',
+    'admin.categories.subcats_title': 'Subcategorias',
+    'admin.categories.subcats_desc':
+      'Gerencie a lista de serviços ou especialidades desta categoria.',
+    'admin.categories.add_subcat': 'Adicionar Subcategoria',
+    'admin.categories.subcat_name': 'Nome da Subcategoria',
+    'admin.categories.no_subcats':
+      'Nenhuma subcategoria cadastrada para esta categoria.',
+    'admin.categories.new_subcat_title': 'Nova Subcategoria',
+    'admin.categories.new_subcat_desc':
+      'Adicione uma nova opção sob a categoria.',
+    'admin.categories.name': 'Nome',
+    'admin.categories.edit_subcat_title': 'Editar Subcategoria',
+    'admin.categories.edit_subcat_desc':
+      'Modifique o nome da subcategoria selecionada.',
+    'admin.categories.delete_sub_title': 'Você tem certeza?',
+    'admin.categories.delete_sub_desc':
+      'Isso excluirá a subcategoria permanentemente. Esta ação não pode ser desfeita.',
+    'home.tiles.desapego': 'Desapego',
+    'home.tiles.jobs': 'Vagas',
 
     'admin.plans.title': 'Gestão de Planos',
     'admin.plans.desc':
@@ -2128,6 +2170,47 @@ export const translations: Translations = {
     'admin.categories.add_title': 'Add Category',
     'admin.categories.add_desc': 'Create a new main category.',
     'admin.categories.placeholder': 'Category name',
+    'admin.categories.add_success': 'Category added successfully',
+    'admin.categories.delete_success': 'Category removed successfully',
+    'admin.categories.subcats_count': 'Subcategories Count',
+    'admin.categories.subcats': 'subcategory(ies)',
+    'admin.categories.delete_title': 'Delete category?',
+    'admin.categories.delete_desc':
+      'This will remove the category and all associated subcategories. This action cannot be undone.',
+    'admin.categories.empty': 'No categories found.',
+    'admin.categories.not_found': 'Category not found',
+    'admin.categories.back': 'Back to Categories',
+    'admin.categories.name_empty': 'Category name cannot be empty',
+    'admin.categories.update_success': 'Category updated successfully',
+    'admin.subcat.name_empty': 'Subcategory name cannot be empty',
+    'admin.subcat.add_success': 'Subcategory added',
+    'admin.subcat.update_success': 'Subcategory updated',
+    'admin.subcat.delete_success': 'Subcategory removed',
+    'admin.categories.edit_title': 'Edit Category',
+    'admin.categories.managing': 'Managing:',
+    'admin.categories.details_title': 'Category Details',
+    'admin.categories.details_desc':
+      'Change the main information of this category.',
+    'admin.categories.name_label': 'Category Name',
+    'admin.categories.save': 'Save Changes',
+    'admin.categories.subcats_title': 'Subcategories',
+    'admin.categories.subcats_desc':
+      'Manage the list of services or specialties of this category.',
+    'admin.categories.add_subcat': 'Add Subcategory',
+    'admin.categories.subcat_name': 'Subcategory Name',
+    'admin.categories.no_subcats':
+      'No subcategories registered for this category.',
+    'admin.categories.new_subcat_title': 'New Subcategory',
+    'admin.categories.new_subcat_desc': 'Add a new option under the category.',
+    'admin.categories.name': 'Name',
+    'admin.categories.edit_subcat_title': 'Edit Subcategory',
+    'admin.categories.edit_subcat_desc':
+      'Modify the selected subcategory name.',
+    'admin.categories.delete_sub_title': 'Are you sure?',
+    'admin.categories.delete_sub_desc':
+      'This will permanently delete the subcategory. This action cannot be undone.',
+    'home.tiles.desapego': 'Clearance',
+    'home.tiles.jobs': 'Jobs',
 
     'admin.plans.title': 'Plan Management',
     'admin.plans.desc':
@@ -3186,6 +3269,50 @@ export const translations: Translations = {
     'admin.categories.add_title': 'Añadir Categoría',
     'admin.categories.add_desc': 'Cree una nueva categoría principal.',
     'admin.categories.placeholder': 'Nombre de la categoría',
+    'admin.categories.add_success': 'Categoría añadida con éxito',
+    'admin.categories.delete_success': 'Categoría eliminada con éxito',
+    'admin.categories.subcats_count': 'Cant. Subcategorías',
+    'admin.categories.subcats': 'subcategoría(s)',
+    'admin.categories.delete_title': '¿Eliminar categoría?',
+    'admin.categories.delete_desc':
+      'Esta acción eliminará la categoría y todas sus subcategorías asociadas. Esta acción no se puede deshacer.',
+    'admin.categories.empty': 'No se encontraron categorías.',
+    'admin.categories.not_found': 'Categoría no encontrada',
+    'admin.categories.back': 'Volver a Categorías',
+    'admin.categories.name_empty':
+      'El nombre de la categoría no puede estar vacío',
+    'admin.categories.update_success': 'Categoría actualizada con éxito',
+    'admin.subcat.name_empty':
+      'El nombre de la subcategoría no puede estar vacío',
+    'admin.subcat.add_success': 'Subcategoría añadida',
+    'admin.subcat.update_success': 'Subcategoría actualizada',
+    'admin.subcat.delete_success': 'Subcategoría eliminada',
+    'admin.categories.edit_title': 'Editar Categoría',
+    'admin.categories.managing': 'Gestionando:',
+    'admin.categories.details_title': 'Detalles de la Categoría',
+    'admin.categories.details_desc':
+      'Cambie la información principal de esta categoría.',
+    'admin.categories.name_label': 'Nombre de la Categoría',
+    'admin.categories.save': 'Guardar Cambios',
+    'admin.categories.subcats_title': 'Subcategorías',
+    'admin.categories.subcats_desc':
+      'Gestione la lista de servicios o especialidades de esta categoría.',
+    'admin.categories.add_subcat': 'Añadir Subcategoría',
+    'admin.categories.subcat_name': 'Nombre de la Subcategoría',
+    'admin.categories.no_subcats':
+      'Ninguna subcategoría registrada para esta categoría.',
+    'admin.categories.new_subcat_title': 'Nueva Subcategoría',
+    'admin.categories.new_subcat_desc':
+      'Añada una nueva opción bajo la categoría.',
+    'admin.categories.name': 'Nombre',
+    'admin.categories.edit_subcat_title': 'Editar Subcategoría',
+    'admin.categories.edit_subcat_desc':
+      'Modifique el nombre de la subcategoría seleccionada.',
+    'admin.categories.delete_sub_title': '¿Está seguro?',
+    'admin.categories.delete_sub_desc':
+      'Esto eliminará permanentemente la subcategoría. Esta acción no se puede deshacer.',
+    'home.tiles.desapego': 'Venta',
+    'home.tiles.jobs': 'Vacantes',
 
     'admin.plans.title': 'Gestión de Planes',
     'admin.plans.desc':

@@ -59,26 +59,26 @@ export default function ManageCategories() {
     addCategory(newCategory.trim(), newType)
     setNewCategory('')
     setNewType('job')
-    toast({ title: 'Categoria adicionada com sucesso' })
+    toast({ title: t('admin.categories.add_success') })
   }
 
   const handleDelete = (id: string) => {
     removeCategory(id)
-    toast({ title: 'Categoria removida com sucesso' })
+    toast({ title: t('admin.categories.delete_success') })
   }
 
   const getTypeLabel = (type: CategoryType) => {
     switch (type) {
       case 'job':
-        return 'Serviços/Vagas'
+        return t('post.type.job.label')
       case 'marketplace':
-        return 'Vendas'
+        return t('post.type.product.label')
       case 'rental':
-        return 'Locações'
+        return t('post.type.rental.label')
       case 'donation':
-        return 'Doação'
+        return t('category.donation')
       default:
-        return 'Outros'
+        return t('role.other')
     }
   }
 
@@ -112,18 +112,24 @@ export default function ManageCategories() {
               onValueChange={(val: CategoryType) => setNewType(val)}
             >
               <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Tipo" />
+                <SelectValue placeholder={t('proj.approvals.type')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="job">Serviços/Vagas</SelectItem>
-                <SelectItem value="marketplace">Vendas</SelectItem>
-                <SelectItem value="rental">Locações</SelectItem>
-                <SelectItem value="donation">Doação</SelectItem>
-                <SelectItem value="other">Outros</SelectItem>
+                <SelectItem value="job">{t('post.type.job.label')}</SelectItem>
+                <SelectItem value="marketplace">
+                  {t('post.type.product.label')}
+                </SelectItem>
+                <SelectItem value="rental">
+                  {t('post.type.rental.label')}
+                </SelectItem>
+                <SelectItem value="donation">
+                  {t('category.donation')}
+                </SelectItem>
+                <SelectItem value="other">{t('role.other')}</SelectItem>
               </SelectContent>
             </Select>
             <Button onClick={handleAdd}>
-              <Plus className="mr-2 h-4 w-4" /> Adicionar
+              <Plus className="mr-2 h-4 w-4" /> {t('add')}
             </Button>
           </div>
         </CardContent>
@@ -134,11 +140,11 @@ export default function ManageCategories() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Categoria</TableHead>
-                <TableHead>Tipo</TableHead>
+                <TableHead>{t('market.category')}</TableHead>
+                <TableHead>{t('proj.approvals.type')}</TableHead>
                 <TableHead>Slug</TableHead>
-                <TableHead>Qtd. Subcategorias</TableHead>
-                <TableHead className="text-right">Ações</TableHead>
+                <TableHead>{t('admin.categories.subcats_count')}</TableHead>
+                <TableHead className="text-right">{t('actions')}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -160,13 +166,14 @@ export default function ManageCategories() {
                     </span>
                   </TableCell>
                   <TableCell>
-                    {category.subCategories.length} subcategoria(s)
+                    {category.subCategories.length}{' '}
+                    {t('admin.categories.subcats')}
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
                       <Button variant="outline" size="sm" asChild>
                         <Link to={`/admin/categories/${category.id}`}>
-                          <Edit2 className="mr-2 h-4 w-4" /> Editar Detalhes
+                          <Edit2 className="mr-2 h-4 w-4" /> {t('edit')}
                         </Link>
                       </Button>
                       <AlertDialog>
@@ -182,21 +189,19 @@ export default function ManageCategories() {
                         <AlertDialogContent>
                           <AlertDialogHeader>
                             <AlertDialogTitle>
-                              Excluir categoria?
+                              {t('admin.categories.delete_title')}
                             </AlertDialogTitle>
                             <AlertDialogDescription>
-                              Esta ação removerá a categoria "{category.name}" e
-                              todas as suas subcategorias associadas. Esta ação
-                              não pode ser desfeita.
+                              {t('admin.categories.delete_desc')}
                             </AlertDialogDescription>
                           </AlertDialogHeader>
                           <AlertDialogFooter>
-                            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                            <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
                             <AlertDialogAction
                               onClick={() => handleDelete(category.id)}
                               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                             >
-                              Excluir
+                              {t('delete')}
                             </AlertDialogAction>
                           </AlertDialogFooter>
                         </AlertDialogContent>
@@ -211,7 +216,7 @@ export default function ManageCategories() {
                     colSpan={5}
                     className="text-center py-8 text-muted-foreground"
                   >
-                    Nenhuma categoria encontrada.
+                    {t('admin.categories.empty')}
                   </TableCell>
                 </TableRow>
               )}

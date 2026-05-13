@@ -79,9 +79,11 @@ export default function ManageCategoryDetail() {
   if (!category) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[50vh] space-y-4">
-        <h2 className="text-2xl font-bold">Categoria não encontrada</h2>
+        <h2 className="text-2xl font-bold">
+          {t('admin.categories.not_found')}
+        </h2>
         <Button onClick={() => navigate('/admin/categories')}>
-          Voltar para Categorias
+          {t('admin.categories.back')}
         </Button>
       </div>
     )
@@ -92,12 +94,12 @@ export default function ManageCategoryDetail() {
     if (!catName.trim()) {
       toast({
         variant: 'destructive',
-        title: 'O nome da categoria não pode ser vazio',
+        title: t('admin.categories.name_empty'),
       })
       return
     }
     updateCategory(category.id, catName.trim())
-    toast({ title: 'Categoria atualizada com sucesso' })
+    toast({ title: t('admin.categories.update_success') })
   }
 
   // Handle Add Subcategory
@@ -105,15 +107,15 @@ export default function ManageCategoryDetail() {
     if (!newSubName.trim()) {
       toast({
         variant: 'destructive',
-        title: 'Erro',
-        description: 'O nome da subcategoria não pode ser vazio',
+        title: t('error'),
+        description: t('admin.subcat.name_empty'),
       })
       return
     }
     addSubCategory(category.id, newSubName.trim())
     setNewSubName('')
     setIsAddOpen(false)
-    toast({ title: 'Sucesso', description: 'Subcategoria adicionada' })
+    toast({ title: t('success'), description: t('admin.subcat.add_success') })
   }
 
   // Handle Edit Subcategory
@@ -121,14 +123,17 @@ export default function ManageCategoryDetail() {
     if (!editingSub || !editSubName.trim()) {
       toast({
         variant: 'destructive',
-        title: 'Erro',
-        description: 'O nome da subcategoria não pode ser vazio',
+        title: t('error'),
+        description: t('admin.subcat.name_empty'),
       })
       return
     }
     updateSubCategory(category.id, editingSub.id, editSubName.trim())
     setEditingSub(null)
-    toast({ title: 'Sucesso', description: 'Subcategoria atualizada' })
+    toast({
+      title: t('success'),
+      description: t('admin.subcat.update_success'),
+    })
   }
 
   // Handle Delete Subcategory
@@ -136,7 +141,10 @@ export default function ManageCategoryDetail() {
     if (subToDelete) {
       removeSubCategory(category.id, subToDelete.id)
       setSubToDelete(null)
-      toast({ title: 'Sucesso', description: 'Subcategoria removida' })
+      toast({
+        title: t('success'),
+        description: t('admin.subcat.delete_success'),
+      })
     }
   }
 
@@ -150,10 +158,10 @@ export default function ManageCategoryDetail() {
         </Button>
         <div>
           <h1 className="text-3xl font-bold tracking-tight">
-            Editar Categoria
+            {t('admin.categories.edit_title')}
           </h1>
           <p className="text-muted-foreground">
-            Gerenciando:{' '}
+            {t('admin.categories.managing')}{' '}
             {category.translationKey
               ? t(category.translationKey)
               : category.name}
@@ -163,15 +171,17 @@ export default function ManageCategoryDetail() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Detalhes da Categoria</CardTitle>
+          <CardTitle>{t('admin.categories.details_title')}</CardTitle>
           <CardDescription>
-            Altere as informações principais desta categoria.
+            {t('admin.categories.details_desc')}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex flex-col sm:flex-row gap-4 items-end">
             <div className="space-y-2 flex-1 w-full">
-              <Label htmlFor="catName">Nome da Categoria</Label>
+              <Label htmlFor="catName">
+                {t('admin.categories.name_label')}
+              </Label>
               <Input
                 id="catName"
                 value={catName}
@@ -179,7 +189,7 @@ export default function ManageCategoryDetail() {
               />
             </div>
             <Button onClick={handleUpdateCategory} className="w-full sm:w-auto">
-              <Save className="mr-2 h-4 w-4" /> Salvar Alterações
+              <Save className="mr-2 h-4 w-4" /> {t('admin.categories.save')}
             </Button>
           </div>
         </CardContent>
@@ -188,22 +198,22 @@ export default function ManageCategoryDetail() {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
-            <CardTitle>Subcategorias</CardTitle>
+            <CardTitle>{t('admin.categories.subcats_title')}</CardTitle>
             <CardDescription>
-              Gerencie a lista de serviços ou especialidades desta categoria.
+              {t('admin.categories.subcats_desc')}
             </CardDescription>
           </div>
           <Button onClick={() => setIsAddOpen(true)} size="sm">
-            <Plus className="mr-2 h-4 w-4" /> Adicionar Subcategoria
+            <Plus className="mr-2 h-4 w-4" /> {t('admin.categories.add_subcat')}
           </Button>
         </CardHeader>
         <CardContent className="p-0">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Nome da Subcategoria</TableHead>
+                <TableHead>{t('admin.categories.subcat_name')}</TableHead>
                 <TableHead>Slug</TableHead>
-                <TableHead className="text-right">Ações</TableHead>
+                <TableHead className="text-right">{t('actions')}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -247,7 +257,7 @@ export default function ManageCategoryDetail() {
                     colSpan={3}
                     className="text-center py-8 text-muted-foreground"
                   >
-                    Nenhuma subcategoria cadastrada para esta categoria.
+                    {t('admin.categories.no_subcats')}
                   </TableCell>
                 </TableRow>
               )}
@@ -260,27 +270,26 @@ export default function ManageCategoryDetail() {
       <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Nova Subcategoria</DialogTitle>
+            <DialogTitle>{t('admin.categories.new_subcat_title')}</DialogTitle>
             <DialogDescription>
-              Adicione uma nova opção sob a categoria "{category.name}".
+              {t('admin.categories.new_subcat_desc')}
             </DialogDescription>
           </DialogHeader>
           <div className="py-4">
-            <Label htmlFor="newSubName">Nome</Label>
+            <Label htmlFor="newSubName">{t('admin.categories.name')}</Label>
             <Input
               id="newSubName"
               className="mt-2"
               value={newSubName}
               onChange={(e) => setNewSubName(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleAddSub()}
-              placeholder="Ex: Pintura Externa"
             />
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsAddOpen(false)}>
-              Cancelar
+              {t('cancel')}
             </Button>
-            <Button onClick={handleAddSub}>Salvar</Button>
+            <Button onClick={handleAddSub}>{t('save')}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -292,13 +301,13 @@ export default function ManageCategoryDetail() {
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Editar Subcategoria</DialogTitle>
+            <DialogTitle>{t('admin.categories.edit_subcat_title')}</DialogTitle>
             <DialogDescription>
-              Modifique o nome da subcategoria selecionada.
+              {t('admin.categories.edit_subcat_desc')}
             </DialogDescription>
           </DialogHeader>
           <div className="py-4">
-            <Label htmlFor="editSubName">Nome</Label>
+            <Label htmlFor="editSubName">{t('admin.categories.name')}</Label>
             <Input
               id="editSubName"
               className="mt-2"
@@ -309,9 +318,11 @@ export default function ManageCategoryDetail() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setEditingSub(null)}>
-              Cancelar
+              {t('cancel')}
             </Button>
-            <Button onClick={handleEditSub}>Salvar Alterações</Button>
+            <Button onClick={handleEditSub}>
+              {t('admin.categories.save')}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -323,19 +334,20 @@ export default function ManageCategoryDetail() {
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Você tem certeza?</AlertDialogTitle>
+            <AlertDialogTitle>
+              {t('admin.categories.delete_sub_title')}
+            </AlertDialogTitle>
             <AlertDialogDescription>
-              Isso excluirá a subcategoria "{subToDelete?.name}"
-              permanentemente. Esta ação não pode ser desfeita.
+              {t('admin.categories.delete_sub_desc')}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
             <AlertDialogAction
               onClick={confirmDeleteSub}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              Excluir
+              {t('delete')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

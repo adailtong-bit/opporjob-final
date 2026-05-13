@@ -511,6 +511,14 @@ const App = () => {
                   }
                 />{' '}
                 <Route
+                  path="/admin/categories"
+                  element={
+                    <AdminRoute>
+                      <ManageCategories />
+                    </AdminRoute>
+                  }
+                />
+                <Route
                   path="/admin/categories/:id"
                   element={
                     <AdminRoute>
