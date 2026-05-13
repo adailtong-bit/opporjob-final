@@ -201,11 +201,11 @@ export default function ProjectDetail() {
       {criticalExpiredDocs.length > 0 && (
         <Alert
           variant="destructive"
-          className="mt-4 bg-red-50 text-red-900 border-red-200"
+          className="mt-4 bg-red-50/80 text-red-900 border-red-200 overflow-hidden"
         >
-          <ShieldAlert className="h-4 w-4" />
-          <AlertTitle>Alerta de Risco Operacional!</AlertTitle>
-          <AlertDescription>
+          <ShieldAlert className="h-5 w-5" />
+          <AlertTitle className="text-base font-semibold mb-1">Alerta de Risco Operacional</AlertTitle>
+          <AlertDescription className="text-sm leading-relaxed break-words">
             Existem <strong>{criticalExpiredDocs.length}</strong> documento(s)
             crítico(s) vencido(s). Risco iminente de paralisação da obra. Acesse
             a aba de Compliance para regularizar.
@@ -214,7 +214,7 @@ export default function ProjectDetail() {
       )}
 
       {/* Refactored Header */}
-      <div className="flex flex-col gap-6 py-6 min-w-0">
+      <div className="flex flex-col gap-5 py-4 md:py-6 min-w-0">
         {/* Top Bar: Navigation, Status & Actions */}
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 w-full">
           <div className="flex items-center gap-3">
@@ -396,19 +396,21 @@ export default function ProjectDetail() {
         </div>
 
         {/* Title & Info */}
-        <div className="flex flex-col items-center md:items-start gap-3 w-full">
-          <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-foreground truncate max-w-full text-center md:text-left w-full px-2 md:px-0">
+        <div className="flex flex-col items-start gap-3 w-full mt-2">
+          <h1 className="text-2xl md:text-4xl font-bold tracking-tight text-foreground text-left w-full break-words">
             {project.name}
           </h1>
 
-          <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 text-sm text-muted-foreground w-full">
-            <span className="flex items-center gap-1.5 bg-muted/50 px-3 py-1.5 rounded-full whitespace-nowrap border">
+          <div className="flex flex-wrap items-center justify-start gap-2 text-sm text-muted-foreground w-full">
+            <span className="flex items-center gap-1.5 bg-muted/50 px-3 py-1.5 rounded-full whitespace-nowrap border text-xs md:text-sm">
               <MapPin className="h-3.5 w-3.5" />
-              {project.address
-                ? `${project.address.city} - ${project.address.state}`
-                : project.location}
+              <span className="truncate max-w-[200px] md:max-w-none">
+                {project.address
+                  ? `${project.address.city} - ${project.address.state}`
+                  : project.location}
+              </span>
             </span>
-            <span className="flex items-center gap-1.5 bg-muted/50 px-3 py-1.5 rounded-full whitespace-nowrap border">
+            <span className="flex items-center gap-1.5 bg-muted/50 px-3 py-1.5 rounded-full whitespace-nowrap border text-xs md:text-sm">
               <CalendarIcon className="h-3.5 w-3.5" />{' '}
               {formatDate(project.startDate, 'P')} -{' '}
               {formatDate(project.endDate, 'P')}
@@ -423,15 +425,16 @@ export default function ProjectDetail() {
         className="w-full flex flex-col min-w-0"
       >
         {/* Mobile Dropdown Navigation */}
-        <div className="md:hidden w-full mb-6 flex flex-col gap-2">
-          <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider px-1">
-            Seção do Projeto
-          </label>
-          <Select value={currentTab} onValueChange={handleTabChange}>
-            <SelectTrigger className="w-full bg-background border-2 border-border hover:border-primary/50 font-semibold h-14 rounded-xl shadow-sm transition-colors text-base">
-              <SelectValue placeholder="Selecione uma seção" />
-            </SelectTrigger>
-            <SelectContent className="max-h-[60vh] overflow-y-auto">
+        <div className="md:hidden w-full mb-6">
+          <div className="bg-card border shadow-sm rounded-xl p-3">
+            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 block px-1">
+              Menu do Projeto
+            </label>
+            <Select value={currentTab} onValueChange={handleTabChange}>
+              <SelectTrigger className="w-full bg-background border-border hover:border-primary/50 font-medium h-12 rounded-lg transition-colors text-sm">
+                <SelectValue placeholder="Selecione uma seção" />
+              </SelectTrigger>
+              <SelectContent className="max-h-[60vh] overflow-y-auto">
               <SelectItem value="financial">Painel Financeiro</SelectItem>
               <SelectItem value="equipment">Máquinas</SelectItem>
               <SelectItem value="purchasing">Compras</SelectItem>
