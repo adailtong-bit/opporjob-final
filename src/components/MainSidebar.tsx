@@ -25,6 +25,7 @@ import {
   Truck,
   ShoppingCart,
   LayoutTemplate,
+  PanelBottom,
 } from 'lucide-react'
 import {
   Sidebar,
@@ -149,6 +150,11 @@ export function MainSidebar() {
             title: t('nav.marketing'),
             url: '/admin/marketing',
             icon: LayoutTemplate,
+          },
+          {
+            title: t('nav.footer'),
+            url: '/admin/footer',
+            icon: PanelBottom,
           },
         ],
       })

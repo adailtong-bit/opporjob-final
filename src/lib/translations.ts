@@ -944,6 +944,7 @@ export const translations: Translations = {
     'admin.ads.create_btn': 'Criar Novo Anúncio',
 
     'nav.marketing': 'Conteúdo de Marketing',
+    'nav.footer': 'Gerenciar Rodapé',
     'admin.marketing.title': 'Conteúdo de Marketing',
     'admin.marketing.desc':
       'Gerencie os textos exibidos na página de login e outras áreas públicas.',
@@ -2143,6 +2144,7 @@ export const translations: Translations = {
     'admin.ads.create_btn': 'Create New Ad',
 
     'nav.marketing': 'Marketing Content',
+    'nav.footer': 'Manage Footer',
     'admin.marketing.title': 'Marketing Content',
     'admin.marketing.desc':
       'Manage the text displayed on the login page and other public areas.',
@@ -3246,6 +3248,7 @@ export const translations: Translations = {
     'admin.ads.create_btn': 'Crear Nuevo Anuncio',
 
     'nav.marketing': 'Contenido de Marketing',
+    'nav.footer': 'Gestionar Pie de Página',
     'admin.marketing.title': 'Contenido de Marketing',
     'admin.marketing.desc':
       'Gestione los textos mostrados en la página de inicio de sesión y áreas públicas.',
