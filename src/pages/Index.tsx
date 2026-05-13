@@ -128,9 +128,12 @@ export default function Index() {
           <Card className="bg-primary text-primary-foreground border-none shadow-lg animate-fade-in-up">
             <CardContent className="p-4 flex items-center justify-between">
               <div>
-                <h3 className="font-bold text-lg">Instale o App OPPORJOB</h3>
+                <h3 className="font-bold text-lg">
+                  {t('pwa.install.title', undefined) || 'Install OPPORJOB App'}
+                </h3>
                 <p className="text-sm text-primary-foreground/90">
-                  Acesse rápido, receba notificações e use offline!
+                  {t('pwa.install.desc', undefined) ||
+                    'Access quickly, receive notifications and use offline!'}
                 </p>
               </div>
               <Button
@@ -139,7 +142,7 @@ export default function Index() {
                 className="gap-2 font-bold whitespace-nowrap"
               >
                 <Download className="h-4 w-4" />
-                Instalar
+                {t('pwa.install.btn', undefined) || 'Install'}
               </Button>
             </CardContent>
           </Card>
@@ -154,13 +157,13 @@ export default function Index() {
           onClick={() =>
             shareContent({
               title: 'OPPORJOB',
-              text: 'Encontre os melhores projetos e especialistas na OPPORJOB!',
+              text: 'Find the best projects and experts on OPPORJOB!',
               url: window.location.origin,
             })
           }
         >
           <Share2 className="h-4 w-4 text-primary" />
-          Compartilhar App
+          {t('pwa.share', undefined) || 'Share App'}
         </Button>
         <Button
           variant="outline"
@@ -168,7 +171,7 @@ export default function Index() {
           onClick={() => setBadge(3)}
         >
           <Bell className="h-4 w-4 text-primary" />
-          Testar Badge (3)
+          {t('pwa.test_badge', undefined) || 'Test Badge (3)'}
         </Button>
         <Button
           variant="outline"
@@ -176,7 +179,7 @@ export default function Index() {
           onClick={() => clearBadge()}
         >
           <BellOff className="h-4 w-4 text-primary" />
-          Limpar Notificações
+          {t('pwa.clear_badge', undefined) || 'Clear Notifications'}
         </Button>
       </div>
 

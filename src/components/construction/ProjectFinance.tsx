@@ -127,10 +127,13 @@ export function ProjectFinance({ projectId }: { projectId: string }) {
   return (
     <Card className="flex flex-col w-full min-w-0 border-0 shadow-none bg-transparent sm:bg-card sm:border sm:shadow-sm">
       <CardHeader className="shrink-0 pb-4">
-        <CardTitle>Painel Financeiro Integrado</CardTitle>
+        <CardTitle>
+          {t('finance.integrated_dashboard', undefined) ||
+            'Integrated Financial Dashboard'}
+        </CardTitle>
         <CardDescription>
-          Acompanhamento centralizado: Orçamento vs. Despesas Conta Corrente e
-          Ledger.
+          {t('finance.integrated_dashboard_desc', undefined) ||
+            'Centralized tracking: Budget vs. Current Account Expenses and Ledger.'}
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col min-h-0">
@@ -138,7 +141,7 @@ export function ProjectFinance({ projectId }: { projectId: string }) {
           <div className="xl:col-span-1 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-1 gap-4">
             <div className="bg-blue-50/50 dark:bg-blue-950/20 p-4 rounded-xl border border-blue-100 dark:border-blue-900/50">
               <p className="text-xs text-muted-foreground font-medium mb-1">
-                Orçamento (Planejado)
+                {t('finance.budget_planned', undefined) || 'Budget (Planned)'}
               </p>
               <div className="flex items-center gap-2">
                 <PieChart className="h-5 w-5 text-blue-500" />
@@ -150,7 +153,7 @@ export function ProjectFinance({ projectId }: { projectId: string }) {
 
             <div className="bg-purple-50/50 dark:bg-purple-950/20 p-4 rounded-xl border border-purple-100 dark:border-purple-900/50">
               <p className="text-xs text-muted-foreground font-medium mb-1">
-                Custo Realizado
+                {t('finance.realized_cost', undefined) || 'Realized Cost'}
               </p>
               <div className="flex items-center gap-2">
                 <BookOpen className="h-5 w-5 text-purple-500" />
@@ -162,7 +165,8 @@ export function ProjectFinance({ projectId }: { projectId: string }) {
 
             <div className="bg-orange-50/50 dark:bg-orange-950/20 p-4 rounded-xl border border-orange-100 dark:border-orange-900/50">
               <p className="text-xs text-muted-foreground font-medium mb-1">
-                Saídas Conta Corrente
+                {t('finance.account_outflows', undefined) ||
+                  'Current Account Outflows'}
               </p>
               <div className="flex items-center gap-2">
                 <WalletCards className="h-5 w-5 text-orange-500" />
@@ -181,7 +185,7 @@ export function ProjectFinance({ projectId }: { projectId: string }) {
               )}
             >
               <p className="text-xs text-muted-foreground font-medium mb-1">
-                Variância Geral
+                {t('finance.overall_variance', undefined) || 'Overall Variance'}
               </p>
               <div className="flex items-center gap-2">
                 {isOverBudget ? (
@@ -206,7 +210,8 @@ export function ProjectFinance({ projectId }: { projectId: string }) {
 
           <div className="xl:col-span-2 bg-card border rounded-xl p-4 shadow-sm h-full min-h-[300px] flex flex-col">
             <h3 className="text-sm font-semibold mb-2 shrink-0">
-              Planejado vs. Realizado
+              {t('finance.planned_vs_realized', undefined) ||
+                'Planned vs. Realized'}
             </h3>
             <div className="flex-1 min-h-0">
               <ChartContainer config={chartConfig} className="h-full w-full">
@@ -253,12 +258,22 @@ export function ProjectFinance({ projectId }: { projectId: string }) {
             className="mb-4 bg-red-50 text-red-900 border-red-200 dark:bg-red-950/40 dark:text-red-200 dark:border-red-900"
           >
             <AlertCircle className="h-4 w-4" />
-            <AlertTitle>Alerta de Compliance</AlertTitle>
+            <AlertTitle>
+              {t('alert.compliance_title', undefined) || 'Compliance Alert'}
+            </AlertTitle>
             <AlertDescription>
-              Existem <strong>{complianceAlerts.length}</strong> documento(s)
-              com problema (Vencidos: {expiredCount}). Fornecedores com
-              documentação crítica vencida estão{' '}
-              <strong>bloqueados para pagamento</strong> no Ledger.
+              {t('alert.compliance_desc_1', undefined) || 'There are'}{' '}
+              <strong>{complianceAlerts.length}</strong>{' '}
+              {t('alert.compliance_desc_2', undefined) ||
+                'document(s) with issues (Expired:'}{' '}
+              {expiredCount}).{' '}
+              {t('alert.compliance_desc_3', undefined) ||
+                'Vendors with expired critical documentation are'}{' '}
+              <strong>
+                {t('alert.compliance_desc_4', undefined) ||
+                  'blocked for payment'}
+              </strong>{' '}
+              {t('alert.compliance_desc_5', undefined) || 'in the Ledger.'}
             </AlertDescription>
           </Alert>
         )}
@@ -269,12 +284,18 @@ export function ProjectFinance({ projectId }: { projectId: string }) {
             className="mb-6 bg-orange-50 text-orange-900 border-orange-200 dark:bg-orange-950/40 dark:text-orange-200 dark:border-orange-900"
           >
             <AlertCircle className="h-4 w-4" />
-            <AlertTitle>Alerta de Impacto no Custo (Atrasos)</AlertTitle>
+            <AlertTitle>
+              {t('alert.delay_impact_title', undefined) ||
+                'Cost Impact Alert (Delays)'}
+            </AlertTitle>
             <AlertDescription>
-              O cronograma possui <strong>{delayedCount}</strong> marcos/tarefas
-              em atraso. O impacto estimado nos custos indiretos (Soft Costs) é
-              de <strong>{formatCurrency(totalDelayImpact)}</strong>, aumentando
-              o consumo do orçamento.
+              {t('alert.delay_impact_desc_1', undefined) || 'The schedule has'}{' '}
+              <strong>{delayedCount}</strong>{' '}
+              {t('alert.delay_impact_desc_2', undefined) ||
+                'delayed milestones/tasks. The estimated impact on indirect costs (Soft Costs) is'}{' '}
+              <strong>{formatCurrency(totalDelayImpact)}</strong>,{' '}
+              {t('alert.delay_impact_desc_3', undefined) ||
+                'increasing budget consumption.'}
             </AlertDescription>
           </Alert>
         )}
@@ -289,25 +310,29 @@ export function ProjectFinance({ projectId }: { projectId: string }) {
                 value="ledger"
                 className="py-2 px-4 flex items-center gap-2 text-xs md:text-sm whitespace-nowrap"
               >
-                <BookOpen className="w-4 h-4 shrink-0" /> Diário (Ledger)
+                <BookOpen className="w-4 h-4 shrink-0" />{' '}
+                {t('finance.tab_ledger', undefined) || 'Ledger'}
               </TabsTrigger>
               <TabsTrigger
                 value="execucao"
                 className="py-2 px-4 flex items-center gap-2 text-xs md:text-sm whitespace-nowrap"
               >
-                <TrendingUp className="w-4 h-4 shrink-0" /> Físico-Financeiro
+                <TrendingUp className="w-4 h-4 shrink-0" />{' '}
+                {t('finance.tab_execution', undefined) || 'Physical-Financial'}
               </TabsTrigger>
               <TabsTrigger
                 value="visao_geral"
                 className="py-2 px-4 flex items-center gap-2 text-xs md:text-sm whitespace-nowrap"
               >
-                <PieChart className="w-4 h-4 shrink-0" /> Custos Alocados
+                <PieChart className="w-4 h-4 shrink-0" />{' '}
+                {t('finance.tab_allocated', undefined) || 'Allocated Costs'}
               </TabsTrigger>
               <TabsTrigger
                 value="conta_corrente"
                 className="py-2 px-4 flex items-center gap-2 text-xs md:text-sm whitespace-nowrap"
               >
-                <WalletCards className="w-4 h-4 shrink-0" /> Conta Corrente
+                <WalletCards className="w-4 h-4 shrink-0" />{' '}
+                {t('finance.tab_account', undefined) || 'Current Account'}
               </TabsTrigger>
             </TabsList>
           </div>

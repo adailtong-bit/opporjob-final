@@ -273,12 +273,13 @@ export default function ConstructionDashboard() {
         <Card className="bg-emerald-50/50 border-emerald-100">
           <CardHeader className="pb-2">
             <CardTitle className="text-base text-emerald-800">
-              Acesso Administrativo
+              {t('construction.admin_access', undefined) ||
+                'Administrative Access'}
             </CardTitle>
           </CardHeader>
           <CardContent className="text-sm text-emerald-700">
-            Você tem acesso ilimitado à Gestão de Obras como administrador.
-            Nenhuma cobrança é aplicada.
+            {t('construction.admin_access_desc', undefined) ||
+              'You have unlimited access to Construction Management as an administrator. No charges apply.'}
           </CardContent>
         </Card>
       )}

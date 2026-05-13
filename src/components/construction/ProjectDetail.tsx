@@ -112,13 +112,14 @@ export default function ProjectDetail() {
         >
           <ShieldAlert className="h-4 w-4 sm:h-5 sm:w-5" />
           <AlertTitle className="text-sm sm:text-base font-bold mb-1">
-            Alerta de Risco Operacional
+            {t('alert.operational_risk', undefined) || 'Operational Risk Alert'}
           </AlertTitle>
           <AlertDescription className="text-xs sm:text-sm leading-relaxed break-words">
-            Existem <strong>{criticalExpiredDocs.length}</strong> documento(s)
-            crítico(s) vencido(s). Risco iminente de paralisação da obra. Acesse
-            a aba de Compliance para regularizar.
-          </AlertDescription>
+            {t('alert.expired_docs_msg_1', undefined) || 'There are'}{' '}
+            <strong>{criticalExpiredDocs.length}</strong>{' '}
+            {t('alert.expired_docs_msg_2', undefined) ||
+              'expired critical document(s). Imminent risk of project stoppage. Access the Compliance tab to regularize.'}
+          </AlertDescription>{' '}
         </Alert>
       )}
 
@@ -157,8 +158,12 @@ export default function ProjectDetail() {
             >
               <Link to={`/construction/materials?projectId=${project.id}`}>
                 <ShoppingCart className="mr-1.5 h-3.5 w-3.5 sm:mr-2 sm:h-4 sm:w-4 shrink-0" />{' '}
-                <span className="hidden min-[400px]:inline">Nova Compra</span>
-                <span className="inline min-[400px]:hidden">Comprar</span>
+                <span className="hidden min-[400px]:inline">
+                  {t('action.new_purchase', undefined) || 'New Purchase'}
+                </span>
+                <span className="inline min-[400px]:hidden">
+                  {t('action.buy', undefined) || 'Buy'}
+                </span>
               </Link>
             </Button>
             <Button
@@ -174,7 +179,7 @@ export default function ProjectDetail() {
               variant="outline"
               size="icon"
               onClick={() => setIsChatOpen(true)}
-              title="Chat do Projeto"
+              title={t('nav.project_chat', undefined) || 'Project Chat'}
               className="bg-background hover:bg-muted h-8 w-8 sm:h-10 sm:w-10 shrink-0"
             >
               <MessageSquare className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
@@ -214,10 +219,10 @@ export default function ProjectDetail() {
             <div className="flex items-center gap-1.5 bg-blue-50/50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full border border-blue-100 dark:border-blue-800 text-[11px] sm:text-xs md:text-sm max-w-full">
               <Store className="h-3 w-3 sm:h-3.5 sm:w-3.5 shrink-0" />
               <span className="font-medium mr-1 truncate hidden sm:inline">
-                Fornecedor Preferencial:
+                {t('proj.preferred_vendor', undefined) || 'Preferred Vendor:'}
               </span>
               <span className="font-medium mr-1 truncate inline sm:hidden">
-                Forn.:
+                {t('proj.vendor_short', undefined) || 'Vendor:'}
               </span>
               <Select
                 value={project.preferredVendorId || 'none'}
@@ -229,10 +234,14 @@ export default function ProjectDetail() {
                 }
               >
                 <SelectTrigger className="h-6 w-auto min-w-[100px] text-[11px] sm:text-xs border-none bg-transparent shadow-none focus:ring-0 px-1 hover:bg-blue-100/50 dark:hover:bg-blue-800/30 rounded">
-                  <SelectValue placeholder="Nenhum" />
+                  <SelectValue
+                    placeholder={t('general.none', undefined) || 'None'}
+                  />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="none">Nenhum</SelectItem>
+                  <SelectItem value="none">
+                    {t('general.none', undefined) || 'None'}
+                  </SelectItem>
                   {vendors.map((v) => (
                     <SelectItem key={v.id} value={v.id}>
                       {v.name}
@@ -254,28 +263,38 @@ export default function ProjectDetail() {
         <div className="md:hidden w-full mb-5">
           <div className="bg-card border shadow-sm rounded-lg p-2.5">
             <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1.5 block px-1">
-              Menu do Projeto
+              {t('nav.project_menu', undefined) || 'Project Menu'}
             </label>
             <Select value={currentTab} onValueChange={setCurrentTab}>
               <SelectTrigger className="w-full bg-background border-border hover:border-primary/50 font-medium h-10 rounded-md transition-colors text-sm shadow-sm focus:ring-1 focus:ring-primary/30">
-                <SelectValue placeholder="Selecione uma seção" />
+                <SelectValue
+                  placeholder={
+                    t('nav.select_section', undefined) || 'Select a section'
+                  }
+                />
               </SelectTrigger>
               <SelectContent className="max-h-[60vh] overflow-y-auto">
-                <SelectItem value="financial">Financeiro</SelectItem>
-                <SelectItem value="purchasing">Compras</SelectItem>
+                <SelectItem value="financial">
+                  {t('nav.financials', undefined) || 'Financials'}
+                </SelectItem>
+                <SelectItem value="purchasing">
+                  {t('nav.purchasing', undefined) || 'Purchasing'}
+                </SelectItem>
                 <SelectItem value="stages">
                   {t('proj.detail.schedule')}
                 </SelectItem>
                 <SelectItem value="budget">{t('proj.budget.title')}</SelectItem>
                 <SelectItem value="estimation">{t('est.tab.title')}</SelectItem>
                 <SelectItem value="execution">
-                  {t('proj.detail.financial_execution') || 'Execução'}
+                  {t('proj.detail.financial_execution') || 'Execution'}
                 </SelectItem>
                 <SelectItem value="compliance">Compliance</SelectItem>
                 <SelectItem value="partners">
                   {t('proj.detail.partners')}
                 </SelectItem>
-                <SelectItem value="quotes">Faturas</SelectItem>
+                <SelectItem value="quotes">
+                  {t('nav.invoices', undefined) || 'Invoices'}
+                </SelectItem>
                 <SelectItem value="approvals">
                   {t('proj.approvals.title')}
                 </SelectItem>
@@ -294,13 +313,13 @@ export default function ProjectDetail() {
               value="financial"
               className="whitespace-nowrap px-4 py-2.5 text-sm"
             >
-              Financeiro
+              {t('nav.financials', undefined) || 'Financials'}
             </TabsTrigger>
             <TabsTrigger
               value="purchasing"
               className="whitespace-nowrap px-4 py-2.5 text-sm"
             >
-              Compras
+              {t('nav.purchasing', undefined) || 'Purchasing'}
             </TabsTrigger>
             <TabsTrigger
               value="stages"
@@ -324,7 +343,7 @@ export default function ProjectDetail() {
               value="execution"
               className="whitespace-nowrap px-4 py-2.5 text-sm"
             >
-              {t('proj.detail.financial_execution') || 'Execução'}
+              {t('proj.detail.financial_execution') || 'Execution'}
             </TabsTrigger>
             <TabsTrigger
               value="compliance"
@@ -342,7 +361,7 @@ export default function ProjectDetail() {
               value="quotes"
               className="whitespace-nowrap px-4 py-2.5 text-sm"
             >
-              Faturas
+              {t('nav.invoices', undefined) || 'Invoices'}
             </TabsTrigger>
             <TabsTrigger
               value="approvals"
@@ -618,27 +637,35 @@ export default function ProjectDetail() {
                             {partner.companyName}
                           </h3>
                           <div className="text-sm font-medium mt-1">
-                            {partner.email || 'Email não cadastrado'} •{' '}
-                            {partner.phone || 'Telefone não cadastrado'}
+                            {partner.email ||
+                              t('general.no_email', undefined) ||
+                              'Email not registered'}{' '}
+                            •{' '}
+                            {partner.phone ||
+                              t('general.no_phone', undefined) ||
+                              'Phone not registered'}
                           </div>
                           <p className="text-sm text-muted-foreground mt-1">
                             {partner.address
                               ? `${partner.address.street}, ${partner.address.city} - ${partner.address.state}`
-                              : 'Sem endereço cadastrado'}
+                              : t('general.no_address', undefined) ||
+                                'No address registered'}
                           </p>
                           <div className="flex items-center gap-2 mt-3">
                             <Badge
                               variant="secondary"
                               className="bg-primary/10 text-primary hover:bg-primary/20"
                             >
-                              {partner.specialty || 'Especialidade Geral'}
+                              {partner.specialty ||
+                                t('general.general_specialty', undefined) ||
+                                'General Specialty'}
                             </Badge>
                             <Badge variant="outline">
                               {t('proj.partner.stage')}:{' '}
                               {t(
                                 project.stages.find(
                                   (s) => s.id === partner.stageId,
-                                )?.name || 'Geral',
+                                )?.name || 'general.general',
                               )}
                             </Badge>
                             <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-100 border-yellow-200">

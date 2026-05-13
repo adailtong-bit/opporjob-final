@@ -31,7 +31,7 @@ CREATE POLICY "vendors_delete" ON public.vendors
 
 -- Seed some initial vendors
 INSERT INTO public.vendors (id, name, email, phone, category) VALUES
-    ('11111111-1111-1111-1111-111111111111'::uuid, 'Cimento & Cia', 'contato@cimentoecia.com', '(11) 9999-9999', 'Materiais Básicos'),
-    ('22222222-2222-2222-2222-222222222222'::uuid, 'Elétrica Avançada', 'vendas@eletrica.com', '(11) 8888-8888', 'Elétrica'),
-    ('33333333-3333-3333-3333-333333333333'::uuid, 'Tintas e Cores', 'atendimento@tintas.com.br', '(11) 7777-7777', 'Acabamentos')
+    ('11111111-1111-1111-1111-111111111111'::uuid, 'Cement & Co', 'contact@cementco.com', '(555) 123-4567', 'Basic Materials'),
+    ('22222222-2222-2222-2222-222222222222'::uuid, 'Advanced Electrical', 'sales@electrical.com', '(555) 987-6543', 'Electrical'),
+    ('33333333-3333-3333-3333-333333333333'::uuid, 'Paints and Colors', 'support@paintscolors.com', '(555) 555-5555', 'Finishes')
 ON CONFLICT (id) DO NOTHING;

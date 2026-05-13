@@ -63,9 +63,9 @@ BEGIN
   -- Equalizing default options
   INSERT INTO public.construction_plans (id, name, description, price, billing_cycle, max_projects, work_size, complexity, features, target_audience)
   VALUES 
-    ('11111111-1111-1111-1111-111111111111'::uuid, 'Básico', 'Para pequenos empreiteiros', 99.00, 'monthly', 3, 'Pequena', 'Low', '["Gestão de Tarefas", "Diário de Obras"]', 'contractor'),
-    ('22222222-2222-2222-2222-222222222222'::uuid, 'Profissional', 'Para médias empresas', 299.00, 'monthly', 10, 'Média', 'Medium', '["Gestão de Tarefas", "Diário de Obras", "Financeiro"]', 'contractor'),
-    ('33333333-3333-3333-3333-333333333333'::uuid, 'Avançado', 'Para grandes construtoras', 599.00, 'monthly', 50, 'Grande', 'High', '["Gestão de Tarefas", "Diário de Obras", "Financeiro", "Relatórios Avançados"]', 'contractor'),
-    ('44444444-4444-4444-4444-444444444444'::uuid, 'Enterprise', 'Ilimitado', 999.00, 'monthly', 999, 'Todas', 'High', '["Todas as funcionalidades", "Suporte Dedicado"]', 'contractor')
+    ('11111111-1111-1111-1111-111111111111'::uuid, 'Basic', 'For small contractors', 99.00, 'monthly', 3, 'Small', 'Low', '["Task Management", "Daily Logs"]', 'contractor'),
+    ('22222222-2222-2222-2222-222222222222'::uuid, 'Professional', 'For mid-size companies', 299.00, 'monthly', 10, 'Medium', 'Medium', '["Task Management", "Daily Logs", "Financials"]', 'contractor'),
+    ('33333333-3333-3333-3333-333333333333'::uuid, 'Advanced', 'For large constructors', 599.00, 'monthly', 50, 'Large', 'High', '["Task Management", "Daily Logs", "Financials", "Advanced Reports"]', 'contractor'),
+    ('44444444-4444-4444-4444-444444444444'::uuid, 'Enterprise', 'Unlimited', 999.00, 'monthly', 999, 'All', 'High', '["All features", "Dedicated Support"]', 'contractor')
   ON CONFLICT DO NOTHING;
 END $$;

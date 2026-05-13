@@ -70,13 +70,20 @@ export function ProjectDailyLogs({ projectId }: { projectId: string }) {
             coords: `${position.coords.latitude.toFixed(5)}, ${position.coords.longitude.toFixed(5)}`,
           }))
           setIsGettingLocation(false)
-          toast({ title: 'Localização obtida com sucesso.' })
+          toast({
+            title:
+              t('toast.location_success', undefined) ||
+              'Location obtained successfully.',
+          })
         },
         () => {
           // Mock location if failed
           setFormData((prev) => ({ ...prev, coords: '-23.5023, -46.8456' }))
           setIsGettingLocation(false)
-          toast({ title: 'Localização simulada aplicada.' })
+          toast({
+            title:
+              t('toast.location_mock', undefined) || 'Mock location applied.',
+          })
         },
       )
     } else {
@@ -90,7 +97,9 @@ export function ProjectDailyLogs({ projectId }: { projectId: string }) {
     if (!formData.date || !formData.teamSize || !formData.occurrences) {
       toast({
         variant: 'destructive',
-        title: 'Preencha os campos obrigatórios',
+        title:
+          t('toast.required_fields', undefined) ||
+          'Fill in the required fields',
       })
       return
     }
@@ -111,7 +120,10 @@ export function ProjectDailyLogs({ projectId }: { projectId: string }) {
     })
 
     setOpen(false)
-    toast({ title: 'Diário de Obra Registrado' })
+    toast({
+      title:
+        t('toast.daily_log_registered', undefined) || 'Daily Log Registered',
+    })
     setFormData({
       date: new Date().toISOString().split('T')[0],
       weather: 'sunny',
@@ -145,25 +157,32 @@ export function ProjectDailyLogs({ projectId }: { projectId: string }) {
     <Card className="w-full">
       <CardHeader className="flex flex-row items-center justify-between">
         <div>
-          <CardTitle>Diário de Obra</CardTitle>
+          <CardTitle>
+            {t('daily_log.title', undefined) || 'Daily Log'}
+          </CardTitle>
           <CardDescription>
-            Registro diário georreferenciado e evidências fotográficas.
+            {t('daily_log.desc', undefined) ||
+              'Georeferenced daily log and photographic evidence.'}
           </CardDescription>
         </div>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
             <Button>
-              <Plus className="h-4 w-4 mr-2" /> Novo Registro
+              <Plus className="h-4 w-4 mr-2" />{' '}
+              {t('daily_log.new_record', undefined) || 'New Record'}
             </Button>
           </DialogTrigger>
           <DialogContent className="w-full max-w-lg max-h-[90vh] flex flex-col p-4 sm:p-6">
             <DialogHeader>
-              <DialogTitle>Novo Registro no Diário</DialogTitle>
+              <DialogTitle>
+                {t('daily_log.new_daily_record', undefined) ||
+                  'New Daily Record'}
+              </DialogTitle>
             </DialogHeader>
             <div className="grid gap-4 py-4 overflow-y-auto min-h-0 flex-1 px-1">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>Data</Label>
+                  <Label>{t('daily_log.date', undefined) || 'Date'}</Label>
                   <Input
                     type="date"
                     value={formData.date}
@@ -173,7 +192,9 @@ export function ProjectDailyLogs({ projectId }: { projectId: string }) {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Clima</Label>
+                  <Label>
+                    {t('daily_log.weather', undefined) || 'Weather'}
+                  </Label>
                   <Select
                     value={formData.weather}
                     onValueChange={(val: any) =>
@@ -184,17 +205,29 @@ export function ProjectDailyLogs({ projectId }: { projectId: string }) {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="sunny">Ensolarado</SelectItem>
-                      <SelectItem value="cloudy">Nublado</SelectItem>
-                      <SelectItem value="rainy">Chuvoso</SelectItem>
-                      <SelectItem value="snow">Neve/Frio Extremo</SelectItem>
+                      <SelectItem value="sunny">
+                        {t('daily_log.weather.sunny', undefined) || 'Sunny'}
+                      </SelectItem>
+                      <SelectItem value="cloudy">
+                        {t('daily_log.weather.cloudy', undefined) || 'Cloudy'}
+                      </SelectItem>
+                      <SelectItem value="rainy">
+                        {t('daily_log.weather.rainy', undefined) || 'Rainy'}
+                      </SelectItem>
+                      <SelectItem value="snow">
+                        {t('daily_log.weather.snow', undefined) ||
+                          'Snow/Extreme Cold'}
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>Efetivo (Nº Trabalhadores)</Label>
+                  <Label>
+                    {t('daily_log.team_size', undefined) ||
+                      'Team Size (No. of Workers)'}
+                  </Label>
                   <Input
                     type="number"
                     value={formData.teamSize}
@@ -204,9 +237,14 @@ export function ProjectDailyLogs({ projectId }: { projectId: string }) {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Equipamentos no Canteiro</Label>
+                  <Label>
+                    {t('daily_log.equipment', undefined) || 'Equipment on Site'}
+                  </Label>
                   <Input
-                    placeholder="Ex: Betoneira..."
+                    placeholder={
+                      t('daily_log.equipment_placeholder', undefined) ||
+                      'Ex: Concrete Mixer...'
+                    }
                     value={formData.equipment}
                     onChange={(e) =>
                       setFormData({ ...formData, equipment: e.target.value })
@@ -215,7 +253,10 @@ export function ProjectDailyLogs({ projectId }: { projectId: string }) {
                 </div>
               </div>
               <div className="space-y-2">
-                <Label>Ocorrências / Atividades do Dia</Label>
+                <Label>
+                  {t('daily_log.occurrences', undefined) ||
+                    'Occurrences / Daily Activities'}
+                </Label>
                 <Textarea
                   className="min-h-[100px]"
                   value={formData.occurrences}
@@ -227,7 +268,9 @@ export function ProjectDailyLogs({ projectId }: { projectId: string }) {
 
               <div className="space-y-2 border-t pt-4">
                 <Label className="flex items-center gap-2">
-                  <Camera className="h-4 w-4" /> Anexos e Geotagging
+                  <Camera className="h-4 w-4" />{' '}
+                  {t('daily_log.attachments_gps', undefined) ||
+                    'Attachments and Geotagging'}
                 </Label>
                 <div className="flex flex-col gap-3">
                   <Button
@@ -237,7 +280,10 @@ export function ProjectDailyLogs({ projectId }: { projectId: string }) {
                     disabled={isGettingLocation}
                   >
                     <MapPin className="mr-2 h-4 w-4" />
-                    {formData.coords ? 'Atualizar GPS' : 'Capturar GPS e Hora'}
+                    {formData.coords
+                      ? t('daily_log.update_gps', undefined) || 'Update GPS'
+                      : t('daily_log.capture_gps', undefined) ||
+                        'Capture GPS & Time'}
                   </Button>
                   {formData.coords && (
                     <div className="text-xs bg-muted p-2 rounded-md font-mono flex flex-col gap-1">
@@ -251,16 +297,22 @@ export function ProjectDailyLogs({ projectId }: { projectId: string }) {
                   )}
                   <div className="border-2 border-dashed rounded-lg p-6 flex flex-col items-center justify-center text-center hover:bg-muted/50 transition-colors cursor-pointer">
                     <Camera className="h-8 w-8 text-muted-foreground mb-2" />
-                    <p className="text-sm font-medium">Anexar Fotos</p>
+                    <p className="text-sm font-medium">
+                      {t('daily_log.attach_photos', undefined) ||
+                        'Attach Photos'}
+                    </p>
                     <p className="text-xs text-muted-foreground mt-1">
-                      As imagens receberão carimbo digital automático.
+                      {t('daily_log.attach_photos_desc', undefined) ||
+                        'Images will receive automatic digital stamps.'}
                     </p>
                   </div>
                 </div>
               </div>
             </div>
             <DialogFooter>
-              <Button onClick={handleSubmit}>Salvar Registro</Button>
+              <Button onClick={handleSubmit}>
+                {t('daily_log.save_record', undefined) || 'Save Record'}
+              </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
@@ -268,7 +320,7 @@ export function ProjectDailyLogs({ projectId }: { projectId: string }) {
       <CardContent>
         {sortedLogs.length === 0 ? (
           <div className="text-center py-10 text-muted-foreground border-2 border-dashed rounded-lg bg-muted/10">
-            Nenhum registro no diário de obra ainda.
+            {t('daily_log.empty', undefined) || 'No daily logs recorded yet.'}
           </div>
         ) : (
           <div className="space-y-6">
@@ -309,7 +361,10 @@ export function ProjectDailyLogs({ projectId }: { projectId: string }) {
                 </div>
                 <div className="space-y-4">
                   <div>
-                    <h5 className="text-sm font-semibold mb-1">Ocorrências:</h5>
+                    <h5 className="text-sm font-semibold mb-1">
+                      {t('daily_log.occurrences_label', undefined) ||
+                        'Occurrences:'}
+                    </h5>
                     <p className="text-sm text-muted-foreground whitespace-pre-line">
                       {log.occurrences}
                     </p>
@@ -317,7 +372,9 @@ export function ProjectDailyLogs({ projectId }: { projectId: string }) {
                   {log.photos && log.photos.length > 0 && (
                     <div>
                       <h5 className="text-sm font-semibold mb-2 flex items-center gap-2">
-                        <Camera className="h-4 w-4" /> Anexos Visuais:
+                        <Camera className="h-4 w-4" />{' '}
+                        {t('daily_log.visual_attachments', undefined) ||
+                          'Visual Attachments:'}
                       </h5>
                       <div className="flex gap-4 overflow-x-auto pb-2">
                         {log.photos.map((photo, idx) => (

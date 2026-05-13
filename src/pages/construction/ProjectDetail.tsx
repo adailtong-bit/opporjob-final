@@ -205,13 +205,14 @@ export default function ProjectDetail() {
         >
           <ShieldAlert className="h-4 w-4 sm:h-5 sm:w-5" />
           <AlertTitle className="text-sm sm:text-base font-bold mb-1">
-            Alerta de Risco Operacional
+            {t('alert.operational_risk', undefined) || 'Operational Risk Alert'}
           </AlertTitle>
           <AlertDescription className="text-xs sm:text-sm leading-relaxed break-words">
-            Existem <strong>{criticalExpiredDocs.length}</strong> documento(s)
-            crítico(s) vencido(s). Risco iminente de paralisação da obra. Acesse
-            a aba de Compliance para regularizar.
-          </AlertDescription>
+            {t('alert.expired_docs_msg_1', undefined) || 'There are'}{' '}
+            <strong>{criticalExpiredDocs.length}</strong>{' '}
+            {t('alert.expired_docs_msg_2', undefined) ||
+              'expired critical document(s). Imminent risk of project stoppage. Access the Compliance tab to regularize.'}
+          </AlertDescription>{' '}
         </Alert>
       )}
 
@@ -248,27 +249,28 @@ export default function ProjectDetail() {
                     updateProject(project.id, { status: 'planning' })
                   }
                 >
-                  Planejamento
+                  {t('status.planning', undefined) || 'Planning'}
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={() =>
                     updateProject(project.id, { status: 'in_progress' })
                   }
                 >
-                  Em Progresso
+                  {t('status.in_progress', undefined) || 'In Progress'}
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={() =>
                     updateProject(project.id, { status: 'paused' })
                   }
                 >
-                  Pausado
+                  {t('status.paused', undefined) || 'Paused'}
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={handleCompleteProject}
                   className="text-green-600 font-medium"
                 >
-                  Concluir Projeto
+                  {t('action.complete_project', undefined) ||
+                    'Complete Project'}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -284,8 +286,12 @@ export default function ProjectDetail() {
             >
               <Link to={`/construction/materials?projectId=${project.id}`}>
                 <ShoppingCart className="mr-1.5 h-3.5 w-3.5 sm:mr-2 sm:h-4 sm:w-4 shrink-0" />{' '}
-                <span className="hidden min-[400px]:inline">Nova Compra</span>
-                <span className="inline min-[400px]:hidden">Comprar</span>
+                <span className="hidden min-[400px]:inline">
+                  {t('action.new_purchase', undefined) || 'New Purchase'}
+                </span>
+                <span className="inline min-[400px]:hidden">
+                  {t('action.buy', undefined) || 'Buy'}
+                </span>
               </Link>
             </Button>
             <Popover>
@@ -294,7 +300,7 @@ export default function ProjectDetail() {
                   variant="outline"
                   size="icon"
                   className="relative bg-background hover:bg-muted h-8 w-8 sm:h-10 sm:w-10 shrink-0"
-                  title="Notificações"
+                  title={t('nav.notifications', undefined) || 'Notifications'}
                 >
                   <Bell className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                   {(expiring15DaysDocs.length > 0 ||
@@ -308,12 +314,15 @@ export default function ProjectDetail() {
               </PopoverTrigger>
               <PopoverContent align="end" className="w-80 p-4">
                 <div className="space-y-4">
-                  <h4 className="font-semibold text-sm">Alertas do Projeto</h4>
+                  <h4 className="font-semibold text-sm">
+                    {t('alert.project_alerts', undefined) || 'Project Alerts'}
+                  </h4>
                   <div className="space-y-2 max-h-[300px] overflow-auto">
                     {expiring15DaysDocs.length === 0 &&
                       budgetOverruns.length === 0 && (
                         <p className="text-sm text-muted-foreground">
-                          Tudo certo! Nenhuma notificação.
+                          {t('alert.all_good', undefined) ||
+                            'All good! No notifications.'}
                         </p>
                       )}
                     {expiring15DaysDocs.map((doc) => (
@@ -324,16 +333,18 @@ export default function ProjectDetail() {
                         <AlertTriangle className="h-4 w-4 text-yellow-600 mt-0.5 shrink-0" />
                         <div>
                           <p className="text-xs font-medium text-yellow-900">
-                            Documento Vencendo
+                            {t('alert.expiring_doc', undefined) ||
+                              'Expiring Document'}
                           </p>
                           <p className="text-[10px] text-yellow-800">
-                            {doc.name} vence em{' '}
+                            {doc.name}{' '}
+                            {t('alert.expires_in', undefined) || 'expires in'}{' '}
                             {Math.ceil(
                               (new Date(doc.expirationDate).getTime() -
                                 todayDate.getTime()) /
                                 (1000 * 60 * 60 * 24),
                             )}{' '}
-                            dias.
+                            {t('alert.days', undefined) || 'days.'}
                           </p>
                         </div>
                       </div>
@@ -346,12 +357,16 @@ export default function ProjectDetail() {
                         <TrendingUp className="h-4 w-4 text-red-600 mt-0.5 shrink-0" />
                         <div>
                           <p className="text-xs font-medium text-red-900">
-                            Estouro de Orçamento
+                            {t('alert.budget_overrun', undefined) ||
+                              'Budget Overrun'}
                           </p>
                           <p className="text-[10px] text-red-800">
-                            {entry.description}: Custo final (
-                            {formatCurrency(entry.finalCost)}) excedeu o
-                            previsto ({formatCurrency(entry.estimatedCost)}).
+                            {entry.description}:{' '}
+                            {t('alert.final_cost', undefined) || 'Final cost ('}
+                            {formatCurrency(entry.finalCost)}){' '}
+                            {t('alert.exceeded_planned', undefined) ||
+                              'exceeded planned ('}
+                            {formatCurrency(entry.estimatedCost)}).
                           </p>
                         </div>
                       </div>
@@ -365,7 +380,7 @@ export default function ProjectDetail() {
               variant="outline"
               size="icon"
               asChild
-              title="Apontamento (Mobile)"
+              title={t('nav.field_entry', undefined) || 'Field Entry (Mobile)'}
               className="bg-background hover:bg-muted h-8 w-8 sm:h-10 sm:w-10 shrink-0"
             >
               <Link to="/construction/field-entry">
@@ -385,7 +400,7 @@ export default function ProjectDetail() {
               variant="outline"
               size="icon"
               onClick={() => setIsChatOpen(true)}
-              title="Chat do Projeto"
+              title={t('nav.project_chat', undefined) || 'Project Chat'}
               className="bg-background hover:bg-muted h-8 w-8 sm:h-10 sm:w-10 shrink-0"
             >
               <MessageSquare className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
@@ -434,16 +449,27 @@ export default function ProjectDetail() {
         <div className="md:hidden w-full mb-5">
           <div className="bg-card border shadow-sm rounded-lg p-2.5">
             <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1.5 block px-1">
-              Menu do Projeto
+              {t('nav.project_menu', undefined) || 'Project Menu'}
             </label>
             <Select value={currentTab} onValueChange={handleTabChange}>
               <SelectTrigger className="w-full bg-background border-border hover:border-primary/50 font-medium h-10 rounded-md transition-colors text-sm shadow-sm focus:ring-1 focus:ring-primary/30">
-                <SelectValue placeholder="Selecione uma seção" />
+                <SelectValue
+                  placeholder={
+                    t('nav.select_section', undefined) || 'Select a section'
+                  }
+                />
               </SelectTrigger>
               <SelectContent className="max-h-[60vh] overflow-y-auto">
-                <SelectItem value="financial">Painel Financeiro</SelectItem>
-                <SelectItem value="equipment">Máquinas</SelectItem>
-                <SelectItem value="purchasing">Compras</SelectItem>
+                <SelectItem value="financial">
+                  {t('nav.financial_dashboard', undefined) ||
+                    'Financial Dashboard'}
+                </SelectItem>
+                <SelectItem value="equipment">
+                  {t('nav.equipment', undefined) || 'Equipment'}
+                </SelectItem>
+                <SelectItem value="purchasing">
+                  {t('nav.purchasing', undefined) || 'Purchasing'}
+                </SelectItem>
                 <SelectItem value="stages">
                   {t('proj.detail.schedule')}
                 </SelectItem>
@@ -453,7 +479,9 @@ export default function ProjectDetail() {
                 <SelectItem value="partners">
                   {t('proj.detail.partners')}
                 </SelectItem>
-                <SelectItem value="quotes">Faturas</SelectItem>
+                <SelectItem value="quotes">
+                  {t('nav.invoices', undefined) || 'Invoices'}
+                </SelectItem>
                 <SelectItem value="approvals">
                   {t('proj.approvals.title')}
                 </SelectItem>
@@ -472,19 +500,19 @@ export default function ProjectDetail() {
               value="financial"
               className="whitespace-nowrap px-4 py-2.5 text-sm"
             >
-              Painel Financeiro
+              {t('nav.financial_dashboard', undefined) || 'Financial Dashboard'}
             </TabsTrigger>
             <TabsTrigger
               value="equipment"
               className="whitespace-nowrap px-4 py-2.5 text-sm"
             >
-              Máquinas
+              {t('nav.equipment', undefined) || 'Equipment'}
             </TabsTrigger>
             <TabsTrigger
               value="purchasing"
               className="whitespace-nowrap px-4 py-2.5 text-sm"
             >
-              Compras
+              {t('nav.purchasing', undefined) || 'Purchasing'}
             </TabsTrigger>
             <TabsTrigger
               value="stages"
@@ -520,7 +548,7 @@ export default function ProjectDetail() {
               value="quotes"
               className="whitespace-nowrap px-4 py-2.5 text-sm"
             >
-              Faturas
+              {t('nav.invoices', undefined) || 'Invoices'}
             </TabsTrigger>
             <TabsTrigger
               value="approvals"
@@ -792,27 +820,35 @@ export default function ProjectDetail() {
                             {partner.companyName}
                           </h3>
                           <div className="text-sm font-medium mt-1">
-                            {partner.email || 'Email não cadastrado'} •{' '}
-                            {partner.phone || 'Telefone não cadastrado'}
+                            {partner.email ||
+                              t('general.no_email', undefined) ||
+                              'Email not registered'}{' '}
+                            •{' '}
+                            {partner.phone ||
+                              t('general.no_phone', undefined) ||
+                              'Phone not registered'}
                           </div>
                           <p className="text-sm text-muted-foreground mt-1">
                             {partner.address
                               ? `${partner.address.street}, ${partner.address.city} - ${partner.address.state}`
-                              : 'Sem endereço cadastrado'}
+                              : t('general.no_address', undefined) ||
+                                'No address registered'}
                           </p>
                           <div className="flex items-center gap-2 mt-3">
                             <Badge
                               variant="secondary"
                               className="bg-primary/10 text-primary hover:bg-primary/20"
                             >
-                              {partner.specialty || 'Especialidade Geral'}
+                              {partner.specialty ||
+                                t('general.general_specialty', undefined) ||
+                                'General Specialty'}
                             </Badge>
                             <Badge variant="outline">
                               {t('proj.partner.stage')}:{' '}
                               {t(
                                 project.stages.find(
                                   (s) => s.id === partner.stageId,
-                                )?.name || 'Geral',
+                                )?.name || 'general.general',
                               )}
                             </Badge>
                             <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-100 border-yellow-200">
