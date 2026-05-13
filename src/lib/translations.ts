@@ -3423,8 +3423,4 @@ export const translations: Translations = {
     'credits.boost.7d': 'Súper Destacado (7 días)',
     'credits.boost.7d_desc':
       'Máxima visibilidad en la categoría y región por una semana.',
-    'credits.boost.profile': 'Impulsar Perfil',
-    'credits.boost.profile_desc':
-      'Aparece como sugerencia a contratistas por 3 días.',
-  },
-}
+    'credits.boost.profile': '
