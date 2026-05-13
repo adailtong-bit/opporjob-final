@@ -423,12 +423,15 @@ export default function ProjectDetail() {
         className="w-full flex flex-col min-w-0"
       >
         {/* Mobile Dropdown Navigation */}
-        <div className="md:hidden w-full mb-6">
+        <div className="md:hidden w-full mb-6 flex flex-col gap-2">
+          <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider px-1">
+            Seção do Projeto
+          </label>
           <Select value={currentTab} onValueChange={handleTabChange}>
-            <SelectTrigger className="w-full bg-muted/50 border-none font-medium h-12 shadow-sm">
+            <SelectTrigger className="w-full bg-background border-2 border-border hover:border-primary/50 font-semibold h-14 rounded-xl shadow-sm transition-colors text-base">
               <SelectValue placeholder="Selecione uma seção" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="max-h-[60vh] overflow-y-auto">
               <SelectItem value="financial">Painel Financeiro</SelectItem>
               <SelectItem value="equipment">Máquinas</SelectItem>
               <SelectItem value="purchasing">Compras</SelectItem>
@@ -525,7 +528,7 @@ export default function ProjectDetail() {
         {/* Financial Tab (Integrated View) */}
         <TabsContent
           value="financial"
-          className="w-full min-w-0 animate-fade-in"
+          className="w-full min-w-0 animate-fade-in overflow-x-auto"
         >
           <ProjectFinance projectId={project.id} />
         </TabsContent>
@@ -533,7 +536,7 @@ export default function ProjectDetail() {
         {/* Equipment Tab */}
         <TabsContent
           value="equipment"
-          className="w-full min-w-0 animate-fade-in"
+          className="w-full min-w-0 animate-fade-in overflow-x-auto"
         >
           <ProjectEquipment projectId={project.id} />
         </TabsContent>
@@ -541,7 +544,7 @@ export default function ProjectDetail() {
         {/* Purchasing Tab */}
         <TabsContent
           value="purchasing"
-          className="w-full min-w-0 animate-fade-in"
+          className="w-full min-w-0 animate-fade-in overflow-x-auto"
         >
           <ProjectPurchasing projectId={project.id} />
         </TabsContent>
@@ -549,14 +552,14 @@ export default function ProjectDetail() {
         {/* Compliance Tab */}
         <TabsContent
           value="compliance"
-          className="w-full min-w-0 animate-fade-in"
+          className="w-full min-w-0 animate-fade-in overflow-x-auto"
         >
           <ProjectCompliance projectId={project.id} />
         </TabsContent>
 
         <TabsContent
           value="estimation"
-          className="w-full min-w-0 animate-fade-in space-y-6"
+          className="w-full min-w-0 animate-fade-in space-y-6 overflow-x-auto"
         >
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -616,7 +619,7 @@ export default function ProjectDetail() {
 
         <TabsContent
           value="stages"
-          className="w-full min-w-0 space-y-6 animate-fade-in"
+          className="w-full min-w-0 space-y-6 animate-fade-in overflow-x-auto"
         >
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-4 bg-card p-4 rounded-lg border shadow-sm">
             <div className="flex items-center gap-2">
@@ -739,14 +742,17 @@ export default function ProjectDetail() {
         </TabsContent>
 
         {/* Budget Tab */}
-        <TabsContent value="budget" className="w-full min-w-0 animate-fade-in">
+        <TabsContent
+          value="budget"
+          className="w-full min-w-0 animate-fade-in overflow-x-auto"
+        >
           <ProjectBudget projectId={project.id} />
         </TabsContent>
 
         {/* Partners Tab */}
         <TabsContent
           value="partners"
-          className="w-full min-w-0 animate-fade-in"
+          className="w-full min-w-0 animate-fade-in overflow-x-auto"
         >
           <Card className="max-w-4xl mx-auto">
             <CardHeader>
@@ -886,19 +892,25 @@ export default function ProjectDetail() {
         </TabsContent>
 
         {/* Quotes & Invoices Tab */}
-        <TabsContent value="quotes" className="w-full min-w-0 animate-fade-in">
+        <TabsContent
+          value="quotes"
+          className="w-full min-w-0 animate-fade-in overflow-x-auto"
+        >
           <ProjectQuotes projectId={project.id} />
         </TabsContent>
 
         {/* Reports Tab */}
-        <TabsContent value="reports" className="w-full min-w-0 animate-fade-in">
+        <TabsContent
+          value="reports"
+          className="w-full min-w-0 animate-fade-in overflow-x-auto"
+        >
           <ProjectReports projectId={project.id} />
         </TabsContent>
 
         {/* Approvals Tab */}
         <TabsContent
           value="approvals"
-          className="w-full min-w-0 animate-fade-in"
+          className="w-full min-w-0 animate-fade-in overflow-x-auto"
         >
           <ProjectApprovalWorkflow projectId={project.id} />
         </TabsContent>
