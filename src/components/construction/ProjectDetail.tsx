@@ -103,18 +103,18 @@ export default function ProjectDetail() {
   )
 
   return (
-    <div className="space-y-8 w-full max-w-6xl mx-auto pb-24 md:pb-10 px-4 min-w-0">
+    <div className="space-y-4 sm:space-y-8 w-full max-w-6xl mx-auto pb-24 md:pb-10 px-3 sm:px-4 min-w-0">
       {/* Visual Safeguard Warning */}
       {criticalExpiredDocs.length > 0 && (
         <Alert
           variant="destructive"
-          className="mt-4 bg-red-50/80 text-red-900 border-red-200 overflow-hidden"
+          className="mt-4 bg-red-50/90 text-red-900 border-red-200 shadow-sm"
         >
-          <ShieldAlert className="h-5 w-5" />
-          <AlertTitle className="text-base font-semibold mb-1">
+          <ShieldAlert className="h-4 w-4 sm:h-5 sm:w-5" />
+          <AlertTitle className="text-sm sm:text-base font-bold mb-1">
             Alerta de Risco Operacional
           </AlertTitle>
-          <AlertDescription className="text-sm leading-relaxed break-words">
+          <AlertDescription className="text-xs sm:text-sm leading-relaxed break-words">
             Existem <strong>{criticalExpiredDocs.length}</strong> documento(s)
             crítico(s) vencido(s). Risco iminente de paralisação da obra. Acesse
             a aba de Compliance para regularizar.
@@ -123,15 +123,15 @@ export default function ProjectDetail() {
       )}
 
       {/* Refactored Header */}
-      <div className="flex flex-col gap-5 py-4 md:py-6 min-w-0">
+      <div className="flex flex-col gap-3 sm:gap-5 py-3 sm:py-6 min-w-0">
         {/* Top Bar: Navigation, Status & Actions */}
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 w-full">
-          <div className="flex items-center gap-3">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 w-full">
+          <div className="flex items-center gap-2 w-full sm:w-auto">
             <Button
               variant="outline"
               size="icon"
               asChild
-              className="shrink-0 bg-background hover:bg-muted"
+              className="shrink-0 h-8 w-8 sm:h-10 sm:w-10 bg-background hover:bg-muted"
             >
               <Link to="/construction/dashboard">
                 <ArrowLeft className="h-4 w-4" />
@@ -141,21 +141,24 @@ export default function ProjectDetail() {
               variant={
                 project.status === 'in_progress' ? 'default' : 'secondary'
               }
-              className="px-3 py-1.5 text-sm"
+              className="px-2.5 py-1 sm:px-3 sm:py-1.5 text-xs sm:text-sm whitespace-nowrap"
             >
               {t(`status.${project.status}`)}
             </Badge>
           </div>
 
           {/* Action Buttons */}
-          <div className="flex flex-wrap items-center gap-2 w-full md:w-auto justify-start md:justify-end">
+          <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 w-full sm:w-auto justify-start sm:justify-end shrink-0">
             <Button
               asChild
               variant="default"
-              className="bg-blue-600 hover:bg-blue-700 text-white shadow-sm"
+              size="sm"
+              className="bg-blue-600 hover:bg-blue-700 text-white shadow-sm h-8 sm:h-10 text-xs sm:text-sm px-2.5 sm:px-4"
             >
               <Link to={`/construction/materials?projectId=${project.id}`}>
-                <ShoppingCart className="mr-2 h-4 w-4" /> Nova Compra
+                <ShoppingCart className="mr-1.5 h-3.5 w-3.5 sm:mr-2 sm:h-4 sm:w-4 shrink-0" />{' '}
+                <span className="hidden min-[400px]:inline">Nova Compra</span>
+                <span className="inline min-[400px]:hidden">Comprar</span>
               </Link>
             </Button>
             <Button
@@ -163,54 +166,58 @@ export default function ProjectDetail() {
               size="icon"
               onClick={() => setIsSyncOpen(true)}
               title={t('proj.sync.btn')}
-              className="bg-background hover:bg-muted"
+              className="bg-background hover:bg-muted h-8 w-8 sm:h-10 sm:w-10 shrink-0"
             >
-              <Link2 className="h-4 w-4" />
+              <Link2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             </Button>
             <Button
               variant="outline"
               size="icon"
               onClick={() => setIsChatOpen(true)}
               title="Chat do Projeto"
-              className="bg-background hover:bg-muted"
+              className="bg-background hover:bg-muted h-8 w-8 sm:h-10 sm:w-10 shrink-0"
             >
-              <MessageSquare className="h-4 w-4" />
+              <MessageSquare className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             </Button>
             <Button
               variant="outline"
+              size="sm"
               onClick={() => setIsTeamManagerOpen(true)}
-              className="hidden sm:flex bg-background hover:bg-muted"
+              className="hidden md:flex bg-background hover:bg-muted h-10"
             >
-              <HardHat className="mr-2 h-4 w-4" /> {t('proj.team.btn')}
+              <HardHat className="mr-2 h-4 w-4 shrink-0" /> {t('proj.team.btn')}
             </Button>
           </div>
         </div>
 
         {/* Title & Info */}
-        <div className="flex flex-col items-start gap-3 w-full mt-2">
-          <h1 className="text-2xl md:text-4xl font-bold tracking-tight text-foreground text-left w-full break-words">
+        <div className="flex flex-col items-start gap-2.5 w-full mt-1 sm:mt-2">
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight text-foreground text-left w-full break-words">
             {project.name}
           </h1>
 
-          <div className="flex flex-wrap items-center justify-start gap-2 text-sm text-muted-foreground w-full">
-            <span className="flex items-center gap-1.5 bg-muted/50 px-3 py-1.5 rounded-full whitespace-nowrap border text-xs md:text-sm">
-              <MapPin className="h-3.5 w-3.5" />
-              <span className="truncate max-w-[200px] md:max-w-none">
+          <div className="flex flex-wrap items-center justify-start gap-1.5 sm:gap-2 text-sm text-muted-foreground w-full">
+            <span className="flex items-center gap-1.5 bg-muted/50 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full border text-[11px] sm:text-xs md:text-sm max-w-full">
+              <MapPin className="h-3 w-3 sm:h-3.5 sm:w-3.5 shrink-0" />
+              <span className="truncate">
                 {project.address
                   ? `${project.address.city} - ${project.address.state}`
                   : project.location}
               </span>
             </span>
-            <span className="flex items-center gap-1.5 bg-muted/50 px-3 py-1.5 rounded-full whitespace-nowrap border text-xs md:text-sm">
-              <CalendarIcon className="h-3.5 w-3.5" />{' '}
+            <span className="flex items-center gap-1.5 bg-muted/50 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full whitespace-nowrap border text-[11px] sm:text-xs md:text-sm">
+              <CalendarIcon className="h-3 w-3 sm:h-3.5 sm:w-3.5 shrink-0" />{' '}
               {formatDate(project.startDate, 'P')} -{' '}
               {formatDate(project.endDate, 'P')}
             </span>
 
-            <div className="flex items-center gap-1.5 bg-blue-50/50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300 px-3 py-1.5 rounded-full whitespace-nowrap border border-blue-100 dark:border-blue-800 text-xs md:text-sm">
-              <Store className="h-3.5 w-3.5" />
-              <span className="font-medium mr-1 text-xs">
+            <div className="flex items-center gap-1.5 bg-blue-50/50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full border border-blue-100 dark:border-blue-800 text-[11px] sm:text-xs md:text-sm max-w-full">
+              <Store className="h-3 w-3 sm:h-3.5 sm:w-3.5 shrink-0" />
+              <span className="font-medium mr-1 truncate hidden sm:inline">
                 Fornecedor Preferencial:
+              </span>
+              <span className="font-medium mr-1 truncate inline sm:hidden">
+                Forn.:
               </span>
               <Select
                 value={project.preferredVendorId || 'none'}
@@ -221,7 +228,7 @@ export default function ProjectDetail() {
                   )
                 }
               >
-                <SelectTrigger className="h-6 w-[140px] text-xs border-none bg-transparent shadow-none focus:ring-0 px-1 hover:bg-blue-100/50 dark:hover:bg-blue-800/30 rounded">
+                <SelectTrigger className="h-6 w-auto min-w-[100px] text-[11px] sm:text-xs border-none bg-transparent shadow-none focus:ring-0 px-1 hover:bg-blue-100/50 dark:hover:bg-blue-800/30 rounded">
                   <SelectValue placeholder="Nenhum" />
                 </SelectTrigger>
                 <SelectContent>
@@ -244,13 +251,13 @@ export default function ProjectDetail() {
         className="w-full flex flex-col min-w-0"
       >
         {/* Mobile Dropdown Navigation */}
-        <div className="md:hidden w-full mb-6">
-          <div className="bg-card border shadow-sm rounded-xl p-3">
-            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 block px-1">
+        <div className="md:hidden w-full mb-5">
+          <div className="bg-card border shadow-sm rounded-lg p-2.5">
+            <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1.5 block px-1">
               Menu do Projeto
             </label>
             <Select value={currentTab} onValueChange={setCurrentTab}>
-              <SelectTrigger className="w-full bg-background border-border hover:border-primary/50 font-medium h-12 rounded-lg transition-colors text-sm">
+              <SelectTrigger className="w-full bg-background border-border hover:border-primary/50 font-medium h-10 rounded-md transition-colors text-sm shadow-sm focus:ring-1 focus:ring-primary/30">
                 <SelectValue placeholder="Selecione uma seção" />
               </SelectTrigger>
               <SelectContent className="max-h-[60vh] overflow-y-auto">
