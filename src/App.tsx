@@ -420,22 +420,25 @@ const App = () => {
     addOrUpdateMeta('apple-mobile-web-app-title', 'OPPORJOB')
 
     // Ensure OG Image has absolute URL for crawlers that support JS execution
-    const ogImage = document.querySelector('meta[property="og:image"]')
-    if (ogImage) {
-      ogImage.setAttribute('content', absoluteLogoUrl)
-    }
-
-    const ogUrl = document.querySelector('meta[property="og:url"]')
-    if (ogUrl) {
-      ogUrl.setAttribute('content', window.location.href)
-    }
-
-    const twitterImage = document.querySelector(
-      'meta[property="twitter:image"]',
+    addOrUpdateMeta('og:image', absoluteLogoUrl, true)
+    addOrUpdateMeta('og:url', window.location.href, true)
+    addOrUpdateMeta('og:title', t('app.title') + ' - Plataforma Completa', true)
+    addOrUpdateMeta(
+      'og:description',
+      'OPPORJOB é a plataforma ideal para conectar especialistas e oportunidades de projetos.',
+      true,
     )
-    if (twitterImage) {
-      twitterImage.setAttribute('content', absoluteLogoUrl)
-    }
+    addOrUpdateMeta('twitter:image', absoluteLogoUrl, true)
+    addOrUpdateMeta(
+      'twitter:title',
+      t('app.title') + ' - Plataforma Completa',
+      true,
+    )
+    addOrUpdateMeta(
+      'twitter:description',
+      'OPPORJOB é a plataforma ideal para conectar especialistas e oportunidades de projetos.',
+      true,
+    )
 
     // Clean up dummy data from local storage to ensure production is clean
     try {

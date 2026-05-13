@@ -37,43 +37,43 @@ export function Footer() {
   }, [])
 
   return (
-    <footer className="bg-[#0f172a] text-slate-300 py-4 md:py-5 px-4 md:px-8 w-full mt-auto border-t border-slate-800">
+    <footer className="bg-[#0f172a] text-slate-300 py-3 px-4 md:px-6 w-full mt-auto border-t border-slate-800">
       <div className="max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-4 md:mb-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-3">
           {/* Column 1 */}
-          <div className="space-y-1.5">
-            <h3 className="text-base font-bold text-white">About Us</h3>
-            <p className="text-[13px] leading-snug text-slate-400">
+          <div className="space-y-0.5">
+            <h3 className="text-sm font-bold text-white">About Us</h3>
+            <p className="text-xs leading-tight text-slate-400">
               {data.aboutUs}
             </p>
           </div>
 
           {/* Column 2 */}
-          <div className="space-y-1.5">
-            <h3 className="text-base font-bold text-white">Our Mission</h3>
-            <p className="text-[13px] leading-snug text-slate-400">
+          <div className="space-y-0.5">
+            <h3 className="text-sm font-bold text-white">Our Mission</h3>
+            <p className="text-xs leading-tight text-slate-400">
               {data.ourMission}
             </p>
           </div>
 
           {/* Column 3 */}
-          <div className="space-y-1.5">
-            <h3 className="text-base font-bold text-white">Our Company</h3>
-            <p className="text-[13px] leading-snug text-slate-400">
+          <div className="space-y-0.5">
+            <h3 className="text-sm font-bold text-white">Our Company</h3>
+            <p className="text-xs leading-tight text-slate-400">
               {data.ourCompany}
             </p>
           </div>
 
           {/* Column 4 */}
-          <div className="space-y-1.5">
-            <h3 className="text-base font-bold text-white">Contact Us</h3>
-            <div className="text-[13px] space-y-0.5 text-slate-400 whitespace-pre-line leading-snug">
+          <div className="space-y-0.5">
+            <h3 className="text-sm font-bold text-white">Contact Us</h3>
+            <div className="text-xs space-y-0.5 text-slate-400 whitespace-pre-line leading-tight">
               {`Email: ${data.contactEmail}\nPhone: ${data.contactPhone}\nAddress: ${data.contactAddress}`}
             </div>
           </div>
         </div>
 
-        <div className="pt-4 border-t border-slate-800 text-center md:text-left text-xs text-slate-500">
+        <div className="pt-3 border-t border-slate-800 text-center md:text-left text-[11px] text-slate-500">
           <p>{data.copyright}</p>
         </div>
       </div>

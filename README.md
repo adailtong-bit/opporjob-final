@@ -1,6 +1,6 @@
-# Projeto Criado com o Skip
+# OPPORJOB Frontend
 
-Este projeto foi criado de ponta a ponta com o [Skip](https://goskip.dev).
+Este é o repositório frontend da plataforma OPPORJOB.
 
 ## 🚀 Stack Tecnológica
 
