@@ -204,7 +204,9 @@ export default function ProjectDetail() {
           className="mt-4 bg-red-50/80 text-red-900 border-red-200 overflow-hidden"
         >
           <ShieldAlert className="h-5 w-5" />
-          <AlertTitle className="text-base font-semibold mb-1">Alerta de Risco Operacional</AlertTitle>
+          <AlertTitle className="text-base font-semibold mb-1">
+            Alerta de Risco Operacional
+          </AlertTitle>
           <AlertDescription className="text-sm leading-relaxed break-words">
             Existem <strong>{criticalExpiredDocs.length}</strong> documento(s)
             crítico(s) vencido(s). Risco iminente de paralisação da obra. Acesse
@@ -435,25 +437,28 @@ export default function ProjectDetail() {
                 <SelectValue placeholder="Selecione uma seção" />
               </SelectTrigger>
               <SelectContent className="max-h-[60vh] overflow-y-auto">
-              <SelectItem value="financial">Painel Financeiro</SelectItem>
-              <SelectItem value="equipment">Máquinas</SelectItem>
-              <SelectItem value="purchasing">Compras</SelectItem>
-              <SelectItem value="stages">
-                {t('proj.detail.schedule')}
-              </SelectItem>
-              <SelectItem value="budget">{t('proj.budget.title')}</SelectItem>
-              <SelectItem value="estimation">{t('est.tab.title')}</SelectItem>
-              <SelectItem value="compliance">Compliance</SelectItem>
-              <SelectItem value="partners">
-                {t('proj.detail.partners')}
-              </SelectItem>
-              <SelectItem value="quotes">Faturas</SelectItem>
-              <SelectItem value="approvals">
-                {t('proj.approvals.title')}
-              </SelectItem>
-              <SelectItem value="reports">{t('proj.reports.title')}</SelectItem>
-            </SelectContent>
-          </Select>
+                <SelectItem value="financial">Painel Financeiro</SelectItem>
+                <SelectItem value="equipment">Máquinas</SelectItem>
+                <SelectItem value="purchasing">Compras</SelectItem>
+                <SelectItem value="stages">
+                  {t('proj.detail.schedule')}
+                </SelectItem>
+                <SelectItem value="budget">{t('proj.budget.title')}</SelectItem>
+                <SelectItem value="estimation">{t('est.tab.title')}</SelectItem>
+                <SelectItem value="compliance">Compliance</SelectItem>
+                <SelectItem value="partners">
+                  {t('proj.detail.partners')}
+                </SelectItem>
+                <SelectItem value="quotes">Faturas</SelectItem>
+                <SelectItem value="approvals">
+                  {t('proj.approvals.title')}
+                </SelectItem>
+                <SelectItem value="reports">
+                  {t('proj.reports.title')}
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
 
         {/* Desktop Responsive Horizontal Scroll Tabs */}
