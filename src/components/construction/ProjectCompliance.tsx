@@ -358,7 +358,7 @@ export function ProjectCompliance({ projectId }: ProjectComplianceProps) {
                       }
                     />
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="grid gap-2">
                       <Label>
                         Categoria <span className="text-red-500">*</span>
@@ -429,7 +429,7 @@ export function ProjectCompliance({ projectId }: ProjectComplianceProps) {
                     />
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="grid gap-2">
                       <Label>Empresa / Entidade Emissora</Label>
                       <Input
@@ -638,18 +638,32 @@ export function ProjectCompliance({ projectId }: ProjectComplianceProps) {
             className="w-full mt-4 min-w-0"
             onValueChange={setFilterCategory}
           >
-            <div className="overflow-x-auto pb-2">
-              <TabsList className="mb-4 flex flex-nowrap h-auto justify-start min-w-max">
-                <TabsTrigger value="all">Todos</TabsTrigger>
-                <TabsTrigger value="permits">Licenças / Prefeitura</TabsTrigger>
-                <TabsTrigger value="contracts">Contratos</TabsTrigger>
-                <TabsTrigger value="constructor_insurance">
+            <div className="overflow-x-auto pb-2 scrollbar-hide">
+              <TabsList className="mb-4 flex flex-nowrap h-auto justify-start w-max min-w-full">
+                <TabsTrigger value="all" className="whitespace-nowrap">
+                  Todos
+                </TabsTrigger>
+                <TabsTrigger value="permits" className="whitespace-nowrap">
+                  Licenças / Prefeitura
+                </TabsTrigger>
+                <TabsTrigger value="contracts" className="whitespace-nowrap">
+                  Contratos
+                </TabsTrigger>
+                <TabsTrigger
+                  value="constructor_insurance"
+                  className="whitespace-nowrap"
+                >
                   Seguros (Construtor)
                 </TabsTrigger>
-                <TabsTrigger value="owner_insurance">
+                <TabsTrigger
+                  value="owner_insurance"
+                  className="whitespace-nowrap"
+                >
                   Seguros (Proprietário)
                 </TabsTrigger>
-                <TabsTrigger value="others">Técnico / Outros</TabsTrigger>
+                <TabsTrigger value="others" className="whitespace-nowrap">
+                  Técnico / Outros
+                </TabsTrigger>
               </TabsList>
             </div>
 

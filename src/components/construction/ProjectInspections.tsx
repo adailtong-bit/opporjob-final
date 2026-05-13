@@ -105,8 +105,8 @@ export function ProjectInspections({ projectId }: { projectId: string }) {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="rounded-md border overflow-x-auto">
-          <Table>
+        <div className="rounded-md border overflow-x-auto w-full block">
+          <Table className="min-w-[600px] w-full">
             <TableHeader className="bg-muted/50">
               <TableRow>
                 <TableHead>Inspeção</TableHead>

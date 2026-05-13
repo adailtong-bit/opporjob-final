@@ -294,8 +294,8 @@ export function ProjectExecution({ projectId }: ProjectExecutionProps) {
           <CardDescription>{t('proj.finance.desc')}</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="rounded-md border overflow-x-auto w-full">
-            <Table>
+          <div className="rounded-md border overflow-x-auto w-full block">
+            <Table className="min-w-[600px] w-full">
               <TableHeader className="bg-muted/50">
                 <TableRow>
                   <TableHead>{t('proj.execution.category')}</TableHead>

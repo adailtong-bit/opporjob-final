@@ -182,8 +182,8 @@ export function ProjectReports({ projectId }: ProjectReportsProps) {
         </Card>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 min-w-0">
+        <Card className="min-w-0">
           <CardHeader>
             <CardTitle>{t('proj.reports.progress_budget')}</CardTitle>
             <CardDescription>
@@ -227,7 +227,7 @@ export function ProjectReports({ projectId }: ProjectReportsProps) {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="min-w-0">
           <CardHeader>
             <CardTitle>{t('proj.reports.category_dist')}</CardTitle>
             <CardDescription>{t('proj.reports.chart_dist')}</CardDescription>

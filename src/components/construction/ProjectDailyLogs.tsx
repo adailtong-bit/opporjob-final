@@ -156,12 +156,12 @@ export function ProjectDailyLogs({ projectId }: { projectId: string }) {
               <Plus className="h-4 w-4 mr-2" /> Novo Registro
             </Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="w-full max-w-lg max-h-[90vh] flex flex-col p-4 sm:p-6">
             <DialogHeader>
               <DialogTitle>Novo Registro no Diário</DialogTitle>
             </DialogHeader>
-            <div className="grid gap-4 py-4 max-h-[70vh] overflow-y-auto">
-              <div className="grid grid-cols-2 gap-4">
+            <div className="grid gap-4 py-4 overflow-y-auto min-h-0 flex-1 px-1">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Data</Label>
                   <Input
@@ -192,7 +192,7 @@ export function ProjectDailyLogs({ projectId }: { projectId: string }) {
                   </Select>
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Efetivo (Nº Trabalhadores)</Label>
                   <Input

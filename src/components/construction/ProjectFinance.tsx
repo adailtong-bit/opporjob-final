@@ -279,34 +279,35 @@ export function ProjectFinance({ projectId }: { projectId: string }) {
           </Alert>
         )}
 
-        <Tabs defaultValue="ledger" className="w-full flex flex-col mt-4">
-          <div className="w-full overflow-x-auto pb-2 mb-4 -mx-2 px-2 shrink-0">
-            <TabsList className="w-full max-w-[900px] grid grid-cols-4 h-auto p-1 min-w-[500px]">
+        <Tabs
+          defaultValue="ledger"
+          className="w-full flex flex-col mt-4 min-w-0"
+        >
+          <div className="w-full overflow-x-auto pb-2 mb-4 -mx-2 px-2 shrink-0 scrollbar-hide">
+            <TabsList className="flex w-max min-w-full h-auto p-1 justify-start">
               <TabsTrigger
                 value="ledger"
-                className="py-2 flex items-center gap-2 text-xs md:text-sm whitespace-normal text-center"
+                className="py-2 px-4 flex items-center gap-2 text-xs md:text-sm whitespace-nowrap"
               >
-                <BookOpen className="w-4 h-4 hidden sm:block" /> Diário (Ledger)
+                <BookOpen className="w-4 h-4 shrink-0" /> Diário (Ledger)
               </TabsTrigger>
               <TabsTrigger
                 value="execucao"
-                className="py-2 flex items-center gap-2 text-xs md:text-sm whitespace-normal text-center"
+                className="py-2 px-4 flex items-center gap-2 text-xs md:text-sm whitespace-nowrap"
               >
-                <TrendingUp className="w-4 h-4 hidden sm:block" />{' '}
-                Físico-Financeiro
+                <TrendingUp className="w-4 h-4 shrink-0" /> Físico-Financeiro
               </TabsTrigger>
               <TabsTrigger
                 value="visao_geral"
-                className="py-2 flex items-center gap-2 text-xs md:text-sm whitespace-normal text-center"
+                className="py-2 px-4 flex items-center gap-2 text-xs md:text-sm whitespace-nowrap"
               >
-                <PieChart className="w-4 h-4 hidden sm:block" /> Custos Alocados
+                <PieChart className="w-4 h-4 shrink-0" /> Custos Alocados
               </TabsTrigger>
               <TabsTrigger
                 value="conta_corrente"
-                className="py-2 flex items-center gap-2 text-xs md:text-sm whitespace-normal text-center"
+                className="py-2 px-4 flex items-center gap-2 text-xs md:text-sm whitespace-nowrap"
               >
-                <WalletCards className="w-4 h-4 hidden sm:block" /> Conta
-                Corrente
+                <WalletCards className="w-4 h-4 shrink-0" /> Conta Corrente
               </TabsTrigger>
             </TabsList>
           </div>

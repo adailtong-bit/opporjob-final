@@ -203,7 +203,7 @@ export function ProjectTeamManager({
   return (
     <>
       <Sheet open={open} onOpenChange={onClose}>
-        <SheetContent className="w-[400px] sm:w-[540px] overflow-y-auto">
+        <SheetContent className="w-full max-w-full sm:w-[540px] overflow-y-auto">
           <SheetHeader className="mb-6">
             <SheetTitle className="flex items-center gap-2">
               <HardHat className="h-5 w-5" /> {t('team.manager.title')}
@@ -249,20 +249,20 @@ export function ProjectTeamManager({
                                 {member.name.substring(0, 2).toUpperCase()}
                               </AvatarFallback>
                             </Avatar>
-                            <div>
-                              <p className="text-sm font-medium leading-none">
+                            <div className="min-w-0 flex-1">
+                              <p className="text-sm font-medium leading-none truncate">
                                 {member.name}
                               </p>
-                              <div className="flex items-center gap-2 mt-1">
+                              <div className="flex flex-wrap items-center gap-2 mt-1">
                                 <Badge
                                   variant="secondary"
-                                  className="text-[10px] px-1 py-0 h-4"
+                                  className="text-[10px] px-1 py-0 h-4 whitespace-nowrap"
                                 >
                                   {t(
                                     `role.${member.role.toLowerCase().replace(' ', '_')}`,
                                   ) || member.role}
                                 </Badge>
-                                <span className="text-[10px] text-muted-foreground">
+                                <span className="text-[10px] text-muted-foreground truncate">
                                   {member.phone}
                                 </span>
                               </div>
