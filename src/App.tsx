@@ -42,6 +42,7 @@ import ManageCategories from '@/pages/admin/ManageCategories'
 import ManageCategoryDetail from '@/pages/admin/ManageCategoryDetail'
 import ManageAds from '@/pages/admin/ManageAds'
 import ManageMarketing from '@/pages/admin/ManageMarketing'
+import ManageFooter from '@/pages/admin/ManageFooter'
 import ManageConstructionPlans from '@/pages/admin/ManageConstructionPlans'
 import ConstructionDashboard from '@/pages/construction/ConstructionDashboard'
 import ProjectDetail from '@/pages/construction/ProjectDetail'
@@ -593,6 +594,14 @@ const App = () => {
                   element={
                     <AdminRoute>
                       <ManageMarketing />
+                    </AdminRoute>
+                  }
+                />
+                <Route
+                  path="/admin/footer"
+                  element={
+                    <AdminRoute>
+                      <ManageFooter />
                     </AdminRoute>
                   }
                 />
