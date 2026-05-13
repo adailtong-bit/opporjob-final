@@ -37,7 +37,7 @@
     "vite.config.ts"
   ],
   "deployment": {
-    "lastDevBuildRef": "0532fb3"
+    "lastDevBuildRef": "7ce83dc"
   },
   "migrations": {
     "applied": [
