@@ -543,6 +543,14 @@ const App = () => {
                   }
                 />
                 <Route
+                  path="/admin/users"
+                  element={
+                    <AdminRoute>
+                      <ManageUsers />
+                    </AdminRoute>
+                  }
+                />
+                <Route
                   path="/admin/push"
                   element={
                     <AdminRoute>
