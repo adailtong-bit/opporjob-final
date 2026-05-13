@@ -309,4 +309,11 @@ export function MainSidebar() {
                 </DropdownMenu>
               </SidebarMenuItem>
             </SidebarMenu>
-     
+          </SidebarFooter>
+        )}
+      </Sidebar>
+
+      <PublishModal open={isPublishOpen} onOpenChange={setIsPublishOpen} />
+    </>
+  )
+}
