@@ -239,10 +239,6 @@ const App = () => {
     const absoluteLogoUrl = getAbsoluteUrl(logoImg)
 
     // --- PWA Enhancements (Offline, Badging, Splash Screen, Native Icons) ---
-    // Using a version cache buster to force mobile OS to discard old gray icons
-    const cacheBuster = '?v=6'
-    const cacheBustedLogoUrl = absoluteLogoUrl + cacheBuster
-
     // Remove any Skip-injected favicons
     document
       .querySelectorAll('link[rel="icon"], link[rel="shortcut icon"]')
@@ -276,55 +272,127 @@ const App = () => {
       Notification.requestPermission()
     }
 
-    // Dynamic Manifest for PWA and App Icon using the brand logo
-    const manifest = {
-      name: 'OPPORJOB',
-      short_name: 'OPPORJOB',
-      description: 'Plataforma completa para projetos e especialistas.',
-      start_url: '/?source=pwa',
-      display: 'standalone',
-      background_color: '#ffffff',
-      theme_color: '#2563EB',
-      orientation: 'portrait-primary',
-      scope: '/',
-      icons: [
-        {
-          src: cacheBustedLogoUrl,
-          type: 'image/png',
-          sizes: '192x192',
-          purpose: 'any',
-        },
-        {
-          src: cacheBustedLogoUrl,
-          type: 'image/png',
-          sizes: '512x512',
-          purpose: 'any',
-        },
-        {
-          src: cacheBustedLogoUrl,
-          type: 'image/png',
-          sizes: '192x192',
-          purpose: 'maskable',
-        },
-        {
-          src: cacheBustedLogoUrl,
-          type: 'image/png',
-          sizes: '512x512',
-          purpose: 'maskable',
-        },
-      ],
-    }
-    const stringManifest = JSON.stringify(manifest)
-    const manifestBase64 = btoa(unescape(encodeURIComponent(stringManifest)))
-    const manifestURL = `data:application/manifest+json;base64,${manifestBase64}`
+    const setupIcons = async () => {
+      const createIcon = (
+        url: string,
+        bg: string,
+        padding: number = 0,
+      ): Promise<string> => {
+        return new Promise((resolve) => {
+          const img = new Image()
+          img.crossOrigin = 'anonymous'
+          img.onload = () => {
+            const canvas = document.createElement('canvas')
+            canvas.width = 512
+            canvas.height = 512
+            const ctx = canvas.getContext('2d')
+            if (ctx) {
+              if (bg !== 'transparent') {
+                ctx.fillStyle = bg
+                ctx.fillRect(0, 0, canvas.width, canvas.height)
+              } else {
+                ctx.clearRect(0, 0, canvas.width, canvas.height)
+              }
+              const availWidth = canvas.width - padding * 2
+              const availHeight = canvas.height - padding * 2
+              const scale = Math.min(
+                availWidth / img.width,
+                availHeight / img.height,
+              )
+              const x = canvas.width / 2 - (img.width / 2) * scale
+              const y = canvas.height / 2 - (img.height / 2) * scale
+              ctx.drawImage(img, x, y, img.width * scale, img.height * scale)
+              resolve(canvas.toDataURL('image/png'))
+            } else {
+              resolve(url)
+            }
+          }
+          img.onerror = () => resolve(url)
+          img.src = url
+        })
+      }
 
-    let link = document.querySelector('link[rel="manifest"]')
-    if (!link) {
-      link = document.createElement('link')
-      link.setAttribute('rel', 'manifest')
-      document.head.appendChild(link)
+      try {
+        // Create a solid white background icon for Apple Touch and maskable to prevent black squares
+        const [solidIcon, transparentIcon] = await Promise.all([
+          createIcon(absoluteLogoUrl, '#ffffff', 40),
+          createIcon(absoluteLogoUrl, 'transparent', 0),
+        ])
+
+        const manifest = {
+          name: 'OPPORJOB',
+          short_name: 'OPPORJOB',
+          description: 'Plataforma completa para projetos e especialistas.',
+          start_url: '/?source=pwa',
+          display: 'standalone',
+          background_color: '#ffffff',
+          theme_color: '#2563EB',
+          orientation: 'portrait-primary',
+          scope: '/',
+          icons: [
+            {
+              src: transparentIcon,
+              type: 'image/png',
+              sizes: '512x512',
+              purpose: 'any',
+            },
+            {
+              src: solidIcon,
+              type: 'image/png',
+              sizes: '512x512',
+              purpose: 'maskable',
+            },
+          ],
+        }
+        const stringManifest = JSON.stringify(manifest)
+        const manifestBase64 = btoa(
+          unescape(encodeURIComponent(stringManifest)),
+        )
+        const manifestURL = `data:application/manifest+json;base64,${manifestBase64}`
+
+        let link = document.querySelector('link[rel="manifest"]')
+        if (!link) {
+          link = document.createElement('link')
+          link.setAttribute('rel', 'manifest')
+          document.head.appendChild(link)
+        }
+        link.setAttribute('href', manifestURL)
+
+        // Update dynamic Apple Touch Icon
+        let appleIcon = document.querySelector('link[rel="apple-touch-icon"]')
+        if (!appleIcon) {
+          appleIcon = document.createElement('link')
+          appleIcon.setAttribute('rel', 'apple-touch-icon')
+          document.head.appendChild(appleIcon)
+        }
+        appleIcon.setAttribute('href', solidIcon)
+
+        // Fallback standard icon
+        let stdIcon = document.querySelector('link[rel="icon"]')
+        if (!stdIcon) {
+          stdIcon = document.createElement('link')
+          stdIcon.setAttribute('rel', 'icon')
+          stdIcon.setAttribute('type', 'image/png')
+          document.head.appendChild(stdIcon)
+        }
+        stdIcon.setAttribute('href', transparentIcon)
+
+        // Apple Splash Screen (Basic fallback)
+        let appleSplash = document.querySelector(
+          'link[rel="apple-touch-startup-image"]',
+        )
+        if (!appleSplash) {
+          appleSplash = document.createElement('link')
+          appleSplash.setAttribute('rel', 'apple-touch-startup-image')
+          document.head.appendChild(appleSplash)
+        }
+        appleSplash.setAttribute('href', solidIcon)
+      } catch (e) {
+        console.error('Error setting up icons', e)
+      }
     }
-    link.setAttribute('href', manifestURL)
+
+    setupIcons()
 
     // Meta tags for theme, Apple Mobile Web App capability and Splash Screens
     const addOrUpdateMeta = (
@@ -349,36 +417,6 @@ const App = () => {
     addOrUpdateMeta('apple-mobile-web-app-capable', 'yes')
     addOrUpdateMeta('apple-mobile-web-app-status-bar-style', 'default')
     addOrUpdateMeta('apple-mobile-web-app-title', 'OPPORJOB')
-
-    // Update dynamic Apple Touch Icon
-    let appleIcon = document.querySelector('link[rel="apple-touch-icon"]')
-    if (!appleIcon) {
-      appleIcon = document.createElement('link')
-      appleIcon.setAttribute('rel', 'apple-touch-icon')
-      document.head.appendChild(appleIcon)
-    }
-    appleIcon.setAttribute('href', cacheBustedLogoUrl)
-
-    // Fallback standard icon
-    let stdIcon = document.querySelector('link[rel="icon"]')
-    if (!stdIcon) {
-      stdIcon = document.createElement('link')
-      stdIcon.setAttribute('rel', 'icon')
-      stdIcon.setAttribute('type', 'image/png')
-      document.head.appendChild(stdIcon)
-    }
-    stdIcon.setAttribute('href', cacheBustedLogoUrl)
-
-    // Apple Splash Screen (Basic fallback) to prevent white screen
-    let appleSplash = document.querySelector(
-      'link[rel="apple-touch-startup-image"]',
-    )
-    if (!appleSplash) {
-      appleSplash = document.createElement('link')
-      appleSplash.setAttribute('rel', 'apple-touch-startup-image')
-      document.head.appendChild(appleSplash)
-    }
-    appleSplash.setAttribute('href', cacheBustedLogoUrl)
 
     // Ensure OG Image has absolute URL for crawlers that support JS execution
     const ogImage = document.querySelector('meta[property="og:image"]')
