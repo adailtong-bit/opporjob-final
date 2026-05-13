@@ -81,6 +81,7 @@ export default function ProjectDetail() {
   const [isTeamManagerOpen, setIsTeamManagerOpen] = useState(false)
   const [isSyncOpen, setIsSyncOpen] = useState(false)
   const [isChatOpen, setIsChatOpen] = useState(false)
+  const [currentTab, setCurrentTab] = useState('financial')
 
   // Estimation State
   const [isTemplateSelectorOpen, setIsTemplateSelectorOpen] = useState(false)
@@ -102,7 +103,7 @@ export default function ProjectDetail() {
   )
 
   return (
-    <div className="space-y-8 w-full max-w-6xl mx-auto pb-10 px-4 min-w-0">
+    <div className="space-y-8 w-full max-w-6xl mx-auto pb-24 md:pb-10 px-4 min-w-0">
       {/* Visual Safeguard Warning */}
       {criticalExpiredDocs.length > 0 && (
         <Alert
@@ -233,9 +234,43 @@ export default function ProjectDetail() {
         </div>
       </div>
 
-      <Tabs defaultValue="financial" className="w-full flex flex-col min-w-0">
-        {/* Responsive Horizontal Scroll Tabs */}
-        <div className="w-full overflow-x-auto pb-4 -mb-4 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+      <Tabs
+        value={currentTab}
+        onValueChange={setCurrentTab}
+        className="w-full flex flex-col min-w-0"
+      >
+        {/* Mobile Dropdown Navigation */}
+        <div className="md:hidden w-full mb-6">
+          <Select value={currentTab} onValueChange={setCurrentTab}>
+            <SelectTrigger className="w-full bg-muted/50 border-none font-medium h-12 shadow-sm">
+              <SelectValue placeholder="Selecione uma seção" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="financial">Financeiro</SelectItem>
+              <SelectItem value="purchasing">Compras</SelectItem>
+              <SelectItem value="stages">
+                {t('proj.detail.schedule')}
+              </SelectItem>
+              <SelectItem value="budget">{t('proj.budget.title')}</SelectItem>
+              <SelectItem value="estimation">{t('est.tab.title')}</SelectItem>
+              <SelectItem value="execution">
+                {t('proj.detail.financial_execution') || 'Execução'}
+              </SelectItem>
+              <SelectItem value="compliance">Compliance</SelectItem>
+              <SelectItem value="partners">
+                {t('proj.detail.partners')}
+              </SelectItem>
+              <SelectItem value="quotes">Faturas</SelectItem>
+              <SelectItem value="approvals">
+                {t('proj.approvals.title')}
+              </SelectItem>
+              <SelectItem value="reports">{t('proj.reports.title')}</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Desktop Responsive Horizontal Scroll Tabs */}
+        <div className="hidden md:block w-full overflow-x-auto pb-4 -mb-4 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
           <TabsList className="flex w-max min-w-full lg:w-auto lg:min-w-0 flex-nowrap justify-start lg:justify-center mx-auto mb-8 h-auto p-1.5 bg-muted/50 rounded-xl">
             <TabsTrigger
               value="financial"
