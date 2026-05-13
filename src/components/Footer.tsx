@@ -37,19 +37,19 @@ export function Footer() {
   }, [])
 
   return (
-    <footer className="bg-[#0f172a] text-slate-300 py-12 px-6 md:px-12 w-full mt-auto border-t border-slate-800">
+    <footer className="bg-[#0f172a] text-slate-300 py-6 md:py-8 px-6 md:px-12 w-full mt-auto border-t border-slate-800">
       <div className="max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
           {/* Column 1 */}
-          <div className="space-y-8">
-            <div className="space-y-4">
-              <h3 className="text-xl font-bold text-white">About Us</h3>
+          <div className="space-y-4 md:space-y-6">
+            <div className="space-y-2">
+              <h3 className="text-lg font-bold text-white">About Us</h3>
               <p className="text-sm leading-relaxed text-slate-400">
                 {data.aboutUs}
               </p>
             </div>
-            <div className="space-y-4">
-              <h3 className="text-xl font-bold text-white">Our Mission</h3>
+            <div className="space-y-2">
+              <h3 className="text-lg font-bold text-white">Our Mission</h3>
               <p className="text-sm leading-relaxed text-slate-400">
                 {data.ourMission}
               </p>
@@ -57,23 +57,23 @@ export function Footer() {
           </div>
 
           {/* Column 2 */}
-          <div className="space-y-8">
-            <div className="space-y-4">
-              <h3 className="text-xl font-bold text-white">Our Company</h3>
+          <div className="space-y-4 md:space-y-6">
+            <div className="space-y-2">
+              <h3 className="text-lg font-bold text-white">Our Company</h3>
               <p className="text-sm leading-relaxed text-slate-400">
                 {data.ourCompany}
               </p>
             </div>
-            <div className="space-y-4">
-              <h3 className="text-xl font-bold text-white">Contact Us</h3>
-              <div className="text-sm space-y-2 text-slate-400 whitespace-pre-line">
+            <div className="space-y-2">
+              <h3 className="text-lg font-bold text-white">Contact Us</h3>
+              <div className="text-sm space-y-1 text-slate-400 whitespace-pre-line leading-relaxed">
                 {`Email: ${data.contactEmail}\nPhone: ${data.contactPhone}\nAddress: ${data.contactAddress}`}
               </div>
             </div>
           </div>
         </div>
 
-        <div className="pt-8 border-t border-slate-800 text-center md:text-left text-sm text-slate-500">
+        <div className="pt-6 border-t border-slate-800 text-center md:text-left text-sm text-slate-500">
           <p>{data.copyright}</p>
         </div>
       </div>
