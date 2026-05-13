@@ -1,39 +1,40 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase/client'
 
+const defaultFooterData = {
+  aboutUs:
+    'We are a platform dedicated to bringing the best deals and opportunities to our users.',
+  ourCompany:
+    'OPPORJOB is a technology company focused on connecting local businesses with consumers.',
+  ourMission:
+    'Our mission is to empower local commerce and help users save money on their everyday purchases.',
+  contactEmail: 'contact@opporjob.com',
+  contactPhone: '+1 234 567 8900',
+  contactAddress: '123 Tech Street, Suite 456, City, Country',
+  copyright: '© 2026 OPPORJOB. All rights reserved.',
+}
+
 export function Footer() {
-  const [data, setData] = useState<any>(null)
+  const [data, setData] = useState<any>(defaultFooterData)
 
   useEffect(() => {
     const fetchFooter = async () => {
-      const { data: res } = await supabase
-        .from('site_settings' as any)
-        .select('value')
-        .eq('key', 'footer')
-        .single()
+      try {
+        const { data: res, error } = await supabase
+          .from('site_settings' as any)
+          .select('value')
+          .eq('key', 'footer')
+          .single()
 
-      if (res?.value) {
-        setData(res.value)
-      } else {
-        // Fallback generic data
-        setData({
-          aboutUs:
-            'We are a platform dedicated to bringing the best deals and opportunities to our users.',
-          ourCompany:
-            'OPPORJOB is a technology company focused on connecting local businesses with consumers.',
-          ourMission:
-            'Our mission is to empower local commerce and help users save money on their everyday purchases.',
-          contactEmail: 'contact@opporjob.com',
-          contactPhone: '+1 234 567 8900',
-          contactAddress: '123 Tech Street, Suite 456, City, Country',
-          copyright: '© 2026 OPPORJOB. All rights reserved.',
-        })
+        if (!error && res?.value) {
+          setData(res.value)
+        }
+      } catch (err) {
+        console.error('Error fetching footer data:', err)
       }
     }
     fetchFooter()
   }, [])
-
-  if (!data) return null
 
   return (
     <footer className="bg-[#0f172a] text-slate-300 py-12 px-6 md:px-12 w-full mt-auto border-t border-slate-800">
