@@ -25,13 +25,14 @@ import { useToast } from '@/hooks/use-toast'
 import { Briefcase, DollarSign } from 'lucide-react'
 import { useLanguageStore } from '@/stores/useLanguageStore'
 import { formatPhone } from '@/lib/validation'
+import { useCategoryStore } from '@/stores/useCategoryStore'
 
 const jobSchema = z.object({
   title: z.string().min(3, 'Title must be at least 3 characters'),
   description: z.string().min(10, 'Description must be at least 10 characters'),
   category: z.string().min(1, 'Please select a category'),
   subCategory: z.string().min(1, 'Please select a subcategory'),
-  type: z.enum(['donation', 'service', 'job']),
+  type: z.enum(['product', 'donation', 'job', 'service', 'rental']),
   price: z.string().optional(),
   pricingType: z.string().optional(),
   phone: z.string().min(14, 'Phone number must be fully formatted'),
@@ -39,78 +40,14 @@ const jobSchema = z.object({
 
 type JobFormValues = z.infer<typeof jobSchema>
 
-const CATEGORIES = {
-  en: [
-    { id: 'construction', name: 'Construction & Remodeling' },
-    { id: 'technology', name: 'IT & Technology' },
-    { id: 'maintenance', name: 'Home Maintenance' },
-  ],
-  pt: [
-    { id: 'construction', name: 'Construção & Reformas' },
-    { id: 'technology', name: 'TI & Tecnologia' },
-    { id: 'maintenance', name: 'Manutenção Residencial' },
-  ],
-  es: [
-    { id: 'construction', name: 'Construcción y Reformas' },
-    { id: 'technology', name: 'TI y Tecnología' },
-    { id: 'maintenance', name: 'Mantenimiento del Hogar' },
-  ],
-}
-
-const SUBCATEGORIES: Record<string, { en: any[]; pt: any[]; es: any[] }> = {
-  construction: {
-    en: [
-      { id: 'plumbing', name: 'Plumbing' },
-      { id: 'electrical', name: 'Electrical' },
-      { id: 'painting', name: 'Painting' },
-    ],
-    pt: [
-      { id: 'plumbing', name: 'Encanamento' },
-      { id: 'electrical', name: 'Elétrica' },
-      { id: 'painting', name: 'Pintura' },
-    ],
-    es: [
-      { id: 'plumbing', name: 'Plomería' },
-      { id: 'electrical', name: 'Electricidad' },
-      { id: 'painting', name: 'Pintura' },
-    ],
-  },
-  technology: {
-    en: [
-      { id: 'web', name: 'Web Development' },
-      { id: 'support', name: 'Tech Support' },
-    ],
-    pt: [
-      { id: 'web', name: 'Desenvolvimento Web' },
-      { id: 'support', name: 'Suporte Técnico' },
-    ],
-    es: [
-      { id: 'web', name: 'Desarrollo Web' },
-      { id: 'support', name: 'Soporte Técnico' },
-    ],
-  },
-  maintenance: {
-    en: [
-      { id: 'cleaning', name: 'House Cleaning' },
-      { id: 'landscaping', name: 'Landscaping' },
-    ],
-    pt: [
-      { id: 'cleaning', name: 'Limpeza Residencial' },
-      { id: 'landscaping', name: 'Jardinagem' },
-    ],
-    es: [
-      { id: 'cleaning', name: 'Limpieza del Hogar' },
-      { id: 'landscaping', name: 'Jardinería' },
-    ],
-  },
-}
-
 export default function PostJob() {
   const { currentLanguage, currentCurrency, t } = useLanguageStore()
   const lang = currentLanguage as 'en' | 'pt' | 'es'
   const countryCode = lang === 'pt' ? 'BR' : 'US'
   const { toast } = useToast()
   const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const { categories } = useCategoryStore()
 
   const form = useForm<JobFormValues>({
     resolver: zodResolver(jobSchema),
@@ -195,14 +132,20 @@ export default function PostJob() {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="service">
-                          {t('post.type.job.label')}
-                        </SelectItem>
-                        <SelectItem value="job">
-                          {t('post.type.job.label')}
+                        <SelectItem value="product">
+                          {t('post.type.clearance') || 'Desapego'}
                         </SelectItem>
                         <SelectItem value="donation">
-                          {t('category.donation')}
+                          {t('post.type.donation') || 'Doação'}
+                        </SelectItem>
+                        <SelectItem value="job">
+                          {t('post.type.job') || 'Vagas'}
+                        </SelectItem>
+                        <SelectItem value="service">
+                          {t('post.type.service') || 'Serviços'}
+                        </SelectItem>
+                        <SelectItem value="rental">
+                          {t('post.type.rental') || 'Aluguéis'}
                         </SelectItem>
                       </SelectContent>
                     </Select>
@@ -211,36 +154,40 @@ export default function PostJob() {
                 )}
               />
 
-              {watchType === 'service' && (
+              {['service', 'job', 'product', 'rental'].includes(watchType) && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 p-5 border rounded-lg bg-primary/5 animate-fade-in border-primary/20">
-                  <FormField
-                    control={form.control}
-                    name="pricingType"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{t('post.pricing_type')}</FormLabel>
-                        <Select
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                        >
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder={t('general.select')} />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="hourly">
-                              {t('post.rate.daily')}
-                            </SelectItem>
-                            <SelectItem value="fixed">
-                              {t('job.fixed_price')}
-                            </SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                  {['service', 'job'].includes(watchType) && (
+                    <FormField
+                      control={form.control}
+                      name="pricingType"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>{t('post.pricing_type')}</FormLabel>
+                          <Select
+                            onValueChange={field.onChange}
+                            defaultValue={field.value}
+                          >
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue
+                                  placeholder={t('general.select')}
+                                />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="hourly">
+                                {t('post.rate.daily')}
+                              </SelectItem>
+                              <SelectItem value="fixed">
+                                {t('job.fixed_price')}
+                              </SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  )}
 
                   <FormField
                     control={form.control}
@@ -248,7 +195,12 @@ export default function PostJob() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>
-                          {t('post.budget_est')} ({currentCurrency || 'USD'})
+                          {watchType === 'rental'
+                            ? t('post.rental_rate')
+                            : watchType === 'product'
+                              ? t('post.sale_price')
+                              : t('post.budget_est')}{' '}
+                          ({currentCurrency || 'USD'})
                         </FormLabel>
                         <FormControl>
                           <div className="relative">
@@ -300,7 +252,7 @@ export default function PostJob() {
                   name="category"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>{t('category.ti').split(' ')[0]}</FormLabel>
+                      <FormLabel>{t('market.category')}</FormLabel>
                       <Select
                         onValueChange={(val) => {
                           field.onChange(val)
@@ -314,9 +266,11 @@ export default function PostJob() {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {(CATEGORIES[lang] || CATEGORIES.pt).map((cat) => (
+                          {categories.map((cat) => (
                             <SelectItem key={cat.id} value={cat.id}>
-                              {cat.name}
+                              {cat.translationKey
+                                ? t(cat.translationKey)
+                                : cat.name}
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -344,14 +298,15 @@ export default function PostJob() {
                         </FormControl>
                         <SelectContent>
                           {watchCategory &&
-                            (
-                              SUBCATEGORIES[watchCategory]?.[lang] ||
-                              SUBCATEGORIES[watchCategory]?.pt
-                            )?.map((sub) => (
-                              <SelectItem key={sub.id} value={sub.id}>
-                                {sub.name}
-                              </SelectItem>
-                            ))}
+                            categories
+                              .find((c) => c.id === watchCategory)
+                              ?.subCategories.map((sub) => (
+                                <SelectItem key={sub.id} value={sub.id}>
+                                  {sub.translationKey
+                                    ? t(sub.translationKey)
+                                    : sub.name}
+                                </SelectItem>
+                              ))}
                         </SelectContent>
                       </Select>
                       <FormMessage />
