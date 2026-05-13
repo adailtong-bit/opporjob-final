@@ -31,7 +31,7 @@ import {
 
 export function ProjectFinance({ projectId }: { projectId: string }) {
   const { getProject } = useProjectStore()
-  const { formatCurrency } = useLanguageStore()
+  const { formatCurrency, t } = useLanguageStore()
   const project = getProject(projectId)
 
   if (!project) return null
