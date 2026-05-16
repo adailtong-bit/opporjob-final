@@ -13,7 +13,17 @@ import {
   Star,
   ShoppingCart,
   Send,
+  MoreVertical,
+  Flag,
+  Ban,
 } from 'lucide-react'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { Textarea } from '@/components/ui/textarea'
 import { useToast } from '@/hooks/use-toast'
 import { useLanguageStore } from '@/stores/useLanguageStore'
@@ -195,12 +205,53 @@ export default function UserProfile() {
 
   if (user.id === id) {
     return (
-      <div className="max-w-3xl mx-auto py-8 px-4 text-center space-y-4">
-        <h2 className="text-2xl font-bold">{t('profile.public_title')}</h2>
-        <p className="text-muted-foreground">{t('profile.public_desc')}</p>
-        <Button onClick={() => navigate('/settings')}>
-          {t('profile.go_settings')}
-        </Button>
+      <div className="max-w-3xl mx-auto py-8 px-4 space-y-6">
+        <div className="text-center space-y-4">
+          <h2 className="text-2xl font-bold">{t('profile.public_title')}</h2>
+          <p className="text-muted-foreground">{t('profile.public_desc')}</p>
+          <Button onClick={() => navigate('/settings')}>
+            {t('profile.go_settings')}
+          </Button>
+        </div>
+
+        <Card className="mt-8 border-blue-200 shadow-sm">
+          <CardHeader className="bg-blue-50/50">
+            <CardTitle className="flex items-center gap-2 text-blue-800">
+              <Shield className="w-5 h-5" />
+              Selo de Verificação de Identidade
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="pt-6 space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Aumente suas chances de ser contratado! Profissionais com
+              identidade verificada recebem até 3x mais contatos na plataforma.
+              Envie uma foto do seu documento oficial para receber o selo.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 items-center p-4 border rounded-lg bg-muted/20">
+              <div className="h-16 w-24 bg-slate-200 rounded-md border-2 border-dashed border-slate-300 flex items-center justify-center shrink-0">
+                <Shield className="w-6 h-6 text-slate-400" />
+              </div>
+              <div className="flex-1 text-center sm:text-left">
+                <h4 className="font-semibold text-sm">
+                  Status: Não Verificado
+                </h4>
+                <p className="text-xs text-muted-foreground">
+                  Nenhum documento enviado ainda.
+                </p>
+              </div>
+              <Button
+                onClick={() => {
+                  toast({
+                    title: 'Upload iniciado',
+                    description: 'Por favor, selecione seu documento.',
+                  })
+                }}
+              >
+                Enviar Documento
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     )
   }
@@ -217,6 +268,7 @@ export default function UserProfile() {
   )
 
   const canMessage = targetUser.openChat || isPremium || !!existingConversation
+  const [isSaved, setIsSaved] = useState(false)
 
   const handleAction = () => {
     if (canMessage) {
@@ -243,9 +295,60 @@ export default function UserProfile() {
 
   return (
     <div className="max-w-4xl mx-auto py-8 px-4 space-y-6">
-      <Button variant="ghost" className="mb-2" onClick={() => navigate(-1)}>
-        <ArrowLeft className="mr-2 h-4 w-4" /> {t('back')}
-      </Button>
+      <div className="flex items-center justify-between mb-2">
+        <Button variant="ghost" onClick={() => navigate(-1)}>
+          <ArrowLeft className="mr-2 h-4 w-4" /> {t('back')}
+        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => {
+              setIsSaved(!isSaved)
+              toast({
+                title: isSaved
+                  ? 'Removido dos favoritos'
+                  : 'Salvo nos favoritos!',
+              })
+            }}
+          >
+            <Heart
+              className={`h-5 w-5 ${isSaved ? 'fill-red-500 text-red-500' : ''}`}
+            />
+          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="icon">
+                <MoreVertical className="h-5 w-5" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem
+                onClick={() =>
+                  toast({
+                    title: 'Usuário denunciado',
+                    description: 'Nossa equipe irá analisar este perfil.',
+                  })
+                }
+              >
+                <Flag className="mr-2 h-4 w-4" /> Denunciar
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                className="text-destructive"
+                onClick={() =>
+                  toast({
+                    title: 'Usuário bloqueado',
+                    description: 'Você não verá mais mensagens deste usuário.',
+                  })
+                }
+              >
+                <Ban className="mr-2 h-4 w-4" /> Bloquear
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      </div>
 
       <Card>
         <CardContent className="pt-6 flex flex-col sm:flex-row items-center gap-6">
@@ -264,8 +367,20 @@ export default function UserProfile() {
                   title="Open Chat Enabled"
                 />
               )}
+              {targetUser.document !== null && (
+                <Badge
+                  variant="default"
+                  className="bg-blue-600 hover:bg-blue-700 text-white gap-1 ml-2"
+                >
+                  <Shield className="h-3 w-3" /> Verificado
+                </Badge>
+              )}
             </h1>
             <div className="flex flex-wrap justify-center sm:justify-start gap-2">
+              <div className="flex items-center gap-1.5 text-sm font-medium text-green-600 bg-green-50 px-2 py-0.5 rounded-full border border-green-200">
+                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                Online
+              </div>
               <Badge variant="outline" className="capitalize">
                 {targetUser.role === 'contractor'
                   ? t('role.contractor')

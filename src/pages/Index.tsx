@@ -9,6 +9,7 @@ import { Link } from 'react-router-dom'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { useJobStore } from '@/stores/useJobStore'
 import { usePWA } from '@/hooks/use-pwa'
+import { ProximityMap } from '@/components/home/ProximityMap'
 
 export default function Index() {
   const { isInstallable, installPWA, shareContent, setBadge, clearBadge } =
@@ -183,7 +184,17 @@ export default function Index() {
         </Button>
       </div>
 
-      <div className="px-4 mt-4">
+      <div className="px-4 mt-6">
+        <div className="mb-6">
+          <h2 className="text-xl font-bold mb-1">
+            Profissionais e Serviços Próximos
+          </h2>
+          <p className="text-sm text-muted-foreground mb-4">
+            Encontre especialistas disponíveis na sua região pelo mapa
+            interativo.
+          </p>
+          <ProximityMap />
+        </div>
         <div className="space-y-2 pt-2">
           {renderSection('Marketplace', 'marketplace', 'product')}
           {renderSection('Donations & Community', 'donation', 'community')}

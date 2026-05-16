@@ -621,6 +621,54 @@ export default function Messages() {
               )}
             </div>
 
+            <div className="px-4 py-2 bg-muted/30 border-t flex items-center gap-2 overflow-x-auto scrollbar-none">
+              <span className="text-xs font-semibold text-muted-foreground whitespace-nowrap">
+                Respostas Rápidas:
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-7 text-xs rounded-full bg-background whitespace-nowrap"
+                onClick={() => {
+                  sendMessage(
+                    selectedConversationId,
+                    user.id,
+                    'Olá! O serviço ainda está disponível?',
+                  )
+                }}
+              >
+                Disponível?
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-7 text-xs rounded-full bg-background whitespace-nowrap"
+                onClick={() => {
+                  sendMessage(
+                    selectedConversationId,
+                    user.id,
+                    'Qual é o preço mínimo ou valor negociável?',
+                  )
+                }}
+              >
+                Negociar Valor
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-7 text-xs rounded-full border-primary/50 text-primary bg-primary/5 whitespace-nowrap"
+                onClick={() => {
+                  const targetId = selectedConversation.participants.find(
+                    (p) => p.id !== user.id,
+                  )?.id
+                  navigate(
+                    `/payment/service/${targetId}?service=Oferta%20Personalizada&price=0`,
+                  )
+                }}
+              >
+                Fazer Oferta Direta
+              </Button>
+            </div>
             <div className="p-4 border-t bg-background shrink-0">
               <form
                 onSubmit={(e) => {

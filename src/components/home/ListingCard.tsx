@@ -50,8 +50,34 @@ export function ListingCard({
                   : 'In Negotiation'}
             </Badge>
           )}
+          {/* Mock Online Status Badge */}
+          <div className="absolute bottom-2 right-2 bg-background/90 backdrop-blur text-[10px] font-medium px-2 py-0.5 rounded-full shadow-sm flex items-center gap-1.5 z-10">
+            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+            Online
+          </div>
         </div>
-        <CardContent className="p-3">
+        <CardContent className="p-3 relative">
+          <Badge
+            variant="outline"
+            className="absolute -top-3 right-2 bg-background text-[10px] h-5 border-blue-200 text-blue-700 font-semibold shadow-sm z-20"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="10"
+              height="10"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="mr-1"
+            >
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+              <path d="m9 12 2 2 4-4" />
+            </svg>
+            Verificado
+          </Badge>
           <h3 className="font-medium text-sm line-clamp-2 min-h-[40px] leading-tight">
             {title}
           </h3>
