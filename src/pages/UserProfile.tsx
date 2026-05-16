@@ -74,6 +74,7 @@ export default function UserProfile() {
   const [newReviewRating, setNewReviewRating] = useState(5)
   const [newReviewComment, setNewReviewComment] = useState('')
   const [submittingReview, setSubmittingReview] = useState(false)
+  const [isSaved, setIsSaved] = useState(false)
 
   useEffect(() => {
     async function fetchUser() {
@@ -268,7 +269,6 @@ export default function UserProfile() {
   )
 
   const canMessage = targetUser.openChat || isPremium || !!existingConversation
-  const [isSaved, setIsSaved] = useState(false)
 
   const handleAction = () => {
     if (canMessage) {
