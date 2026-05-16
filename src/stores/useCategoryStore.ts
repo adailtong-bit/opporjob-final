@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { supabase } from '@/lib/supabase/client'
 
 export interface SubCategory {
   id: string
@@ -25,12 +26,22 @@ export interface Category {
 
 interface CategoryState {
   categories: Category[]
-  addCategory: (name: string, type?: CategoryType) => void
-  removeCategory: (id: string) => void
-  updateCategory: (id: string, name: string, type?: CategoryType) => void
-  addSubCategory: (categoryId: string, name: string) => void
-  removeSubCategory: (categoryId: string, subId: string) => void
-  updateSubCategory: (categoryId: string, subId: string, name: string) => void
+  isLoading: boolean
+  fetchCategories: () => Promise<void>
+  addCategory: (name: string, type?: CategoryType) => Promise<void>
+  removeCategory: (id: string) => Promise<void>
+  updateCategory: (
+    id: string,
+    name: string,
+    type?: CategoryType,
+  ) => Promise<void>
+  addSubCategory: (categoryId: string, name: string) => Promise<void>
+  removeSubCategory: (categoryId: string, subId: string) => Promise<void>
+  updateSubCategory: (
+    categoryId: string,
+    subId: string,
+    name: string,
+  ) => Promise<void>
 }
 
 const createSlug = (name: string) =>
@@ -41,149 +52,263 @@ const createSlug = (name: string) =>
     .replace(/ /g, '-')
     .replace(/[^\w-]+/g, '')
 
-const createSubCat = (name: string, translationKey?: string): SubCategory => ({
-  id: Math.random().toString(36).substr(2, 9),
+const generateId = () => Math.random().toString(36).substring(2, 15)
+
+const createSubCat = (
+  id: string,
+  name: string,
+  translationKey?: string,
+): SubCategory => ({
+  id,
   name,
   slug: createSlug(name),
   translationKey,
 })
 
+const initialCategories: Category[] = [
+  {
+    id: '1',
+    name: 'Renovations',
+    slug: 'renovations',
+    type: 'job',
+    translationKey: 'category.reform',
+    subCategories: [
+      createSubCat('sub-1-1', 'Painting', 'subcat.painting'),
+      createSubCat('sub-1-2', 'Drywall Installation', 'subcat.drywall'),
+      createSubCat('sub-1-3', 'Cabinet Installation', 'subcat.cabinets'),
+      createSubCat('sub-1-4', 'Electrician', 'subcat.electrician'),
+      createSubCat('sub-1-5', 'Flooring Installer', 'subcat.flooring'),
+    ],
+  },
+  {
+    id: '2',
+    name: 'Construction',
+    slug: 'construction',
+    type: 'job',
+    translationKey: 'category.construction',
+    subCategories: [
+      createSubCat('sub-2-1', 'Masonry', 'subcat.masonry'),
+      createSubCat('sub-2-2', 'Roofing', 'subcat.roofing'),
+      createSubCat('sub-2-3', 'Foundation', 'subcat.foundation'),
+      createSubCat('sub-2-4', 'Ironwork', 'subcat.ironwork'),
+    ],
+  },
+  {
+    id: '3',
+    name: 'IT & Programming',
+    slug: 'it-programming',
+    type: 'job',
+    translationKey: 'category.ti',
+    subCategories: [
+      createSubCat('sub-3-1', 'Web Development', 'subcat.webdev'),
+      createSubCat('sub-3-2', 'Mobile Apps', 'subcat.mobile'),
+      createSubCat('sub-3-3', 'UI/UX Design', 'subcat.uiux'),
+      createSubCat('sub-3-4', 'IT Support', 'subcat.itsupport'),
+    ],
+  },
+  {
+    id: '4',
+    name: 'Design',
+    slug: 'design',
+    type: 'job',
+    translationKey: 'category.design',
+    subCategories: [
+      createSubCat('sub-4-1', 'Visual Identity', 'subcat.visualid'),
+      createSubCat('sub-4-2', 'Web Design', 'subcat.webdesign'),
+      createSubCat('sub-4-3', 'Illustration', 'subcat.illustration'),
+    ],
+  },
+  {
+    id: '5',
+    name: 'Marketing',
+    slug: 'marketing',
+    type: 'job',
+    translationKey: 'category.marketing',
+    subCategories: [
+      createSubCat('sub-5-1', 'SEO', 'subcat.seo'),
+      createSubCat('sub-5-2', 'Traffic Management', 'subcat.traffic'),
+      createSubCat('sub-5-3', 'Social Media', 'subcat.socialmedia'),
+    ],
+  },
+  {
+    id: '6',
+    name: 'Sales & Products',
+    slug: 'sales-products',
+    type: 'marketplace',
+    translationKey: 'category.sales',
+    subCategories: [
+      createSubCat('sub-6-1', 'Electronics', 'subcat.electronics'),
+      createSubCat('sub-6-2', 'Furniture', 'subcat.furniture'),
+      createSubCat('sub-6-3', 'Tools', 'subcat.tools'),
+    ],
+  },
+  {
+    id: '7',
+    name: 'Rentals',
+    slug: 'rentals',
+    type: 'rental',
+    translationKey: 'category.rental',
+    subCategories: [
+      createSubCat('sub-7-1', 'Equipment', 'subcat.equipment'),
+      createSubCat('sub-7-2', 'Vehicles', 'subcat.vehicles'),
+      createSubCat('sub-7-3', 'Spaces', 'subcat.spaces'),
+    ],
+  },
+  {
+    id: '8',
+    name: 'Donation',
+    slug: 'donation',
+    type: 'donation',
+    translationKey: 'category.donation',
+    subCategories: [
+      createSubCat('sub-8-1', 'Leftover Materials', 'subcat.leftovers'),
+      createSubCat('sub-8-2', 'Clothes & PPE', 'subcat.clothes_ppe'),
+    ],
+  },
+  {
+    id: '9',
+    name: 'Home Services',
+    slug: 'home-services',
+    type: 'job',
+    translationKey: 'category.home_services',
+    subCategories: [
+      createSubCat('sub-9-1', 'Appliance Repair or Maintenance'),
+      createSubCat('sub-9-2', 'Carpentry'),
+      createSubCat('sub-9-3', 'Concrete and Masonry'),
+      createSubCat('sub-9-4', 'Electrical'),
+      createSubCat('sub-9-5', 'Exterior Painting'),
+      createSubCat('sub-9-6', 'Fence and Gate Installation or Repair'),
+      createSubCat('sub-9-7', 'Flooring'),
+      createSubCat('sub-9-8', 'Furniture Assembly'),
+      createSubCat('sub-9-9', 'General Contracting'),
+      createSubCat('sub-9-10', 'Handyman'),
+      createSubCat('sub-9-11', 'Home Remodeling'),
+      createSubCat('sub-9-12', 'House Cleaning'),
+      createSubCat('sub-9-13', 'HVAC Repair or Maintenance'),
+      createSubCat('sub-9-14', 'Interior Design'),
+      createSubCat('sub-9-15', 'Interior Painting'),
+      createSubCat('sub-9-16', 'Junk Removal'),
+    ],
+  },
+  {
+    id: '10',
+    name: 'Auto Services',
+    slug: 'auto-services',
+    type: 'job',
+    translationKey: 'category.auto_services',
+    subCategories: [
+      createSubCat('sub-10-1', 'Auto Detailing'),
+      createSubCat('sub-10-2', 'Auto Repair or Maintenance'),
+    ],
+  },
+  {
+    id: '11',
+    name: 'Professional & Personal Services',
+    slug: 'professional-personal-services',
+    type: 'job',
+    translationKey: 'category.prof_personal',
+    subCategories: [
+      createSubCat('sub-11-1', 'Academic Tutoring'),
+      createSubCat('sub-11-2', 'Accounting and Financial Services'),
+      createSubCat('sub-11-3', 'Bartending'),
+      createSubCat('sub-11-4', 'Computer and Device Repair'),
+      createSubCat('sub-11-5', 'Dog Training'),
+      createSubCat('sub-11-6', 'Dog Walking'),
+      createSubCat('sub-11-7', 'Event Planning Services'),
+    ],
+  },
+]
+
 export const useCategoryStore = create<CategoryState>((set) => ({
-  categories: [
-    {
-      id: '1',
-      name: 'Renovations',
-      slug: 'renovations',
-      type: 'job',
-      translationKey: 'category.reform',
-      subCategories: [
-        createSubCat('Painting', 'subcat.painting'),
-        createSubCat('Drywall Installation', 'subcat.drywall'),
-        createSubCat('Cabinet Installation', 'subcat.cabinets'),
-        createSubCat('Electrician', 'subcat.electrician'),
-        createSubCat('Flooring Installer', 'subcat.flooring'),
-      ],
-    },
-    {
-      id: '2',
-      name: 'Construction',
-      slug: 'construction',
-      type: 'job',
-      translationKey: 'category.construction',
-      subCategories: [
-        createSubCat('Masonry', 'subcat.masonry'),
-        createSubCat('Roofing', 'subcat.roofing'),
-        createSubCat('Foundation', 'subcat.foundation'),
-        createSubCat('Ironwork', 'subcat.ironwork'),
-      ],
-    },
-    {
-      id: '3',
-      name: 'IT & Programming',
-      slug: 'it-programming',
-      type: 'job',
-      translationKey: 'category.ti',
-      subCategories: [
-        createSubCat('Web Development', 'subcat.webdev'),
-        createSubCat('Mobile Apps', 'subcat.mobile'),
-        createSubCat('UI/UX Design', 'subcat.uiux'),
-        createSubCat('IT Support', 'subcat.itsupport'),
-      ],
-    },
-    {
-      id: '4',
-      name: 'Design',
-      slug: 'design',
-      type: 'job',
-      translationKey: 'category.design',
-      subCategories: [
-        createSubCat('Visual Identity', 'subcat.visualid'),
-        createSubCat('Web Design', 'subcat.webdesign'),
-        createSubCat('Illustration', 'subcat.illustration'),
-      ],
-    },
-    {
-      id: '5',
-      name: 'Marketing',
-      slug: 'marketing',
-      type: 'job',
-      translationKey: 'category.marketing',
-      subCategories: [
-        createSubCat('SEO', 'subcat.seo'),
-        createSubCat('Traffic Management', 'subcat.traffic'),
-        createSubCat('Social Media', 'subcat.socialmedia'),
-      ],
-    },
-    {
-      id: '6',
-      name: 'Sales & Products',
-      slug: 'sales-products',
-      type: 'marketplace',
-      translationKey: 'category.sales',
-      subCategories: [
-        createSubCat('Electronics', 'subcat.electronics'),
-        createSubCat('Furniture', 'subcat.furniture'),
-        createSubCat('Tools', 'subcat.tools'),
-      ],
-    },
-    {
-      id: '7',
-      name: 'Rentals',
-      slug: 'rentals',
-      type: 'rental',
-      translationKey: 'category.rental',
-      subCategories: [
-        createSubCat('Equipment', 'subcat.equipment'),
-        createSubCat('Vehicles', 'subcat.vehicles'),
-        createSubCat('Spaces', 'subcat.spaces'),
-      ],
-    },
-    {
-      id: '8',
-      name: 'Donation',
-      slug: 'donation',
-      type: 'donation',
-      translationKey: 'category.donation',
-      subCategories: [
-        createSubCat('Leftover Materials', 'subcat.leftovers'),
-        createSubCat('Clothes & PPE', 'subcat.clothes_ppe'),
-      ],
-    },
-  ],
-  addCategory: (name, type = 'job') =>
-    set((state) => ({
-      categories: [
-        ...state.categories,
-        {
-          id: Math.random().toString(36).substr(2, 9),
-          name,
-          slug: createSlug(name),
-          type,
-          subCategories: [],
-        },
-      ],
-    })),
-  removeCategory: (id) =>
+  categories: initialCategories,
+  isLoading: false,
+  fetchCategories: async () => {
+    set({ isLoading: true })
+    try {
+      const { data: cats, error: catsError } = await supabase
+        .from('categories')
+        .select('*')
+      const { data: subCats, error: subCatsError } = await supabase
+        .from('subcategories')
+        .select('*')
+
+      if (!catsError && !subCatsError && cats && cats.length > 0) {
+        const merged = cats.map((c: any) => ({
+          id: c.id,
+          name: c.name,
+          slug: c.slug,
+          type: c.type as CategoryType,
+          translationKey: c.translation_key || undefined,
+          subCategories: (subCats || [])
+            .filter((s: any) => s.category_id === c.id)
+            .map((s: any) => ({
+              id: s.id,
+              name: s.name,
+              slug: s.slug,
+              translationKey: s.translation_key || undefined,
+            })),
+        }))
+        set({ categories: merged })
+      }
+    } catch (e) {
+      console.error('Failed to fetch categories:', e)
+    } finally {
+      set({ isLoading: false })
+    }
+  },
+  addCategory: async (name, type = 'job') => {
+    const id = generateId()
+    const slug = createSlug(name)
+    const newCat: Category = { id, name, slug, type, subCategories: [] }
+
+    set((state) => ({ categories: [...state.categories, newCat] }))
+
+    await supabase.from('categories').insert({
+      id,
+      name,
+      slug,
+      type,
+    })
+  },
+  removeCategory: async (id) => {
     set((state) => ({
       categories: state.categories.filter((c) => c.id !== id),
-    })),
-  updateCategory: (id, name, type) =>
+    }))
+    await supabase.from('categories').delete().eq('id', id)
+  },
+  updateCategory: async (id, name, type) => {
+    const slug = createSlug(name)
     set((state) => ({
       categories: state.categories.map((c) =>
-        c.id === id
-          ? { ...c, name, slug: createSlug(name), type: type || c.type }
-          : c,
+        c.id === id ? { ...c, name, slug, type: type || c.type } : c,
       ),
-    })),
-  addSubCategory: (categoryId, name) =>
+    }))
+
+    const updateData: any = { name, slug }
+    if (type) updateData.type = type
+    await supabase.from('categories').update(updateData).eq('id', id)
+  },
+  addSubCategory: async (categoryId, name) => {
+    const id = generateId()
+    const slug = createSlug(name)
+    const newSub = { id, name, slug }
+
     set((state) => ({
       categories: state.categories.map((c) =>
         c.id === categoryId
-          ? { ...c, subCategories: [...c.subCategories, createSubCat(name)] }
+          ? { ...c, subCategories: [...c.subCategories, newSub] }
           : c,
       ),
-    })),
-  removeSubCategory: (categoryId, subId) =>
+    }))
+
+    await supabase.from('subcategories').insert({
+      id,
+      category_id: categoryId,
+      name,
+      slug,
+    })
+  },
+  removeSubCategory: async (categoryId, subId) => {
     set((state) => ({
       categories: state.categories.map((c) =>
         c.id === categoryId
@@ -193,18 +318,25 @@ export const useCategoryStore = create<CategoryState>((set) => ({
             }
           : c,
       ),
-    })),
-  updateSubCategory: (categoryId, subId, name) =>
+    }))
+
+    await supabase.from('subcategories').delete().eq('id', subId)
+  },
+  updateSubCategory: async (categoryId, subId, name) => {
+    const slug = createSlug(name)
     set((state) => ({
       categories: state.categories.map((c) =>
         c.id === categoryId
           ? {
               ...c,
               subCategories: c.subCategories.map((s) =>
-                s.id === subId ? { ...s, name, slug: createSlug(name) } : s,
+                s.id === subId ? { ...s, name, slug } : s,
               ),
             }
           : c,
       ),
-    })),
+    }))
+
+    await supabase.from('subcategories').update({ name, slug }).eq('id', subId)
+  },
 }))

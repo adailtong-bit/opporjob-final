@@ -73,6 +73,7 @@ import { supabase } from '@/lib/supabase/client'
 import { useLanguageStore } from '@/stores/useLanguageStore'
 import { EvaluationModal } from '@/components/EvaluationModal'
 import { AuthProvider, useAuth } from '@/hooks/use-auth'
+import { useCategoryStore } from '@/stores/useCategoryStore'
 import { usePWA } from '@/hooks/use-pwa'
 import logoImg from '@/assets/corepm-f1280.png'
 import { PushNotificationPrompt } from '@/components/PushNotificationPrompt'
@@ -104,6 +105,13 @@ const NotificationBadgeSync = () => {
     }
   }, [user, notifications, setBadge, clearBadge])
 
+  return null
+}
+
+const CategorySync = () => {
+  useEffect(() => {
+    useCategoryStore.getState().fetchCategories()
+  }, [])
   return null
 }
 
@@ -507,6 +515,7 @@ const App = () => {
         future={{ v7_startTransition: false, v7_relativeSplatPath: false }}
       >
         <AuthSync />
+        <CategorySync />
         <NotificationBadgeSync />
         <ScrollToTop />
         <TooltipProvider>
