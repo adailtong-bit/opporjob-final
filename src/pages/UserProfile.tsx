@@ -2,15 +2,44 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { useAuthStore } from '@/stores/useAuthStore'
 import { useMessageStore } from '@/stores/useMessageStore'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
-import { MessageSquare, Heart, Shield, ArrowLeft } from 'lucide-react'
+import { MessageSquare, Heart, Shield, ArrowLeft, Star } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import { useLanguageStore } from '@/stores/useLanguageStore'
 
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase/client'
+import useEmblaCarousel from 'embla-carousel-react'
+import Autoplay from 'embla-carousel-autoplay'
+
+function PortfolioCarousel({ photos }: { photos: string[] }) {
+  const [emblaRef] = useEmblaCarousel({ loop: true, align: 'start' }, [
+    Autoplay({ delay: 3000, stopOnInteraction: true }),
+  ])
+
+  return (
+    <div className="overflow-hidden" ref={emblaRef}>
+      <div className="flex -ml-4">
+        {photos.map((url, idx) => (
+          <div
+            key={idx}
+            className="flex-[0_0_100%] min-w-0 sm:flex-[0_0_50%] md:flex-[0_0_33.33%] pl-4"
+          >
+            <div className="aspect-square rounded-md overflow-hidden border">
+              <img
+                src={url}
+                alt={`Portfolio ${idx + 1}`}
+                className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+              />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
 
 export default function UserProfile() {
   const { id } = useParams<{ id: string }>()
@@ -36,6 +65,22 @@ export default function UserProfile() {
 
         if (error) throw error
 
+        const { data: reviewsData } = await supabase
+          .from('reviews')
+          .select(
+            'id, rating, comment, created_at, reviewer:profiles!reviewer_id(id, name, avatar_url)',
+          )
+          .eq('target_id', id)
+          .order('created_at', { ascending: false })
+
+        const calculatedReputation =
+          reviewsData && reviewsData.length > 0
+            ? (
+                reviewsData.reduce((acc, r) => acc + Number(r.rating), 0) /
+                reviewsData.length
+              ).toFixed(1)
+            : '5.0'
+
         setTargetUser({
           id: data.id,
           name: data.name || data.company_name || 'Professional',
@@ -44,13 +89,14 @@ export default function UserProfile() {
             `https://api.dicebear.com/7.x/initials/svg?seed=${data.name}`,
           openChat: true, // Assuming default open chat for simplicity
           role: data.role || 'executor',
-          reputation: 5.0, // Mock reputation
+          reputation: calculatedReputation,
           location:
             data.city && data.state
               ? `${data.city} - ${data.state}`
               : 'Location unknown',
           portfolio: data.portfolio_photos || [],
           services: data.priced_services || [],
+          reviews: reviewsData || [],
         })
       } catch (err) {
         console.error('Error fetching profile:', err)
@@ -121,7 +167,7 @@ export default function UserProfile() {
   }
 
   return (
-    <div className="max-w-3xl mx-auto py-8 px-4 space-y-6">
+    <div className="max-w-4xl mx-auto py-8 px-4 space-y-6">
       <Button variant="ghost" className="mb-2" onClick={() => navigate(-1)}>
         <ArrowLeft className="mr-2 h-4 w-4" /> {t('back')}
       </Button>
@@ -206,23 +252,66 @@ export default function UserProfile() {
                   <CardTitle>Portfolio</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                    {targetUser.portfolio.map((url: string, idx: number) => (
-                      <div
-                        key={idx}
-                        className="aspect-square rounded-md overflow-hidden border"
-                      >
-                        <img
-                          src={url}
-                          alt={`Portfolio ${idx + 1}`}
-                          className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-                        />
-                      </div>
-                    ))}
-                  </div>
+                  <PortfolioCarousel photos={targetUser.portfolio} />
                 </CardContent>
               </Card>
             )}
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Reviews</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {targetUser.reviews && targetUser.reviews.length > 0 ? (
+                  <div className="space-y-4">
+                    {targetUser.reviews.map((review: any) => (
+                      <div
+                        key={review.id}
+                        className="border-b pb-4 last:border-0 last:pb-0"
+                      >
+                        <div className="flex items-center gap-2 mb-2">
+                          <Avatar className="h-8 w-8">
+                            <AvatarImage src={review.reviewer?.avatar_url} />
+                            <AvatarFallback>
+                              {review.reviewer?.name?.charAt(0) || 'U'}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <p className="text-sm font-semibold">
+                              {review.reviewer?.name || 'Anonymous'}
+                            </p>
+                            <div className="flex text-yellow-500">
+                              {Array.from({ length: 5 }).map((_, i) => (
+                                <Star
+                                  key={i}
+                                  className={`h-3 w-3 ${
+                                    i < review.rating
+                                      ? 'fill-current'
+                                      : 'text-gray-300'
+                                  }`}
+                                />
+                              ))}
+                            </div>
+                          </div>
+                          <span className="text-xs text-muted-foreground ml-auto">
+                            {new Date(review.created_at).toLocaleDateString()}
+                          </span>
+                        </div>
+                        {review.comment && (
+                          <p className="text-sm text-foreground/90">
+                            {review.comment}
+                          </p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-6 text-muted-foreground border-2 border-dashed rounded-md">
+                    No reviews yet.
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           </div>
 
           <div className="md:col-span-1 space-y-6">

@@ -13,11 +13,14 @@ import { Textarea } from '@/components/ui/textarea'
 import { Star } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAuthStore } from '@/stores/useAuthStore'
+import { supabase } from '@/lib/supabase/client'
+import { useToast } from '@/hooks/use-toast'
 
 interface ReputationModalProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   targetName: string
+  targetId?: string
   isContractorRating: boolean // True if logged user is contractor rating executor
 }
 
@@ -29,14 +32,34 @@ export function ReputationModal({
 }: ReputationModalProps) {
   const [rating, setRating] = useState(0)
   const [comment, setComment] = useState('')
-  const { updateUserReputation } = useAuthStore()
+  const { updateUserReputation, user } = useAuthStore()
+  const { toast } = useToast()
 
   const categories = isContractorRating
     ? ['Qualidade', 'Pontualidade', 'Comunicação', 'Profissionalismo']
     : ['Clareza', 'Comunicação', 'Pagamento', 'Respeito']
 
-  const handleSubmit = () => {
-    // Mock update
+  const handleSubmit = async () => {
+    if (targetId && user) {
+      try {
+        const { error } = await supabase.from('reviews').insert({
+          reviewer_id: user.id,
+          target_id: targetId,
+          rating,
+          comment,
+        })
+        if (error) throw error
+        toast({ title: 'Avaliação enviada com sucesso!' })
+      } catch (err: any) {
+        toast({
+          variant: 'destructive',
+          title: 'Erro',
+          description: err.message,
+        })
+        return
+      }
+    }
+
     updateUserReputation(4.9) // Just updating local store for visual feedback
     onOpenChange(false)
   }

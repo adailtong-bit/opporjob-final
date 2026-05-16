@@ -15,6 +15,7 @@ import { Star, Lock } from 'lucide-react'
 import { useAuthStore } from '@/stores/useAuthStore'
 import { useToast } from '@/hooks/use-toast'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
+import { supabase } from '@/lib/supabase/client'
 
 interface EvaluationModalProps {
   open: boolean
@@ -58,7 +59,7 @@ export function EvaluationModal({ open }: EvaluationModalProps) {
     setScores((prev) => ({ ...prev, [key]: value[0] }))
   }
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     // Validation
     const allScored = criteria.every((c) => scores[c.key] !== undefined)
     if (!allScored) {
@@ -79,12 +80,26 @@ export function EvaluationModal({ open }: EvaluationModalProps) {
       return
     }
 
-    // Submit logic mock
-    console.log('Submitted Evaluation:', {
-      scores,
-      priceRating: !isContractorToExecutor ? priceRating : undefined,
-      comment,
-    })
+    const currentScores = Object.values(scores)
+    const avgScore10 =
+      currentScores.length > 0
+        ? currentScores.reduce((a, b) => a + b, 0) / currentScores.length
+        : 5
+    const finalRating = Math.max(1, Math.min(5, Math.round(avgScore10 / 2)))
+
+    if ((user?.pendingEvaluation as any)?.targetId) {
+      try {
+        const { error } = await supabase.from('reviews').insert({
+          reviewer_id: user.id,
+          target_id: (user.pendingEvaluation as any).targetId,
+          rating: finalRating,
+          comment,
+        })
+        if (error) throw error
+      } catch (err) {
+        console.error('Error saving review', err)
+      }
+    }
 
     toast({
       title: 'Avaliação Enviada',

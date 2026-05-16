@@ -12,7 +12,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useToast } from '@/hooks/use-toast'
-import { Loader2, Plus, Trash2, X } from 'lucide-react'
+import { Loader2, Plus, Trash2, X, Pencil } from 'lucide-react'
 import { CurrencyInput } from '@/components/CurrencyInput'
 import { useLanguageStore } from '@/stores/useLanguageStore'
 
@@ -77,6 +77,13 @@ export function ExecutorPortfolio({
     setNewServiceName('')
     setNewServiceUnit('')
     setNewServicePrice(0)
+  }
+
+  const handleEditService = (service: PricedService) => {
+    setNewServiceName(service.name)
+    setNewServiceUnit(service.unit)
+    setNewServicePrice(service.price)
+    setServices(services.filter((s) => s.id !== service.id))
   }
 
   const handleRemoveService = (id: string) => {
@@ -283,7 +290,7 @@ export function ExecutorPortfolio({
                       <th className="px-4 py-2 text-right font-medium">
                         Price
                       </th>
-                      <th className="px-4 py-2 w-10"></th>
+                      <th className="px-4 py-2 w-20"></th>
                     </tr>
                   </thead>
                   <tbody className="divide-y">
@@ -299,7 +306,15 @@ export function ExecutorPortfolio({
                         <td className="px-4 py-3 text-right font-medium">
                           {formatCurrency(service.price)}
                         </td>
-                        <td className="px-4 py-3">
+                        <td className="px-4 py-3 flex justify-end gap-1">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-primary"
+                            onClick={() => handleEditService(service)}
+                          >
+                            <Pencil className="w-4 h-4" />
+                          </Button>
                           <Button
                             variant="ghost"
                             size="icon"
