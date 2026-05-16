@@ -31,6 +31,7 @@ import MyJobs from '@/pages/jobs/MyJobs'
 import JobDetail from '@/pages/jobs/JobDetail'
 import Dispute from '@/pages/jobs/Dispute'
 import PaymentCheckout from '@/pages/jobs/PaymentCheckout'
+import ServiceCheckout from '@/pages/jobs/ServiceCheckout'
 import PaymentSuccess from '@/pages/jobs/PaymentSuccess'
 import SubscriptionPlans from '@/pages/subscription/SubscriptionPlans'
 import CreditsStore from '@/pages/billing/CreditsStore'
@@ -697,6 +698,10 @@ const App = () => {
                 <Route
                   path="/payment/checkout/:jobId/:bidId"
                   element={<PaymentCheckout />}
+                />
+                <Route
+                  path="/payment/service/:providerId"
+                  element={<ServiceCheckout />}
                 />
                 <Route path="/payment/success" element={<PaymentSuccess />} />
                 {/* Finance Routes */}

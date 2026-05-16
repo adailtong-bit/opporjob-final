@@ -59,6 +59,7 @@ export default function FindJobs() {
   const [dateFilter, setDateFilter] = useState('all')
   const [regionFilter, setRegionFilter] = useState('all')
   const [isSmartSort, setIsSmartSort] = useState(false)
+  const [sortBy, setSortBy] = useState('recent')
 
   const isBasicUser = !user || !user.planName || user.planName === 'Básico'
 
@@ -144,6 +145,13 @@ export default function FindJobs() {
       .sort((a, b) => {
         if (isSmartSort) {
           return (b.smartMatchScore || 0) - (a.smartMatchScore || 0)
+        }
+
+        if (sortBy === 'rating') {
+          return (b.smartMatchScore || 0) - (a.smartMatchScore || 0) // Mocking rating sort
+        }
+        if (sortBy === 'proximity') {
+          return a.location.localeCompare(b.location) // Mocking proximity
         }
 
         if (isBasicUser) {
@@ -251,7 +259,7 @@ export default function FindJobs() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
           <Select value={regionFilter} onValueChange={setRegionFilter}>
             <SelectTrigger className="bg-background">
               <SelectValue placeholder="Estado / Região" />
@@ -304,6 +312,17 @@ export default function FindJobs() {
               <SelectItem value="24h">{t('find.filter.date.24h')}</SelectItem>
               <SelectItem value="7d">{t('find.filter.date.7d')}</SelectItem>
               <SelectItem value="30d">{t('find.filter.date.30d')}</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <Select value={sortBy} onValueChange={setSortBy}>
+            <SelectTrigger className="bg-background">
+              <SelectValue placeholder="Ordenar por" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="recent">Mais Recentes</SelectItem>
+              <SelectItem value="rating">Melhor Avaliados</SelectItem>
+              <SelectItem value="proximity">Mais Próximos</SelectItem>
             </SelectContent>
           </Select>
         </div>

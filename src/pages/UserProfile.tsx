@@ -5,7 +5,16 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
-import { MessageSquare, Heart, Shield, ArrowLeft, Star } from 'lucide-react'
+import {
+  MessageSquare,
+  Heart,
+  Shield,
+  ArrowLeft,
+  Star,
+  ShoppingCart,
+  Send,
+} from 'lucide-react'
+import { Textarea } from '@/components/ui/textarea'
 import { useToast } from '@/hooks/use-toast'
 import { useLanguageStore } from '@/stores/useLanguageStore'
 
@@ -52,6 +61,9 @@ export default function UserProfile() {
 
   const [targetUser, setTargetUser] = useState<any>(null)
   const [loading, setLoading] = useState(true)
+  const [newReviewRating, setNewReviewRating] = useState(5)
+  const [newReviewComment, setNewReviewComment] = useState('')
+  const [submittingReview, setSubmittingReview] = useState(false)
 
   useEffect(() => {
     async function fetchUser() {
@@ -106,6 +118,69 @@ export default function UserProfile() {
     }
     fetchUser()
   }, [id])
+
+  const handleSubmitReview = async () => {
+    if (!user || !id) return
+    setSubmittingReview(true)
+    try {
+      const { error } = await supabase.from('reviews').insert({
+        reviewer_id: user.id,
+        target_id: id,
+        rating: newReviewRating,
+        comment: newReviewComment,
+      })
+      if (error) throw error
+
+      toast({ title: 'Avaliação enviada com sucesso!' })
+      setNewReviewComment('')
+
+      // Simulate Notification to the professional
+      useNotificationStore.getState().addNotification({
+        userId: id,
+        title: 'Nova Avaliação',
+        message: `${user.name} deixou uma avaliação de ${newReviewRating} estrelas no seu perfil.`,
+        type: 'info',
+        link: `/profile/${id}`,
+      })
+
+      // Refresh target user
+      const { data: reviewsData } = await supabase
+        .from('reviews')
+        .select(
+          'id, rating, comment, created_at, reviewer:profiles!reviewer_id(id, name, avatar_url)',
+        )
+        .eq('target_id', id)
+        .order('created_at', { ascending: false })
+
+      const calculatedReputation =
+        reviewsData && reviewsData.length > 0
+          ? (
+              reviewsData.reduce((acc, r) => acc + Number(r.rating), 0) /
+              reviewsData.length
+            ).toFixed(1)
+          : '5.0'
+
+      setTargetUser((prev: any) => ({
+        ...prev,
+        reviews: reviewsData || [],
+        reputation: calculatedReputation,
+      }))
+    } catch (err: any) {
+      toast({
+        title: 'Erro ao enviar avaliação',
+        description: err.message,
+        variant: 'destructive',
+      })
+    } finally {
+      setSubmittingReview(false)
+    }
+  }
+
+  const handleBookService = (svc: any) => {
+    navigate(
+      `/payment/service/${id}?service=${encodeURIComponent(svc.name)}&price=${svc.price}`,
+    )
+  }
 
   if (loading) return <div className="p-8 text-center">Loading...</div>
 
@@ -259,9 +334,44 @@ export default function UserProfile() {
 
             <Card>
               <CardHeader>
-                <CardTitle>Reviews</CardTitle>
+                <CardTitle>Avaliações</CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="space-y-6">
+                {user && user.id !== id && (
+                  <div className="bg-muted/30 p-4 rounded-lg border border-border space-y-3">
+                    <h4 className="font-semibold text-sm">
+                      Deixe sua avaliação
+                    </h4>
+                    <div className="flex gap-1 text-yellow-500">
+                      {Array.from({ length: 5 }).map((_, i) => (
+                        <Star
+                          key={i}
+                          className={`h-6 w-6 cursor-pointer hover:scale-110 transition-transform ${i < newReviewRating ? 'fill-current' : 'text-gray-300'}`}
+                          onClick={() => setNewReviewRating(i + 1)}
+                        />
+                      ))}
+                    </div>
+                    <Textarea
+                      placeholder="Como foi o serviço prestado?"
+                      value={newReviewComment}
+                      onChange={(e) => setNewReviewComment(e.target.value)}
+                      className="resize-none"
+                    />
+                    <Button
+                      onClick={handleSubmitReview}
+                      disabled={submittingReview}
+                    >
+                      {submittingReview ? (
+                        'Enviando...'
+                      ) : (
+                        <>
+                          Enviar Avaliação <Send className="ml-2 h-4 w-4" />
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                )}
+
                 {targetUser.reviews && targetUser.reviews.length > 0 ? (
                   <div className="space-y-4">
                     {targetUser.reviews.map((review: any) => (
@@ -316,24 +426,41 @@ export default function UserProfile() {
 
           <div className="md:col-span-1 space-y-6">
             {targetUser.services?.length > 0 && (
-              <Card>
+              <Card className="sticky top-20">
                 <CardHeader>
-                  <CardTitle>Services & Pricing</CardTitle>
+                  <CardTitle>Serviços e Preços</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <ul className="space-y-4">
                     {targetUser.services.map((svc: any) => (
                       <li
                         key={svc.id}
-                        className="flex flex-col gap-1 pb-3 border-b last:border-0 last:pb-0"
+                        className="flex flex-col gap-2 pb-4 border-b last:border-0 last:pb-0"
                       >
-                        <span className="font-semibold">{svc.name}</span>
-                        <div className="flex justify-between text-sm text-muted-foreground">
-                          <span>{svc.unit}</span>
-                          <span className="font-medium text-foreground">
+                        <div className="flex justify-between items-start gap-2">
+                          <div>
+                            <span className="font-semibold block">
+                              {svc.name}
+                            </span>
+                            <span className="text-sm text-muted-foreground">
+                              {svc.unit}
+                            </span>
+                          </div>
+                          <span className="font-bold text-primary">
                             {formatCurrency(svc.price)}
                           </span>
                         </div>
+                        {user && user.id !== id && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="w-full mt-1 border-primary/50 text-primary hover:bg-primary/5"
+                            onClick={() => handleBookService(svc)}
+                          >
+                            <ShoppingCart className="mr-2 h-4 w-4" /> Solicitar
+                            / Reservar
+                          </Button>
+                        )}
                       </li>
                     ))}
                   </ul>
