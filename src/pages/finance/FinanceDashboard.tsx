@@ -219,6 +219,7 @@ export default function FinanceDashboard() {
           <TabsTrigger value="overview">Overview</TabsTrigger>
           {isPJ && <TabsTrigger value="cashflow">Cash Flow</TabsTrigger>}
           <TabsTrigger value="scheduled">Scheduled</TabsTrigger>
+          <TabsTrigger value="earnings">Recebimentos</TabsTrigger>
           <TabsTrigger value="payables">Contas a Pagar</TabsTrigger>
         </TabsList>
 
@@ -402,6 +403,76 @@ export default function FinanceDashboard() {
                   </AreaChart>
                 </ChartContainer>
               </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="earnings" className="space-y-4 mt-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Histórico de Recebimentos e Reservas</CardTitle>
+              <CardDescription>
+                Acompanhe o status dos pagamentos referentes aos seus serviços.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Data</TableHead>
+                    <TableHead>Descrição</TableHead>
+                    <TableHead>Cliente (Pagador)</TableHead>
+                    <TableHead>Valor</TableHead>
+                    <TableHead>Status</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {transactions
+                    .filter((tx) => tx.receiver_id === user.id)
+                    .map((tx) => (
+                      <TableRow key={tx.id}>
+                        <TableCell>
+                          {formatDate(tx.created_at, 'MM/dd/yy')}
+                        </TableCell>
+                        <TableCell className="font-medium">
+                          {tx.description}
+                        </TableCell>
+                        <TableCell>External Client</TableCell>
+                        <TableCell className="font-semibold text-green-600">
+                          {formatCurrency(tx.amount)}
+                        </TableCell>
+                        <TableCell>
+                          {tx.status === 'completed' && (
+                            <Badge className="bg-emerald-100 text-emerald-800 hover:bg-emerald-100">
+                              Recebido
+                            </Badge>
+                          )}
+                          {tx.status === 'pending' && (
+                            <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-100">
+                              Pendente
+                            </Badge>
+                          )}
+                          {tx.status === 'escrow' && (
+                            <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-100">
+                              Reserva (Escrow)
+                            </Badge>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  {transactions.filter((tx) => tx.receiver_id === user.id)
+                    .length === 0 && (
+                    <TableRow>
+                      <TableCell
+                        colSpan={5}
+                        className="text-center py-8 text-muted-foreground"
+                      >
+                        Nenhum recebimento encontrado.
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
             </CardContent>
           </Card>
         </TabsContent>

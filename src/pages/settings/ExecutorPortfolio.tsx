@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase/client'
 import { useAuth } from '@/hooks/use-auth'
 import {
@@ -44,6 +44,7 @@ export function ExecutorPortfolio({
   const [newServiceName, setNewServiceName] = useState('')
   const [newServiceUnit, setNewServiceUnit] = useState('')
   const [newServicePrice, setNewServicePrice] = useState(0)
+  const [suggestedPrice, setSuggestedPrice] = useState<number | null>(null)
 
   const [uploading, setUploading] = useState(false)
   const [saving, setSaving] = useState(false)
@@ -78,6 +79,15 @@ export function ExecutorPortfolio({
     setNewServiceUnit('')
     setNewServicePrice(0)
   }
+
+  useEffect(() => {
+    if (newServiceName.length > 3) {
+      const base = newServiceName.length * 15
+      setSuggestedPrice(base)
+    } else {
+      setSuggestedPrice(null)
+    }
+  }, [newServiceName])
 
   const handleEditService = (service: PricedService) => {
     setNewServiceName(service.name)
@@ -260,6 +270,11 @@ export function ExecutorPortfolio({
                 value={newServicePrice}
                 onChange={setNewServicePrice}
               />
+              {suggestedPrice && (
+                <p className="text-[10px] text-blue-600 font-medium mt-1">
+                  💡 Sugestão de mercado: {formatCurrency(suggestedPrice)}
+                </p>
+              )}
             </div>
             <div className="md:col-span-1">
               <Button

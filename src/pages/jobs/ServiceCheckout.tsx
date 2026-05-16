@@ -74,7 +74,7 @@ export default function ServiceCheckout() {
     const success = await createInvoice({
       payer_id: user.id,
       receiver_id: providerId,
-      amount: amount,
+      amount: amount * 1.05,
       currency: currency || 'USD',
       description: `Reserva de Serviço: ${serviceName}`,
       status: 'escrow',
@@ -186,12 +186,24 @@ export default function ServiceCheckout() {
                 </p>
                 <p className="font-semibold text-[15px]">{providerName}</p>
               </div>
-              <div className="border-t pt-5 mt-2 flex flex-col gap-1">
+              <div className="space-y-2 border-t pt-4">
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">
+                    Subtotal do Serviço
+                  </span>
+                  <span className="font-medium">{formatCurrency(amount)}</span>
+                </div>
+                <div className="flex justify-between text-sm text-muted-foreground">
+                  <span>Taxa de Proteção da Plataforma (5%)</span>
+                  <span>{formatCurrency(amount * 0.05)}</span>
+                </div>
+              </div>
+              <div className="border-t pt-4 mt-2 flex flex-col gap-1">
                 <span className="text-sm font-medium text-muted-foreground">
                   Total a Pagar
                 </span>
                 <span className="text-3xl font-bold text-primary tracking-tight">
-                  {formatCurrency(amount)}
+                  {formatCurrency(amount * 1.05)}
                 </span>
               </div>
             </CardContent>

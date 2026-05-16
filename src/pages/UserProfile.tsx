@@ -16,6 +16,7 @@ import {
   MoreVertical,
   Flag,
   Ban,
+  Share2,
 } from 'lucide-react'
 import {
   DropdownMenu,
@@ -300,6 +301,26 @@ export default function UserProfile() {
           <ArrowLeft className="mr-2 h-4 w-4" /> {t('back')}
         </Button>
         <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => {
+              if (navigator.share) {
+                navigator
+                  .share({
+                    title: targetUser.name,
+                    text: `Confira o perfil de ${targetUser.name} no OPPORJOB!`,
+                    url: window.location.href,
+                  })
+                  .catch(console.error)
+              } else {
+                navigator.clipboard.writeText(window.location.href)
+                toast({ title: 'Link copiado!' })
+              }
+            }}
+          >
+            <Share2 className="h-5 w-5 text-muted-foreground" />
+          </Button>
           <Button
             variant="outline"
             size="icon"
