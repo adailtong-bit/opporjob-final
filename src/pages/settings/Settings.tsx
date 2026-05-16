@@ -39,6 +39,8 @@ import {
 } from '@/lib/validation'
 import { SecuritySettings } from './SecuritySettings'
 import { ProfilePictureSettings } from './ProfilePictureSettings'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { ExecutorPortfolio } from './ExecutorPortfolio'
 
 const createSettingsSchema = (country: CountryCode) => {
   const { phone, zip } = getCountryValidation(country)
@@ -192,383 +194,409 @@ export default function Settings() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="md:col-span-1 space-y-6">
-          <ProfilePictureSettings
-            profile={profile}
-            onUpdate={(url) => setProfile({ ...profile, avatar_url: url })}
-          />
-        </div>
+      <Tabs defaultValue="general" className="w-full">
+        <TabsList className="mb-6">
+          <TabsTrigger value="general">General</TabsTrigger>
+          {profile?.role === 'executor' && (
+            <TabsTrigger value="portfolio">Portfolio & Services</TabsTrigger>
+          )}
+        </TabsList>
 
-        <div className="md:col-span-2 space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Personal Information</CardTitle>
-              <CardDescription>
-                Update your basic details and address.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Form {...form}>
-                <form
-                  onSubmit={form.handleSubmit(handleUpdateProfile)}
-                  className="space-y-4"
-                >
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <FormLabel>Email (Login)</FormLabel>
-                      <Input
-                        value={user?.email || ''}
-                        disabled
-                        className="bg-muted"
-                      />
-                    </div>
-                    <FormField
-                      control={form.control}
-                      name="name"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Full Name / Company</FormLabel>
-                          <FormControl>
-                            <Input {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
+        <TabsContent value="general" className="mt-0">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="md:col-span-1 space-y-6">
+              <ProfilePictureSettings
+                profile={profile}
+                onUpdate={(url) => setProfile({ ...profile, avatar_url: url })}
+              />
+            </div>
 
-                  <div className="grid grid-cols-2 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="entityType"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Entity Type</FormLabel>
-                          <Select
-                            onValueChange={field.onChange}
-                            value={field.value}
-                          >
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="individual">
-                                Individual
-                              </SelectItem>
-                              <SelectItem value="company">Company</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="role"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Account Role</FormLabel>
-                          <Select
-                            onValueChange={field.onChange}
-                            value={field.value}
-                          >
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="contractor">
-                                Contractor
-                              </SelectItem>
-                              <SelectItem value="executor">Executor</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </FormItem>
-                      )}
-                    />
-                  </div>
+            <div className="md:col-span-2 space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Personal Information</CardTitle>
+                  <CardDescription>
+                    Update your basic details and address.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Form {...form}>
+                    <form
+                      onSubmit={form.handleSubmit(handleUpdateProfile)}
+                      className="space-y-4"
+                    >
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <FormLabel>Email (Login)</FormLabel>
+                          <Input
+                            value={user?.email || ''}
+                            disabled
+                            className="bg-muted"
+                          />
+                        </div>
+                        <FormField
+                          control={form.control}
+                          name="name"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Full Name / Company</FormLabel>
+                              <FormControl>
+                                <Input {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
 
-                  <div className="grid grid-cols-2 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="country"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Country</FormLabel>
-                          <Select
-                            onValueChange={(v) => {
-                              const newCountry = v as CountryCode
-                              setCountry(newCountry)
-                              field.onChange(newCountry)
+                      <div className="grid grid-cols-2 gap-4">
+                        <FormField
+                          control={form.control}
+                          name="entityType"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Entity Type</FormLabel>
+                              <Select
+                                onValueChange={field.onChange}
+                                value={field.value}
+                              >
+                                <FormControl>
+                                  <SelectTrigger>
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  <SelectItem value="individual">
+                                    Individual
+                                  </SelectItem>
+                                  <SelectItem value="company">
+                                    Company
+                                  </SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="role"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Account Role</FormLabel>
+                              <Select
+                                onValueChange={field.onChange}
+                                value={field.value}
+                              >
+                                <FormControl>
+                                  <SelectTrigger>
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  <SelectItem value="contractor">
+                                    Contractor
+                                  </SelectItem>
+                                  <SelectItem value="executor">
+                                    Executor
+                                  </SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </FormItem>
+                          )}
+                        />
+                      </div>
 
-                              const currentPhone = form.getValues('phone')
-                              if (currentPhone) {
-                                form.setValue(
-                                  'phone',
-                                  formatPhone(currentPhone, newCountry),
-                                )
-                              }
+                      <div className="grid grid-cols-2 gap-4">
+                        <FormField
+                          control={form.control}
+                          name="country"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Country</FormLabel>
+                              <Select
+                                onValueChange={(v) => {
+                                  const newCountry = v as CountryCode
+                                  setCountry(newCountry)
+                                  field.onChange(newCountry)
 
-                              const currentZip = form.getValues('zipCode')
-                              if (currentZip) {
-                                form.setValue(
-                                  'zipCode',
-                                  formatZip(currentZip, newCountry),
-                                )
-                              }
+                                  const currentPhone = form.getValues('phone')
+                                  if (currentPhone) {
+                                    form.setValue(
+                                      'phone',
+                                      formatPhone(currentPhone, newCountry),
+                                    )
+                                  }
 
-                              const currentDoc = form.getValues('document')
-                              if (currentDoc) {
-                                form.setValue(
-                                  'document',
-                                  maskTaxId(currentDoc, newCountry),
-                                )
-                              }
-                            }}
-                            value={field.value}
-                          >
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="US">United States</SelectItem>
-                              <SelectItem value="BR">Brazil</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="phone"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Phone</FormLabel>
-                          <FormControl>
-                            <Input
-                              {...field}
-                              onChange={(e) =>
-                                field.onChange(
-                                  formatPhone(e.target.value, country),
-                                )
-                              }
-                              maxLength={country === 'BR' ? 15 : 14}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
+                                  const currentZip = form.getValues('zipCode')
+                                  if (currentZip) {
+                                    form.setValue(
+                                      'zipCode',
+                                      formatZip(currentZip, newCountry),
+                                    )
+                                  }
 
-                  <div className="grid grid-cols-3 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="zipCode"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>ZIP/Postal Code</FormLabel>
-                          <FormControl>
-                            <Input
-                              {...field}
-                              onChange={(e) =>
-                                field.onChange(
-                                  formatZip(e.target.value, country),
-                                )
-                              }
-                              maxLength={country === 'BR' ? 9 : 10}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="city"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>City</FormLabel>
-                          <FormControl>
-                            <Input {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="state"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>State</FormLabel>
-                          <FormControl>
-                            <Input {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
+                                  const currentDoc = form.getValues('document')
+                                  if (currentDoc) {
+                                    form.setValue(
+                                      'document',
+                                      maskTaxId(currentDoc, newCountry),
+                                    )
+                                  }
+                                }}
+                                value={field.value}
+                              >
+                                <FormControl>
+                                  <SelectTrigger>
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  <SelectItem value="US">
+                                    United States
+                                  </SelectItem>
+                                  <SelectItem value="BR">Brazil</SelectItem>
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="phone"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Phone</FormLabel>
+                              <FormControl>
+                                <Input
+                                  {...field}
+                                  onChange={(e) =>
+                                    field.onChange(
+                                      formatPhone(e.target.value, country),
+                                    )
+                                  }
+                                  maxLength={country === 'BR' ? 15 : 14}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
 
-                  <div
-                    className={`grid gap-4 ${country === 'US' ? 'grid-cols-1' : 'grid-cols-3'}`}
-                  >
-                    <FormField
-                      control={form.control}
-                      name="street"
-                      render={({ field }) => (
-                        <FormItem
-                          className={country === 'US' ? '' : 'col-span-2'}
-                        >
-                          <FormLabel>Street</FormLabel>
-                          <FormControl>
-                            <Input {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    {country !== 'US' && (
-                      <FormField
-                        control={form.control}
-                        name="number"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Number</FormLabel>
-                            <FormControl>
-                              <Input {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
+                      <div className="grid grid-cols-3 gap-4">
+                        <FormField
+                          control={form.control}
+                          name="zipCode"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>ZIP/Postal Code</FormLabel>
+                              <FormControl>
+                                <Input
+                                  {...field}
+                                  onChange={(e) =>
+                                    field.onChange(
+                                      formatZip(e.target.value, country),
+                                    )
+                                  }
+                                  maxLength={country === 'BR' ? 9 : 10}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="city"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>City</FormLabel>
+                              <FormControl>
+                                <Input {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="state"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>State</FormLabel>
+                              <FormControl>
+                                <Input {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+
+                      <div
+                        className={`grid gap-4 ${country === 'US' ? 'grid-cols-1' : 'grid-cols-3'}`}
+                      >
+                        <FormField
+                          control={form.control}
+                          name="street"
+                          render={({ field }) => (
+                            <FormItem
+                              className={country === 'US' ? '' : 'col-span-2'}
+                            >
+                              <FormLabel>Street</FormLabel>
+                              <FormControl>
+                                <Input {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        {country !== 'US' && (
+                          <FormField
+                            control={form.control}
+                            name="number"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Number</FormLabel>
+                                <FormControl>
+                                  <Input {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
                         )}
-                      />
-                    )}
-                  </div>
+                      </div>
 
-                  <div className="grid grid-cols-2 gap-4">
-                    {country !== 'US' && (
-                      <FormField
-                        control={form.control}
-                        name="neighborhood"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Neighborhood</FormLabel>
-                            <FormControl>
-                              <Input {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
+                      <div className="grid grid-cols-2 gap-4">
+                        {country !== 'US' && (
+                          <FormField
+                            control={form.control}
+                            name="neighborhood"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Neighborhood</FormLabel>
+                                <FormControl>
+                                  <Input {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
                         )}
-                      />
-                    )}
-                    <FormField
-                      control={form.control}
-                      name="complement"
-                      render={({ field }) => (
-                        <FormItem
-                          className={country === 'US' ? 'col-span-2' : ''}
-                        >
-                          <FormLabel>Complement</FormLabel>
-                          <FormControl>
-                            <Input {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
+                        <FormField
+                          control={form.control}
+                          name="complement"
+                          render={({ field }) => (
+                            <FormItem
+                              className={country === 'US' ? 'col-span-2' : ''}
+                            >
+                              <FormLabel>Complement</FormLabel>
+                              <FormControl>
+                                <Input {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
 
-                  <div className="pt-4 border-t space-y-4">
-                    <h4 className="font-medium">Banking Information</h4>
-                    <div className="grid grid-cols-2 gap-4">
-                      <FormField
-                        control={form.control}
-                        name="bank"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Bank</FormLabel>
-                            <FormControl>
-                              <Input {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="agency"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Agency</FormLabel>
-                            <FormControl>
-                              <Input {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="account"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Account</FormLabel>
-                            <FormControl>
-                              <Input {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="document"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Document/Tax ID</FormLabel>
-                            <FormControl>
-                              <Input
-                                placeholder={
-                                  country === 'US'
-                                    ? '000-00-0000'
-                                    : '000.000.000-00'
-                                }
-                                {...field}
-                                onChange={(e) =>
-                                  field.onChange(
-                                    maskTaxId(e.target.value, country),
-                                  )
-                                }
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                  </div>
+                      <div className="pt-4 border-t space-y-4">
+                        <h4 className="font-medium">Banking Information</h4>
+                        <div className="grid grid-cols-2 gap-4">
+                          <FormField
+                            control={form.control}
+                            name="bank"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Bank</FormLabel>
+                                <FormControl>
+                                  <Input {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name="agency"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Agency</FormLabel>
+                                <FormControl>
+                                  <Input {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name="account"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Account</FormLabel>
+                                <FormControl>
+                                  <Input {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name="document"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Document/Tax ID</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    placeholder={
+                                      country === 'US'
+                                        ? '000-00-0000'
+                                        : '000.000.000-00'
+                                    }
+                                    {...field}
+                                    onChange={(e) =>
+                                      field.onChange(
+                                        maskTaxId(e.target.value, country),
+                                      )
+                                    }
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                      </div>
 
-                  <Button type="submit" disabled={saving}>
-                    {saving && (
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    )}
-                    Save Changes
-                  </Button>
-                </form>
-              </Form>
-            </CardContent>
-          </Card>
+                      <Button type="submit" disabled={saving}>
+                        {saving && (
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        )}
+                        Save Changes
+                      </Button>
+                    </form>
+                  </Form>
+                </CardContent>
+              </Card>
 
-          <SecuritySettings />
-        </div>
-      </div>
+              <SecuritySettings />
+            </div>
+          </div>
+        </TabsContent>
+
+        {profile?.role === 'executor' && (
+          <TabsContent value="portfolio" className="mt-0">
+            <ExecutorPortfolio
+              profile={profile}
+              onUpdate={(data) => setProfile({ ...profile, ...data })}
+            />
+          </TabsContent>
+        )}
+      </Tabs>
     </div>
   )
 }

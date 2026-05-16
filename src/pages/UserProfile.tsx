@@ -9,6 +9,9 @@ import { MessageSquare, Heart, Shield, ArrowLeft } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import { useLanguageStore } from '@/stores/useLanguageStore'
 
+import { useEffect, useState } from 'react'
+import { supabase } from '@/lib/supabase/client'
+
 export default function UserProfile() {
   const { id } = useParams<{ id: string }>()
   const { user } = useAuthStore()
@@ -16,21 +19,51 @@ export default function UserProfile() {
     useMessageStore()
   const navigate = useNavigate()
   const { toast } = useToast()
-  const { t } = useLanguageStore()
+  const { t, formatCurrency } = useLanguageStore()
 
-  // Mock fetching user data for demonstration
-  const targetUser = {
-    id: id!,
-    name:
-      id === 'owner-1'
-        ? 'Admin Tech Corp'
-        : 'Professional ' + id?.substring(0, 4),
-    avatar: `https://img.usecurling.com/ppl/large?seed=${id}`,
-    openChat: id === 'owner-1' ? true : false,
-    role: id === 'owner-1' ? 'contractor' : 'executor',
-    reputation: 4.8,
-    location: 'New York - NY',
-  }
+  const [targetUser, setTargetUser] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    async function fetchUser() {
+      if (!id) return
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', id)
+          .single()
+
+        if (error) throw error
+
+        setTargetUser({
+          id: data.id,
+          name: data.name || data.company_name || 'Professional',
+          avatar:
+            data.avatar_url ||
+            `https://api.dicebear.com/7.x/initials/svg?seed=${data.name}`,
+          openChat: true, // Assuming default open chat for simplicity
+          role: data.role || 'executor',
+          reputation: 5.0, // Mock reputation
+          location:
+            data.city && data.state
+              ? `${data.city} - ${data.state}`
+              : 'Location unknown',
+          portfolio: data.portfolio_photos || [],
+          services: data.priced_services || [],
+        })
+      } catch (err) {
+        console.error('Error fetching profile:', err)
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchUser()
+  }, [id])
+
+  if (loading) return <div className="p-8 text-center">Loading...</div>
+
+  if (!targetUser) return <div className="p-8 text-center">User not found</div>
 
   if (!user)
     return (
@@ -163,6 +196,64 @@ export default function UserProfile() {
           </div>
         </CardContent>
       </Card>
+
+      {targetUser.role === 'executor' && (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="md:col-span-2 space-y-6">
+            {targetUser.portfolio?.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Portfolio</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                    {targetUser.portfolio.map((url: string, idx: number) => (
+                      <div
+                        key={idx}
+                        className="aspect-square rounded-md overflow-hidden border"
+                      >
+                        <img
+                          src={url}
+                          alt={`Portfolio ${idx + 1}`}
+                          className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+
+          <div className="md:col-span-1 space-y-6">
+            {targetUser.services?.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Services & Pricing</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ul className="space-y-4">
+                    {targetUser.services.map((svc: any) => (
+                      <li
+                        key={svc.id}
+                        className="flex flex-col gap-1 pb-3 border-b last:border-0 last:pb-0"
+                      >
+                        <span className="font-semibold">{svc.name}</span>
+                        <div className="flex justify-between text-sm text-muted-foreground">
+                          <span>{svc.unit}</span>
+                          <span className="font-medium text-foreground">
+                            {formatCurrency(svc.price)}
+                          </span>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   )
 }
