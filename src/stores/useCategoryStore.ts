@@ -188,6 +188,16 @@ const initialCategories: Category[] = [
       createSubCat('sub-9-14', 'Interior Design'),
       createSubCat('sub-9-15', 'Interior Painting'),
       createSubCat('sub-9-16', 'Junk Removal'),
+      createSubCat('sub-9-17', 'Plumbing'),
+      createSubCat('sub-9-18', 'Remediation Services'),
+      createSubCat(
+        'sub-9-19',
+        'Swimming Pool Cleaning, Maintenance, and Inspection',
+      ),
+      createSubCat('sub-9-20', 'TV Mounting'),
+      createSubCat('sub-9-21', 'Windows and Doors'),
+      createSubCat('sub-9-22', 'Roofing'),
+      createSubCat('sub-9-23', 'Welding'),
     ],
   },
   {
@@ -199,6 +209,8 @@ const initialCategories: Category[] = [
     subCategories: [
       createSubCat('sub-10-1', 'Auto Detailing'),
       createSubCat('sub-10-2', 'Auto Repair or Maintenance'),
+      createSubCat('sub-10-3', 'Transportation'),
+      createSubCat('sub-10-4', 'Vehicle Towing'),
     ],
   },
   {
@@ -215,6 +227,10 @@ const initialCategories: Category[] = [
       createSubCat('sub-11-5', 'Dog Training'),
       createSubCat('sub-11-6', 'Dog Walking'),
       createSubCat('sub-11-7', 'Event Planning Services'),
+      createSubCat('sub-11-8', 'Pet Care'),
+      createSubCat('sub-11-9', 'Pet Grooming'),
+      createSubCat('sub-11-10', 'Photography'),
+      createSubCat('sub-11-11', 'Security and Body Guard Services'),
     ],
   },
 ]
