@@ -9,7 +9,14 @@ export interface Transaction {
   receiverId: string
   receiverName: string
   amount: number
-  status: 'pending' | 'completed' | 'failed' | 'escrow' | 'scheduled'
+  status:
+    | 'pending'
+    | 'completed'
+    | 'failed'
+    | 'escrow'
+    | 'scheduled'
+    | 'refund_requested'
+    | 'refunded'
   date: Date
   scheduledDate?: Date
   type: 'payment' | 'receipt'

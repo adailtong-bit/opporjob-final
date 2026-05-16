@@ -55,11 +55,38 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useLanguageStore } from '@/stores/useLanguageStore'
 import { CurrencyInput } from '@/components/CurrencyInput'
+import { supabase } from '@/lib/supabase/client'
 
 export default function FinanceDashboard() {
   const { user } = useAuthStore()
   const { invoices, createInvoice } = useInvoices(user?.id)
   const { toast } = useToast()
+
+  const handleRequestRefund = async (invoice: any) => {
+    try {
+      const { error } = await supabase.functions.invoke('process-refund', {
+        body: { invoiceId: invoice.id, action: 'request' },
+      })
+      if (error) throw error
+      toast({ title: 'Reembolso solicitado com sucesso!' })
+      setTimeout(() => window.location.reload(), 1500)
+    } catch (err) {
+      toast({ title: 'Erro ao solicitar reembolso', variant: 'destructive' })
+    }
+  }
+
+  const handleApproveRefund = async (invoice: any) => {
+    try {
+      const { error } = await supabase.functions.invoke('process-refund', {
+        body: { invoiceId: invoice.id, action: 'approve' },
+      })
+      if (error) throw error
+      toast({ title: 'Reembolso aprovado!' })
+      setTimeout(() => window.location.reload(), 1500)
+    } catch (err) {
+      toast({ title: 'Erro ao aprovar reembolso', variant: 'destructive' })
+    }
+  }
   const { formatCurrency, formatDate } = useLanguageStore()
 
   const [isScheduleOpen, setIsScheduleOpen] = useState(false)
@@ -280,6 +307,7 @@ export default function FinanceDashboard() {
                       <TableHead>Value</TableHead>
                       <TableHead>Type</TableHead>
                       <TableHead>Status</TableHead>
+                      <TableHead className="text-right">Ações</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -332,6 +360,39 @@ export default function FinanceDashboard() {
                                 Cancelled
                               </Badge>
                             )}
+                            {tx.status === 'refund_requested' && (
+                              <Badge className="bg-orange-100 text-orange-800 hover:bg-orange-100">
+                                Reembolso Solicitado
+                              </Badge>
+                            )}
+                            {tx.status === 'refunded' && (
+                              <Badge className="bg-gray-100 text-gray-800 hover:bg-gray-100">
+                                Reembolsado
+                              </Badge>
+                            )}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            {tx.payer_id === user.id &&
+                              (tx.status === 'completed' ||
+                                tx.status === 'escrow') && (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handleRequestRefund(tx)}
+                                >
+                                  Solicitar Reembolso
+                                </Button>
+                              )}
+                            {tx.receiver_id === user.id &&
+                              tx.status === 'refund_requested' && (
+                                <Button
+                                  variant="default"
+                                  size="sm"
+                                  onClick={() => handleApproveRefund(tx)}
+                                >
+                                  Aprovar Reembolso
+                                </Button>
+                              )}
                           </TableCell>
                         </TableRow>
                       ))
@@ -424,6 +485,7 @@ export default function FinanceDashboard() {
                     <TableHead>Cliente (Pagador)</TableHead>
                     <TableHead>Valor</TableHead>
                     <TableHead>Status</TableHead>
+                    <TableHead className="text-right">Ações</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -456,6 +518,27 @@ export default function FinanceDashboard() {
                             <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-100">
                               Reserva (Escrow)
                             </Badge>
+                          )}
+                          {tx.status === 'refund_requested' && (
+                            <Badge className="bg-orange-100 text-orange-800 hover:bg-orange-100">
+                              Reembolso Solicitado
+                            </Badge>
+                          )}
+                          {tx.status === 'refunded' && (
+                            <Badge className="bg-gray-100 text-gray-800 hover:bg-gray-100">
+                              Reembolsado
+                            </Badge>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          {tx.status === 'refund_requested' && (
+                            <Button
+                              variant="default"
+                              size="sm"
+                              onClick={() => handleApproveRefund(tx)}
+                            >
+                              Aprovar Reembolso
+                            </Button>
                           )}
                         </TableCell>
                       </TableRow>
