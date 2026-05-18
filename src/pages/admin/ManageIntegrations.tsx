@@ -29,6 +29,13 @@ import {
   RefreshCw,
   Edit,
 } from 'lucide-react'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/lib/supabase/client'
 import { useJobStore } from '@/stores/useJobStore'
@@ -41,6 +48,7 @@ export default function ManageIntegrations() {
   const [pendingJobs, setPendingJobs] = useState<Job[]>([])
   const [loadingJobs, setLoadingJobs] = useState(false)
   const [processingId, setProcessingId] = useState<string | null>(null)
+  const [selectedEngine, setSelectedEngine] = useState('default')
 
   const [editingJob, setEditingJob] = useState<Job | null>(null)
 
@@ -53,7 +61,7 @@ export default function ManageIntegrations() {
       const { data, error } = await supabase
         .from('jobs')
         .select('*')
-        .eq('source', 'apify')
+        .in('source', ['apify', 'buscador_scraper'])
         .eq('status', 'pending_approval')
         .order('created_at', { ascending: false })
 
@@ -73,10 +81,9 @@ export default function ManageIntegrations() {
   const handleRunApify = async () => {
     setLoading(true)
     try {
-      const { data, error } = await supabase.functions.invoke(
-        'apify-import',
-        {},
-      )
+      const { data, error } = await supabase.functions.invoke('apify-import', {
+        body: { engineId: selectedEngine },
+      })
 
       if (error) throw error
 
@@ -204,12 +211,12 @@ export default function ManageIntegrations() {
       <div className="grid gap-6 md:grid-cols-2">
         <Card>
           <CardHeader>
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <CardTitle className="flex items-center gap-2">
                 <Database className="w-5 h-5 text-blue-600" />
-                Apify Scraper
+                Integração de Scraper
               </CardTitle>
-              <Badge className="bg-green-500">Conectado</Badge>
+              <Badge className="bg-green-500 w-fit">Conectado</Badge>
             </div>
             <CardDescription>
               Integração ativa utilizando API Key. Extrai dados automaticamente
@@ -217,6 +224,23 @@ export default function ManageIntegrations() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label>Selecione o Motor de Extração:</Label>
+              <Select value={selectedEngine} onValueChange={setSelectedEngine}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Selecione o motor" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="default">
+                    Apify Scraper (Padrão)
+                  </SelectItem>
+                  <SelectItem value="124578ab1a147cdc8baf7376968c4f1f">
+                    Buscador Scraper (124578ab...)
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
             <div className="rounded-lg bg-slate-50 dark:bg-slate-900 p-4 space-y-2 text-sm">
               <div className="flex items-center justify-between">
                 <span className="text-muted-foreground">Status da API</span>
