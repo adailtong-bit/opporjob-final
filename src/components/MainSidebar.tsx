@@ -26,6 +26,7 @@ import {
   ShoppingCart,
   LayoutTemplate,
   PanelBottom,
+  Database,
 } from 'lucide-react'
 import {
   Sidebar,
@@ -155,6 +156,11 @@ export function MainSidebar() {
             title: t('nav.footer'),
             url: '/admin/footer',
             icon: PanelBottom,
+          },
+          {
+            title: 'Integrações',
+            url: '/admin/integrations',
+            icon: Database,
           },
         ],
       })
