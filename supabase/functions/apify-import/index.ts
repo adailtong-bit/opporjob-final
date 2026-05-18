@@ -13,13 +13,11 @@ Deno.serve(async (req: Request) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
     )
 
-    // Usando EXTRACTOR_API_KEY para evitar bloqueio no GitHub (Push Protection)
-    // O GitHub bloqueia strings que começam com a assinatura da Apify, mesmo sendo apenas nomes de variáveis
-    const token = Deno.env.get('EXTRACTOR_API_KEY')
+    const token = Deno.env.get('APIFY_API_TOKEN')
 
     if (!token) {
       throw new Error(
-        'A variável EXTRACTOR_API_KEY não foi encontrada nos Segredos do Supabase.',
+        'A variável APIFY_API_TOKEN não foi encontrada nos Segredos do Supabase.',
       )
     }
 
@@ -30,7 +28,9 @@ Deno.serve(async (req: Request) => {
       throw new Error('datasetId is required')
     }
 
-    const apiUrl = new URL(`https://api.apify.com/v2/datasets/${datasetId}/items`)
+    const apiUrl = new URL(
+      `https://api.apify.com/v2/datasets/${datasetId}/items`,
+    )
     apiUrl.searchParams.append('token', token)
 
     const response = await fetch(apiUrl.toString())
@@ -50,7 +50,6 @@ Deno.serve(async (req: Request) => {
       })
     }
 
-    // Lógica de processamento e inserção dos itens no banco de dados que estava faltando
     const { data: existingCats } = await supabaseClient
       .from('categories')
       .select('name')
@@ -69,7 +68,10 @@ Deno.serve(async (req: Request) => {
       return {
         title: item.title || 'Untitled Job',
         description: item.description || '',
-        budget: typeof item.price === 'number' ? item.price : (parseFloat(item.price) || 0),
+        budget:
+          typeof item.price === 'number'
+            ? item.price
+            : parseFloat(item.price) || 0,
         location: item.location || 'Remote',
         category: finalCategory,
         photos: Array.isArray(item.photos) ? item.photos : [],
