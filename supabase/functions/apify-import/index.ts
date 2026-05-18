@@ -13,11 +13,12 @@ Deno.serve(async (req: Request) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
     )
 
-    const token = Deno.env.get('APIFY_API_TOKEN')
+    // Token de acesso seguro via variáveis de ambiente (Supabase Secrets)
+    const apifyToken = Deno.env.get('APIFY_API_TOKEN')
 
-    if (!token) {
+    if (!apifyToken) {
       throw new Error(
-        'A variável APIFY_API_TOKEN não foi encontrada nos Segredos do Supabase.',
+        'Token de integração não configurado. Adicione APIFY_API_TOKEN nos Segredos do Supabase.',
       )
     }
 
@@ -25,11 +26,13 @@ Deno.serve(async (req: Request) => {
     const datasetId = reqBody.datasetId
 
     if (!datasetId) {
-      throw new Error('datasetId is required')
+      throw new Error('O ID do dataset (datasetId) é obrigatório.')
     }
 
-    const apiUrl = new URL(`https://api.apify.com/v2/datasets/${datasetId}/items`)
-    apiUrl.searchParams.append('token', token)
+    const apiUrl = new URL(
+      `https://api.apify.com/v2/datasets/${datasetId}/items`,
+    )
+    apiUrl.searchParams.append('token', apifyToken)
 
     const response = await fetch(apiUrl.toString())
 
@@ -66,7 +69,10 @@ Deno.serve(async (req: Request) => {
       return {
         title: item.title || 'Untitled Job',
         description: item.description || '',
-        budget: typeof item.price === 'number' ? item.price : (parseFloat(item.price) || 0),
+        budget:
+          typeof item.price === 'number'
+            ? item.price
+            : parseFloat(item.price) || 0,
         location: item.location || 'Remote',
         category: finalCategory,
         photos: Array.isArray(item.photos) ? item.photos : [],
