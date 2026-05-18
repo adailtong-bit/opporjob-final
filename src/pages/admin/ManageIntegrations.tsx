@@ -88,7 +88,8 @@ export default function ManageIntegrations() {
         query = query.gte('created_at', month.toISOString())
       }
 
-      const { data, error } = await query
+      // Limiting to 500 to prevent browser lag with thousands of records
+      const { data, error } = await query.limit(500)
 
       if (error) throw error
       setPendingJobs(data || [])
@@ -301,7 +302,7 @@ export default function ManageIntegrations() {
               {loading ? (
                 <>
                   <RefreshCw className="w-3 h-3 mr-2 animate-spin" />
-                  Processando...
+                  Processando em Lote...
                 </>
               ) : (
                 <>
@@ -320,7 +321,8 @@ export default function ManageIntegrations() {
               Área de Análise (Staging)
             </h2>
             <p className="text-sm text-muted-foreground">
-              Revise, edite e aprove os anúncios recém-importados.
+              Revise, edite e aprove os anúncios recém-importados (Exibindo até
+              500 registros para otimização).
             </p>
           </div>
           <div className="flex items-center gap-2">

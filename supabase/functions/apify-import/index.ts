@@ -4,7 +4,8 @@ import { createClient } from 'jsr:@supabase/supabase-js@2'
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, x-supabase-client-platform, apikey, content-type',
+  'Access-Control-Allow-Headers':
+    'authorization, x-client-info, x-supabase-client-platform, apikey, content-type',
 }
 
 Deno.serve(async (req: Request) => {
@@ -13,182 +14,65 @@ Deno.serve(async (req: Request) => {
   }
 
   try {
-    const reqBody = await req.json().catch(() => ({}));
-    const engineId = reqBody.engineId || 'default';
+    const reqBody = await req.json().catch(() => ({}))
+    const engineId = reqBody.engineId || 'default'
 
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
     )
 
-    const APIFY_API_KEY = Deno.env.get('APIFY_API_KEY') || 'apify_api_YJoWmr8wuxrtBHG0iHjqYTMflDdCBo3hRqDK'
+    const APIFY_API_KEY =
+      Deno.env.get('APIFY_API_KEY') ||
+      'apify_api_YJoWmr8wuxrtBHG0iHjqYTMflDdCBo3hRqDK'
 
-    // Simulate an Apify dataset fetch
-    // In a real app we'd fetch from https://api.apify.com/v2/datasets/.../items?token=...
-    let mockItems = [];
+    // Extract thousands of items simulating an optimized execution without limits
+    const BATCH_TOTAL = 1000
+    let mockItems = []
 
-    if (engineId === '124578ab1a147cdc8baf7376968c4f1f') {
-      const randomBatchId = crypto.randomUUID().split('-')[0];
-      mockItems = [
-        {
-          id: `buscador_item_${randomBatchId}_1`,
-          title: "Desenvolvimento de Site Institucional",
-          description: "Criação de site responsivo e otimizado para SEO com 5 páginas.",
-          price: 1500,
-          location: "São Paulo, SP",
-          category: "Tecnologia",
-          photos: ["https://img.usecurling.com/p/600/600?q=website&color=blue"]
-        },
-        {
-          id: `buscador_item_${randomBatchId}_2`,
-          title: "Consultoria em Marketing Digital",
-          description: "Análise de presença online e plano de ação para redes sociais.",
-          price: 800,
-          location: "Rio de Janeiro, RJ",
-          category: "Marketing",
-          photos: ["https://img.usecurling.com/p/600/600?q=marketing&color=purple"]
-        },
-        {
-          id: `buscador_item_${randomBatchId}_3`,
-          title: "Aulas Particulares de Inglês",
-          description: "Aulas focadas em conversação e negócios, online ou presencial.",
-          price: 80,
-          location: "Curitiba, RJ",
-          category: "Educação",
-          photos: ["https://img.usecurling.com/p/600/600?q=english&color=red"]
-        },
-        {
-          id: `buscador_item_${randomBatchId}_4`,
-          title: "Serviço de Frete e Mudança",
-          description: "Caminhão baú para mudanças locais e intermunicipais.",
-          price: 300,
-          location: "Belo Horizonte, PR",
-          category: "Serviços",
-          photos: ["https://img.usecurling.com/p/600/600?q=moving&color=yellow"]
-        },
-        {
-          id: `buscador_item_${randomBatchId}_5`,
-          title: "Manutenção de Ar Condicionado",
-          description: "Limpeza, higienização e recarga de gás para splits.",
-          price: 150,
-          location: "Brasília, MG",
-          category: "Manutenção",
-          photos: ["https://img.usecurling.com/p/600/600?q=air-conditioner&color=cyan"]
-        }
-      ];
-    } else {
-      mockItems = [
-      {
-        id: "apify_item_001",
-        title: "Iphone 12 Pro Max - Excellent Condition",
-        description: "Selling my iPhone 12 Pro Max, 128GB. No scratches, perfect battery health. Unlocked for all carriers.",
-        price: 550,
-        location: "New York, NY",
-        category: "Electronics",
-        photos: ["https://img.usecurling.com/p/600/600?q=smartphone&color=black"]
-      },
-      {
-        id: "apify_item_002",
-        title: "Professional Plumbing Services",
-        description: "Licensed and insured plumber with 15 years of experience. Available for emergencies 24/7. Water heaters, leak repairs, installations.",
-        price: 120,
-        location: "Los Angeles, CA",
-        category: "Services",
-        photos: ["https://img.usecurling.com/p/600/600?q=plumber&color=blue"]
-      },
-      {
-        id: "apify_item_003",
-        title: "Lawn Mowing & Landscaping",
-        description: "Weekly lawn maintenance, hedge trimming, and mulching. Affordable rates for the neighborhood.",
-        price: 45,
-        location: "Austin, TX",
-        category: "Services",
-        photos: ["https://img.usecurling.com/p/600/600?q=lawnmower&color=green"]
-      },
-      {
-        id: "apify_item_004",
-        title: "Sony PlayStation 5 Console",
-        description: "Barely used PS5 with one controller and two games. Works perfectly.",
-        price: 400,
-        location: "Chicago, IL",
-        category: "Electronics",
-        photos: ["https://img.usecurling.com/p/600/600?q=playstation&color=white"]
-      },
-      {
-        id: "apify_item_005",
-        title: "Moving and Delivery Services",
-        description: "Reliable moving services. Two men and a large truck. We handle everything with care.",
-        price: 80,
-        location: "Miami, FL",
-        category: "Services",
-        photos: ["https://img.usecurling.com/p/600/600?q=truck&color=yellow"]
-      },
-      {
-        id: "apify_item_006",
-        title: "MacBook Pro M1 16-inch",
-        description: "Space Gray, 16GB RAM, 1TB SSD. Comes with original charger and box.",
-        price: 1200,
-        location: "San Francisco, CA",
-        category: "Electronics",
-        photos: ["https://img.usecurling.com/p/600/600?q=laptop&color=gray"]
-      },
-      {
-        id: "apify_item_007",
-        title: "House Cleaning Services",
-        description: "Deep cleaning, regular maintenance, move-in/move-out cleaning. Eco-friendly products.",
-        price: 150,
-        location: "Seattle, WA",
-        category: "Services",
-        photos: ["https://img.usecurling.com/p/600/600?q=cleaning&color=cyan"]
-      },
-      {
-        id: "apify_item_008",
-        title: "Electrician - Fast Response",
-        description: "Panel upgrades, wiring, lighting installation, and troubleshooting.",
-        price: 90,
-        location: "Denver, CO",
-        category: "Services",
-        photos: ["https://img.usecurling.com/p/600/600?q=electrician&color=orange"]
-      },
-      {
-        id: "apify_item_009",
-        title: "Mountain Bike Trek Marlin",
-        description: "Used for one season. Excellent condition. 29er wheels, medium frame.",
-        price: 350,
-        location: "Portland, OR",
-        category: "Sports",
-        photos: ["https://img.usecurling.com/p/600/600?q=bicycle&color=red"]
-      },
-        {
-          id: "apify_item_010",
-          title: "Photography and Videography",
-          description: "Weddings, corporate events, and portraits. High-quality edits included.",
-          price: 500,
-          location: "Atlanta, GA",
-          category: "Services",
-          photos: ["https://img.usecurling.com/p/600/600?q=camera&color=black"]
-        }
-      ];
+    const categories = [
+      'Tecnologia',
+      'Marketing',
+      'Educação',
+      'Serviços',
+      'Manutenção',
+      'Eletrônicos',
+      'Móveis',
+      'Esportes',
+      'Construção',
+      'Design',
+    ]
+    const cities = [
+      'São Paulo, SP',
+      'Rio de Janeiro, RJ',
+      'Curitiba, PR',
+      'Belo Horizonte, MG',
+      'Brasília, DF',
+      'Porto Alegre, RS',
+      'Salvador, BA',
+      'Recife, BA',
+      'Fortaleza, PE',
+      'Manaus, AM',
+    ]
 
-      const randomBatchId = crypto.randomUUID().split('-')[0];
+    const randomBatchId = crypto.randomUUID().split('-')[0]
+
+    for (let i = 0; i < BATCH_TOTAL; i++) {
+      const category = categories[Math.floor(Math.random() * categories.length)]
+      const location = cities[Math.floor(Math.random() * cities.length)]
+      const price = Math.floor(Math.random() * 2000) + 50
+
       mockItems.push({
-        id: `apify_item_dyn_${randomBatchId}_1`,
-        title: `Handyman Services #${randomBatchId}`,
-        description: "General home repairs, furniture assembly, TV mounting.",
-        price: Math.floor(Math.random() * 100) + 50,
-        location: "Dallas, TX",
-        category: "Services",
-        photos: ["https://img.usecurling.com/p/600/600?q=tools&color=gray"]
-      });
-      mockItems.push({
-        id: `apify_item_dyn_${randomBatchId}_2`,
-        title: `Vintage Desk Chair #${randomBatchId}`,
-        description: "Solid wood, mid-century modern style. Needs some polish.",
-        price: Math.floor(Math.random() * 100) + 20,
-        location: "Boston, MA",
-        category: "Furniture",
-        photos: ["https://img.usecurling.com/p/600/600?q=chair&color=yellow"]
-      });
+        id: `ext_${engineId}_${randomBatchId}_${i}`,
+        title: `Serviço de ${category} - Ref ${i}`,
+        description: `Especialista em ${category}. Atendimento exclusivo em ${location}. Qualidade e agilidade garantidas, orçamento sem compromisso. Referência: ${randomBatchId}-${i}`,
+        price: price,
+        location: location,
+        category: category,
+        photos: [
+          `https://img.usecurling.com/p/600/600?q=${encodeURIComponent(category.toLowerCase())}`,
+        ],
+      })
     }
 
     const jobsToInsert = mockItems.map((item) => ({
@@ -198,26 +82,41 @@ Deno.serve(async (req: Request) => {
       location: item.location,
       category: item.category,
       photos: item.photos,
-      source: engineId === '124578ab1a147cdc8baf7376968c4f1f' ? 'buscador_scraper' : 'apify',
+      source:
+        engineId === '124578ab1a147cdc8baf7376968c4f1f'
+          ? 'buscador_scraper'
+          : 'apify',
       external_id: item.id,
       status: 'pending_approval',
-      owner_name: engineId === '124578ab1a147cdc8baf7376968c4f1f' ? 'Buscador Scraper' : 'Apify System',
-      type: 'fixed'
+      owner_name:
+        engineId === '124578ab1a147cdc8baf7376968c4f1f'
+          ? 'Buscador Scraper'
+          : 'Apify System',
+      type: 'fixed',
     }))
 
-    const { data, error } = await supabaseClient
-      .from('jobs')
-      .upsert(jobsToInsert, { onConflict: 'external_id', ignoreDuplicates: true })
-      .select()
+    // Processamento em Lotes (Batching)
+    const BATCH_SIZE = 200
+    let totalInserted = 0
 
-    if (error) {
-      throw error
+    for (let i = 0; i < jobsToInsert.length; i += BATCH_SIZE) {
+      const batch = jobsToInsert.slice(i, i + BATCH_SIZE)
+      const { error } = await supabaseClient
+        .from('jobs')
+        .upsert(batch, { onConflict: 'external_id', ignoreDuplicates: true })
+
+      if (error) {
+        throw error
+      }
+      totalInserted += batch.length
     }
 
-    return new Response(JSON.stringify({ success: true, count: data.length, data }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    })
-
+    return new Response(
+      JSON.stringify({ success: true, count: totalInserted }),
+      {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      },
+    )
   } catch (error: any) {
     return new Response(JSON.stringify({ error: error.message }), {
       status: 400,
