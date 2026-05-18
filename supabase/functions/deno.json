@@ -3,6 +3,6 @@
     "send-push": 9,
     "process-refund": 1,
     "jobs-import": 3,
-    "apify-import": 3
+    "apify-import": 4
   }
 }
