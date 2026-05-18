@@ -76,11 +76,6 @@ export default function ManageIntegrations() {
   const [sourceFilter, setSourceFilter] = useState('all')
 
   const [chartData, setChartData] = useState<any[]>([])
-  const [mappings, setMappings] = useState<
-    { id: string; source: string; target: string }[]
-  >([])
-  const [newSource, setNewSource] = useState('')
-  const [newTarget, setNewTarget] = useState('')
 
   const { toast } = useToast()
   const { fetchJobs } = useJobStore()
@@ -102,56 +97,6 @@ export default function ManageIntegrations() {
     }
     setChartData(data)
   }, [])
-
-  useEffect(() => {
-    const fetchMappings = async () => {
-      const { data } = await supabase
-        .from('site_settings')
-        .select('value')
-        .eq('key', 'category_mappings')
-        .single()
-      if (data?.value) setMappings(data.value as any)
-    }
-    fetchMappings()
-  }, [])
-
-  const saveMappings = async (newMappings: any[]) => {
-    try {
-      await supabase
-        .from('site_settings')
-        .upsert(
-          { key: 'category_mappings', value: newMappings },
-          { onConflict: 'key' },
-        )
-      setMappings(newMappings)
-      toast({
-        title: 'Rules updated',
-        description: 'The category mapping was saved.',
-      })
-    } catch (err: any) {
-      toast({
-        variant: 'destructive',
-        title: 'Error saving',
-        description: err.message,
-      })
-    }
-  }
-
-  const addMapping = () => {
-    if (!newSource || !newTarget) return
-    const newMap = [
-      ...mappings,
-      { id: crypto.randomUUID(), source: newSource, target: newTarget },
-    ]
-    saveMappings(newMap)
-    setNewSource('')
-    setNewTarget('')
-  }
-
-  const removeMapping = (id: string) => {
-    const newMap = mappings.filter((m) => m.id !== id)
-    saveMappings(newMap)
-  }
 
   const fetchPendingJobs = async () => {
     setLoadingJobs(true)
@@ -452,80 +397,6 @@ export default function ManageIntegrations() {
           </CardContent>
         </Card>
       </div>
-
-      <Card className="mb-6">
-        <CardHeader className="p-4 pb-2">
-          <CardTitle className="text-lg flex items-center gap-2">
-            Automatic Category Mapping (From/To)
-          </CardTitle>
-          <CardDescription className="text-xs">
-            Define rules to automatically rename ad categories during
-            extraction.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="p-4 pt-0 space-y-4">
-          <div className="flex flex-col sm:flex-row gap-2 items-end">
-            <div className="flex-1 space-y-1 w-full">
-              <Label className="text-xs">Original Category (Source)</Label>
-              <Input
-                placeholder="Ex: Programmer Job"
-                value={newSource}
-                onChange={(e) => setNewSource(e.target.value)}
-                className="h-8 text-xs"
-              />
-            </div>
-            <div className="flex-1 space-y-1 w-full">
-              <Label className="text-xs">New Category (Target)</Label>
-              <Input
-                placeholder="Ex: Technology"
-                value={newTarget}
-                onChange={(e) => setNewTarget(e.target.value)}
-                className="h-8 text-xs"
-              />
-            </div>
-            <Button
-              onClick={addMapping}
-              className="h-8 text-xs px-4 bg-emerald-600 hover:bg-emerald-700 text-white w-full sm:w-auto"
-            >
-              <Plus className="w-3 h-3 mr-1" /> Add Rule
-            </Button>
-          </div>
-
-          {mappings.length > 0 && (
-            <div className="border rounded-md overflow-hidden bg-background">
-              <table className="w-full text-xs text-left">
-                <thead className="bg-muted/50 border-b">
-                  <tr>
-                    <th className="p-2 font-medium">From (Original)</th>
-                    <th className="p-2 font-medium">To (Target)</th>
-                    <th className="p-2 font-medium w-16 text-center">Action</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y">
-                  {mappings.map((m) => (
-                    <tr key={m.id} className="hover:bg-muted/30">
-                      <td className="p-2">{m.source}</td>
-                      <td className="p-2 font-medium text-emerald-600">
-                        {m.target}
-                      </td>
-                      <td className="p-2 text-center">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-6 w-6 text-red-500 hover:text-red-700 hover:bg-red-50"
-                          onClick={() => removeMapping(m.id)}
-                        >
-                          <Trash2 className="w-3 h-3" />
-                        </Button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </CardContent>
-      </Card>
 
       <div className="mt-6 space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
