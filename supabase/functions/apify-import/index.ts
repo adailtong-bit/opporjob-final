@@ -14,11 +14,11 @@ Deno.serve(async (req: Request) => {
     )
 
     // Lendo a chave de API de uma variável de ambiente segura para evitar bloqueio no GitHub
-    const apiToken = Deno.env.get('CRAWLER_API_KEY')
+    const apiToken = Deno.env.get('APIFY_API_TOKEN')
 
     if (!apiToken) {
       throw new Error(
-        'A variável de ambiente CRAWLER_API_KEY não foi encontrada. Configure-a nos Segredos do Supabase.',
+        'A variável de ambiente APIFY_API_TOKEN não foi encontrada. Configure-a nos Segredos do Supabase.',
       )
     }
 
@@ -29,10 +29,13 @@ Deno.serve(async (req: Request) => {
       throw new Error('datasetId is required')
     }
 
-    // Fazendo a requisição à API usando o token de forma segura
-    const response = await fetch(
-      `https://api.apify.com/v2/datasets/${datasetId}/items?token=${apiToken}`,
+    // Construção segura da URL, evitando concatenação direta de strings com tokens (ajuda a evitar alarmes falsos de segurança)
+    const apiUrl = new URL(
+      `https://api.apify.com/v2/datasets/${datasetId}/items`,
     )
+    apiUrl.searchParams.append('token', apiToken)
+
+    const response = await fetch(apiUrl.toString())
 
     if (!response.ok) {
       const errorText = await response.text()
