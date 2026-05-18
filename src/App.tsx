@@ -68,6 +68,7 @@ import ApprovalDashboard from '@/pages/approvals/ApprovalDashboard'
 import ManageUsers from '@/pages/admin/ManageUsers'
 import AuditLogs from '@/pages/admin/AuditLogs'
 import PushNotifications from '@/pages/admin/PushNotifications'
+import ManageIntegrations from '@/pages/admin/ManageIntegrations'
 import { useAuthStore } from '@/stores/useAuthStore'
 import { useNotificationStore } from '@/stores/useNotificationStore'
 import { supabase } from '@/lib/supabase/client'
@@ -112,6 +113,14 @@ const NotificationBadgeSync = () => {
 const CategorySync = () => {
   useEffect(() => {
     useCategoryStore.getState().fetchCategories()
+  }, [])
+  return null
+}
+
+import { useJobStore } from '@/stores/useJobStore'
+const JobSync = () => {
+  useEffect(() => {
+    useJobStore.getState().fetchJobs()
   }, [])
   return null
 }
@@ -517,6 +526,7 @@ const App = () => {
       >
         <AuthSync />
         <CategorySync />
+        <JobSync />
         <NotificationBadgeSync />
         <ScrollToTop />
         <TooltipProvider>
@@ -631,6 +641,14 @@ const App = () => {
                   element={
                     <AdminRoute>
                       <PushNotifications />
+                    </AdminRoute>
+                  }
+                />
+                <Route
+                  path="/admin/integrations"
+                  element={
+                    <AdminRoute>
+                      <ManageIntegrations />
                     </AdminRoute>
                   }
                 />
