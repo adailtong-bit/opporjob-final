@@ -146,7 +146,7 @@ export default function ManageIntegrations() {
   const handleRunApify = async () => {
     setLoading(true)
     try {
-      const { data, error } = await supabase.functions.invoke('apify-import', {
+      const { data, error } = await supabase.functions.invoke('jobs-import', {
         body: { engineId: selectedEngine },
       })
 
@@ -269,6 +269,27 @@ export default function ManageIntegrations() {
           Manage the automated collection of services and products from other
           platforms.
         </p>
+      </div>
+
+      <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 p-4 rounded-md">
+        <h3 className="text-red-800 dark:text-red-400 font-semibold flex items-center gap-2 mb-2">
+          <AlertCircle className="w-5 h-5" />
+          Ação Necessária para Sincronização com GitHub
+        </h3>
+        <p className="text-red-700 dark:text-red-300 text-sm mb-3">
+          O GitHub bloqueou o envio devido a chaves antigas que ficaram gravadas
+          no histórico. Nós excluímos o arquivo problemático e recriamos a
+          função com segurança total, mas para liberar a restrição de segurança
+          no GitHub, você precisa clicar no link abaixo e aprovar a exceção:
+        </p>
+        <a
+          href="https://github.com/adailtong-bit/bidwork-urxxhqj1l/security/secret-scanning/unblock-secret/3dtxCC81drNUZn22lbH9qjNgtSt"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-red-600 text-white hover:bg-red-700 h-9 px-4 py-2"
+        >
+          Desbloquear Sincronização no GitHub
+        </a>
       </div>
 
       <div className="grid gap-4 md:grid-cols-3 mb-6">

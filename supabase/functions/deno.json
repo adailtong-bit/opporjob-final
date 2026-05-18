@@ -1,7 +1,6 @@
 {
   "_versions": {
     "send-push": 9,
-    "process-refund": 1,
-    "apify-import": 10
+    "process-refund": 1
   }
 }
