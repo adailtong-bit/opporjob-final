@@ -2,7 +2,7 @@
   "_versions": {
     "send-push": 9,
     "process-refund": 1,
-    "jobs-import": 4,
-    "apify-import": 5
+    "jobs-import": 5,
+    "apify-import": 6
   }
 }
