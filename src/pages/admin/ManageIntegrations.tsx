@@ -28,6 +28,7 @@ import {
   Check,
   RefreshCw,
   Edit,
+  Filter,
 } from 'lucide-react'
 import {
   Select,
@@ -52,18 +53,42 @@ export default function ManageIntegrations() {
 
   const [editingJob, setEditingJob] = useState<Job | null>(null)
 
+  const [dateFilter, setDateFilter] = useState('all')
+  const [sourceFilter, setSourceFilter] = useState('all')
+
   const { toast } = useToast()
   const { fetchJobs } = useJobStore()
 
   const fetchPendingJobs = async () => {
     setLoadingJobs(true)
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from('jobs')
         .select('*')
-        .in('source', ['apify', 'buscador_scraper'])
         .eq('status', 'pending_approval')
         .order('created_at', { ascending: false })
+
+      if (sourceFilter !== 'all') {
+        query = query.eq('source', sourceFilter)
+      } else {
+        query = query.in('source', ['apify', 'buscador_scraper'])
+      }
+
+      if (dateFilter === 'today') {
+        const today = new Date()
+        today.setHours(0, 0, 0, 0)
+        query = query.gte('created_at', today.toISOString())
+      } else if (dateFilter === 'week') {
+        const week = new Date()
+        week.setDate(week.getDate() - 7)
+        query = query.gte('created_at', week.toISOString())
+      } else if (dateFilter === 'month') {
+        const month = new Date()
+        month.setMonth(month.getMonth() - 1)
+        query = query.gte('created_at', month.toISOString())
+      }
+
+      const { data, error } = await query
 
       if (error) throw error
       setPendingJobs(data || [])
@@ -76,7 +101,7 @@ export default function ManageIntegrations() {
 
   useEffect(() => {
     fetchPendingJobs()
-  }, [])
+  }, [dateFilter, sourceFilter])
 
   const handleRunApify = async () => {
     setLoading(true)
@@ -197,37 +222,38 @@ export default function ManageIntegrations() {
   }
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto pb-10">
+    <div className="space-y-4 max-w-7xl mx-auto pb-8">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">
+        <h1 className="text-2xl font-bold tracking-tight">
           Integrações de Dados
         </h1>
-        <p className="text-muted-foreground">
+        <p className="text-sm text-muted-foreground">
           Gerencie a coleta automatizada de serviços e produtos de outras
           plataformas.
         </p>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className="grid gap-4 md:grid-cols-2">
         <Card>
-          <CardHeader>
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <CardTitle className="flex items-center gap-2">
-                <Database className="w-5 h-5 text-blue-600" />
+          <CardHeader className="p-4 pb-2">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <Database className="w-4 h-4 text-blue-600" />
                 Integração de Scraper
               </CardTitle>
-              <Badge className="bg-green-500 w-fit">Conectado</Badge>
+              <Badge className="bg-green-500 w-fit text-xs px-2 py-0.5">
+                Conectado
+              </Badge>
             </div>
-            <CardDescription>
-              Integração ativa utilizando API Key. Extrai dados automaticamente
-              de marketplaces externos.
+            <CardDescription className="text-xs mt-1">
+              Integração ativa utilizando API Key. Extrai dados automaticamente.
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label>Selecione o Motor de Extração:</Label>
+          <CardContent className="p-4 pt-0 space-y-3">
+            <div className="space-y-1.5">
+              <Label className="text-xs">Selecione o Motor de Extração:</Label>
               <Select value={selectedEngine} onValueChange={setSelectedEngine}>
-                <SelectTrigger className="w-full">
+                <SelectTrigger className="w-full h-8 text-xs">
                   <SelectValue placeholder="Selecione o motor" />
                 </SelectTrigger>
                 <SelectContent>
@@ -241,11 +267,11 @@ export default function ManageIntegrations() {
               </Select>
             </div>
 
-            <div className="rounded-lg bg-slate-50 dark:bg-slate-900 p-4 space-y-2 text-sm">
+            <div className="rounded-md bg-slate-50 dark:bg-slate-900 p-2.5 space-y-1.5 text-xs">
               <div className="flex items-center justify-between">
                 <span className="text-muted-foreground">Status da API</span>
                 <span className="flex items-center gap-1 font-medium text-green-600">
-                  <CheckCircle2 className="w-4 h-4" /> Operacional
+                  <CheckCircle2 className="w-3 h-3" /> Operacional
                 </span>
               </div>
               <div className="flex items-center justify-between">
@@ -253,34 +279,33 @@ export default function ManageIntegrations() {
                   Filtro Anti-Duplicidade
                 </span>
                 <span className="font-medium text-green-600 flex items-center gap-1">
-                  <CheckCircle2 className="w-4 h-4" /> Ativo
+                  <CheckCircle2 className="w-3 h-3" /> Ativo
                 </span>
               </div>
             </div>
 
-            <div className="flex items-start gap-3 text-sm text-muted-foreground bg-amber-50 dark:bg-amber-900/20 p-3 rounded border border-amber-100 dark:border-amber-800">
-              <AlertCircle className="w-5 h-5 text-amber-600 shrink-0" />
+            <div className="flex items-start gap-2 text-xs text-muted-foreground bg-amber-50 dark:bg-amber-900/20 p-2.5 rounded-md border border-amber-100 dark:border-amber-800">
+              <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
               <p>
-                Os anúncios extraídos serão enviados para a{' '}
-                <strong>Área de Análise</strong> abaixo. O sistema identificará
-                pelo ID original e ignorará automaticamente anúncios repetidos.
+                Os anúncios extraídos vão para a{' '}
+                <strong>Área de Análise</strong>. Duplicados são ignorados.
               </p>
             </div>
           </CardContent>
-          <CardFooter>
+          <CardFooter className="p-4 pt-0">
             <Button
               onClick={handleRunApify}
               disabled={loading}
-              className="w-full"
+              className="w-full h-8 text-xs"
             >
               {loading ? (
                 <>
-                  <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
-                  Processando Extração...
+                  <RefreshCw className="w-3 h-3 mr-2 animate-spin" />
+                  Processando...
                 </>
               ) : (
                 <>
-                  <Play className="w-4 h-4 mr-2" /> Executar Extração Agora
+                  <Play className="w-3 h-3 mr-2" /> Executar Extração
                 </>
               )}
             </Button>
@@ -288,55 +313,86 @@ export default function ManageIntegrations() {
         </Card>
       </div>
 
-      <div className="mt-10 space-y-4">
-        <div className="flex items-center justify-between">
+      <div className="mt-6 space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
           <div>
-            <h2 className="text-2xl font-bold tracking-tight">
+            <h2 className="text-xl font-bold tracking-tight">
               Área de Análise (Staging)
             </h2>
-            <p className="text-muted-foreground">
+            <p className="text-sm text-muted-foreground">
               Revise, edite e aprove os anúncios recém-importados.
             </p>
           </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={fetchPendingJobs}
-            disabled={loadingJobs}
-          >
-            <RefreshCw
-              className={`w-4 h-4 mr-2 ${loadingJobs ? 'animate-spin' : ''}`}
-            />
-            Atualizar
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={fetchPendingJobs}
+              disabled={loadingJobs}
+              className="h-8 text-xs"
+            >
+              <RefreshCw
+                className={`w-3 h-3 mr-2 ${loadingJobs ? 'animate-spin' : ''}`}
+              />
+              Atualizar
+            </Button>
+          </div>
+        </div>
+
+        <div className="flex flex-col sm:flex-row gap-3 items-center bg-muted/30 p-2.5 rounded-md border">
+          <div className="flex items-center gap-2 w-full sm:w-auto px-1">
+            <Filter className="w-4 h-4 text-muted-foreground" />
+            <span className="text-xs font-medium">Filtros:</span>
+          </div>
+          <Select value={sourceFilter} onValueChange={setSourceFilter}>
+            <SelectTrigger className="w-full sm:w-[180px] h-8 text-xs bg-background">
+              <SelectValue placeholder="Fonte / Integrador" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todos os Integradores</SelectItem>
+              <SelectItem value="apify">Apify Scraper</SelectItem>
+              <SelectItem value="buscador_scraper">Buscador Scraper</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select value={dateFilter} onValueChange={setDateFilter}>
+            <SelectTrigger className="w-full sm:w-[160px] h-8 text-xs bg-background">
+              <SelectValue placeholder="Período" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Qualquer data</SelectItem>
+              <SelectItem value="today">Hoje</SelectItem>
+              <SelectItem value="week">Últimos 7 dias</SelectItem>
+              <SelectItem value="month">Últimos 30 dias</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
         {loadingJobs ? (
-          <div className="text-center py-10">
-            <RefreshCw className="w-8 h-8 animate-spin mx-auto text-muted-foreground" />
-            <p className="text-muted-foreground mt-2">
+          <div className="text-center py-8">
+            <RefreshCw className="w-6 h-6 animate-spin mx-auto text-muted-foreground" />
+            <p className="text-sm text-muted-foreground mt-2">
               Carregando anúncios pendentes...
             </p>
           </div>
         ) : pendingJobs.length === 0 ? (
           <Card>
-            <CardContent className="text-center py-10">
-              <p className="text-muted-foreground">
-                Nenhum anúncio pendente de aprovação.
+            <CardContent className="text-center py-8">
+              <p className="text-sm text-muted-foreground">
+                Nenhum anúncio pendente de aprovação com os filtros atuais.
               </p>
             </CardContent>
           </Card>
         ) : (
-          <div className="grid gap-4">
+          <div className="grid gap-3">
             {pendingJobs.map((job) => (
               <Card key={job.id}>
-                <CardContent className="p-4 sm:p-6">
-                  <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-                    <div className="flex gap-4 items-center flex-1">
+                <CardContent className="p-3">
+                  <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
+                    <div className="flex gap-3 items-center flex-1 min-w-0">
                       {job.photos &&
                       Array.isArray(job.photos) &&
                       job.photos.length > 0 ? (
-                        <div className="w-16 h-16 rounded overflow-hidden shrink-0 bg-muted">
+                        <div className="w-12 h-12 rounded overflow-hidden shrink-0 bg-muted">
                           <img
                             src={job.photos[0] as string}
                             alt={job.title}
@@ -344,64 +400,72 @@ export default function ManageIntegrations() {
                           />
                         </div>
                       ) : (
-                        <div className="w-16 h-16 rounded bg-muted flex items-center justify-center shrink-0">
-                          <span className="text-xs text-muted-foreground">
+                        <div className="w-12 h-12 rounded bg-muted flex items-center justify-center shrink-0">
+                          <span className="text-[10px] text-muted-foreground text-center leading-tight px-1">
                             Sem Foto
                           </span>
                         </div>
                       )}
 
-                      <div>
-                        <h3 className="font-semibold text-lg">{job.title}</h3>
-                        <p className="text-sm text-muted-foreground line-clamp-1">
+                      <div className="min-w-0">
+                        <h3 className="font-medium text-sm truncate">
+                          {job.title}
+                        </h3>
+                        <p className="text-xs text-muted-foreground truncate">
                           {job.description}
                         </p>
-                        <div className="flex flex-wrap gap-2 mt-2">
-                          <Badge variant="secondary">
+                        <div className="flex flex-wrap gap-1.5 mt-1.5 items-center">
+                          <Badge
+                            variant="secondary"
+                            className="text-[10px] px-1.5 py-0"
+                          >
                             {job.category || 'Sem Categoria'}
                           </Badge>
                           <Badge
                             variant="outline"
-                            className="text-green-600 bg-green-50 dark:bg-green-950"
+                            className="text-[10px] px-1.5 py-0 text-green-600 bg-green-50 dark:bg-green-950"
                           >
-                            {job.budget ? `$${job.budget}` : 'Preço a combinar'}
+                            {job.budget ? `$${job.budget}` : 'A combinar'}
                           </Badge>
-                          <span className="text-xs text-muted-foreground self-center">
+                          <span className="text-[10px] text-muted-foreground truncate max-w-[120px]">
                             {job.location}
+                          </span>
+                          <span className="text-[10px] text-muted-foreground bg-muted px-1.5 py-0.5 rounded ml-auto">
+                            {job.source === 'apify' ? 'Apify' : 'Buscador'}
                           </span>
                         </div>
                       </div>
                     </div>
 
-                    <div className="flex gap-2 w-full sm:w-auto shrink-0 mt-4 sm:mt-0 flex-wrap sm:flex-nowrap">
+                    <div className="flex gap-1.5 w-full sm:w-auto shrink-0 mt-3 sm:mt-0 flex-wrap sm:flex-nowrap">
                       <Button
                         variant="outline"
                         size="sm"
-                        className="flex-1 sm:flex-none"
+                        className="flex-1 sm:flex-none h-7 text-xs px-2"
                         onClick={() => setEditingJob(job)}
                         disabled={processingId === job.id}
                       >
-                        <Edit className="w-4 h-4 mr-2" />
+                        <Edit className="w-3 h-3 mr-1" />
                         Revisar
                       </Button>
                       <Button
                         variant="destructive"
                         size="sm"
-                        className="flex-1 sm:flex-none"
+                        className="flex-1 sm:flex-none h-7 text-xs px-2"
                         onClick={() => handleDiscard(job.id)}
                         disabled={processingId === job.id}
                       >
-                        <Trash2 className="w-4 h-4 mr-2" />
+                        <Trash2 className="w-3 h-3 mr-1" />
                         Descartar
                       </Button>
                       <Button
                         variant="default"
                         size="sm"
-                        className="flex-1 sm:flex-none bg-green-600 hover:bg-green-700 text-white"
+                        className="flex-1 sm:flex-none bg-green-600 hover:bg-green-700 text-white h-7 text-xs px-2"
                         onClick={() => handleApprove(job.id)}
                         disabled={processingId === job.id}
                       >
-                        <Check className="w-4 h-4 mr-2" />
+                        <Check className="w-3 h-3 mr-1" />
                         Aprovar
                       </Button>
                     </div>
