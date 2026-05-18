@@ -30,9 +30,7 @@ Deno.serve(async (req: Request) => {
     }
 
     // Construção segura da URL, evitando concatenação direta de strings com tokens (ajuda a evitar alarmes falsos de segurança)
-    const apiUrl = new URL(
-      `https://api.apify.com/v2/datasets/${datasetId}/items`,
-    )
+    const apiUrl = new URL(`https://api.apify.com/v2/datasets/${datasetId}/items`)
     apiUrl.searchParams.append('token', apiToken)
 
     const response = await fetch(apiUrl.toString())
