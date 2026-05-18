@@ -298,8 +298,8 @@ export default function ManageIntegrations() {
                   <SelectItem value="default">
                     Apify Scraper (Default)
                   </SelectItem>
-                  <SelectItem value="124578ab1a147cdc8baf7376968c4f1f">
-                    Search Scraper (124578ab...)
+                  <SelectItem value="search_scraper_engine">
+                    Search Scraper (Custom Engine)
                   </SelectItem>
                 </SelectContent>
               </Select>
