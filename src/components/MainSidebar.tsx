@@ -158,7 +158,7 @@ export function MainSidebar() {
             icon: PanelBottom,
           },
           {
-            title: 'Integrações',
+            title: 'Integrations',
             url: '/admin/integrations',
             icon: Database,
           },

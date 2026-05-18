@@ -58,7 +58,7 @@ const chartConfig = {
     color: 'hsl(var(--primary))',
   },
   buscador: {
-    label: 'Buscador',
+    label: 'Search',
     color: 'hsl(var(--chart-2))',
   },
 }
@@ -92,7 +92,7 @@ export default function ManageIntegrations() {
       const d = new Date()
       d.setDate(d.getDate() - i)
       data.push({
-        date: d.toLocaleDateString('pt-BR', {
+        date: d.toLocaleDateString('en-US', {
           day: '2-digit',
           month: '2-digit',
         }),
@@ -125,13 +125,13 @@ export default function ManageIntegrations() {
         )
       setMappings(newMappings)
       toast({
-        title: 'Regras atualizadas',
-        description: 'O mapeamento de categorias foi salvo.',
+        title: 'Rules updated',
+        description: 'The category mapping was saved.',
       })
     } catch (err: any) {
       toast({
         variant: 'destructive',
-        title: 'Erro ao salvar',
+        title: 'Error saving',
         description: err.message,
       })
     }
@@ -209,18 +209,18 @@ export default function ManageIntegrations() {
 
       if (data?.success) {
         toast({
-          title: 'Extração Concluída',
-          description: `Foram importados ${data.count} novos anúncios para a área de análise. Anúncios já existentes foram ignorados para evitar duplicidade.`,
+          title: 'Extraction Completed',
+          description: `${data.count} new ads were imported to the staging area. Existing ads were ignored to avoid duplication.`,
         })
         await fetchPendingJobs()
       } else {
-        throw new Error(data?.error || 'Erro desconhecido')
+        throw new Error(data?.error || 'Unknown error')
       }
     } catch (err: any) {
       toast({
         variant: 'destructive',
-        title: 'Erro na Integração',
-        description: err.message || 'Não foi possível conectar com o Apify.',
+        title: 'Integration Error',
+        description: err.message || 'Could not connect to Apify.',
       })
     } finally {
       setLoading(false)
@@ -238,8 +238,8 @@ export default function ManageIntegrations() {
       if (error) throw error
 
       toast({
-        title: 'Anúncio Aprovado',
-        description: 'O anúncio foi publicado com sucesso no marketplace.',
+        title: 'Ad Approved',
+        description: 'The ad was successfully published on the marketplace.',
       })
 
       setPendingJobs((prev) => prev.filter((job) => job.id !== id))
@@ -247,7 +247,7 @@ export default function ManageIntegrations() {
     } catch (err: any) {
       toast({
         variant: 'destructive',
-        title: 'Erro ao aprovar',
+        title: 'Error approving',
         description: err.message,
       })
     } finally {
@@ -274,8 +274,8 @@ export default function ManageIntegrations() {
       if (error) throw error
 
       toast({
-        title: 'Anúncio Aprovado',
-        description: 'O anúncio foi atualizado e publicado com sucesso.',
+        title: 'Ad Approved',
+        description: 'The ad was successfully updated and published.',
       })
 
       setPendingJobs((prev) => prev.filter((job) => job.id !== editingJob.id))
@@ -284,7 +284,7 @@ export default function ManageIntegrations() {
     } catch (err: any) {
       toast({
         variant: 'destructive',
-        title: 'Erro ao aprovar',
+        title: 'Error approving',
         description: err.message,
       })
     } finally {
@@ -300,15 +300,15 @@ export default function ManageIntegrations() {
       if (error) throw error
 
       toast({
-        title: 'Anúncio Descartado',
-        description: 'O anúncio foi removido permanentemente.',
+        title: 'Ad Discarded',
+        description: 'The ad was permanently removed.',
       })
 
       setPendingJobs((prev) => prev.filter((job) => job.id !== id))
     } catch (err: any) {
       toast({
         variant: 'destructive',
-        title: 'Erro ao descartar',
+        title: 'Error discarding',
         description: err.message,
       })
     } finally {
@@ -319,12 +319,10 @@ export default function ManageIntegrations() {
   return (
     <div className="space-y-4 max-w-7xl mx-auto pb-8">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">
-          Integrações de Dados
-        </h1>
+        <h1 className="text-2xl font-bold tracking-tight">Data Integrations</h1>
         <p className="text-sm text-muted-foreground">
-          Gerencie a coleta automatizada de serviços e produtos de outras
-          plataformas.
+          Manage the automated collection of services and products from other
+          platforms.
         </p>
       </div>
 
@@ -334,29 +332,29 @@ export default function ManageIntegrations() {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <CardTitle className="flex items-center gap-2 text-lg">
                 <Database className="w-4 h-4 text-blue-600" />
-                Integração de Scraper
+                Scraper Integration
               </CardTitle>
               <Badge className="bg-green-500 w-fit text-xs px-2 py-0.5">
-                Conectado
+                Connected
               </Badge>
             </div>
             <CardDescription className="text-xs mt-1">
-              Integração ativa utilizando API Key. Extrai dados automaticamente.
+              Active integration using API Key. Extracts data automatically.
             </CardDescription>
           </CardHeader>
           <CardContent className="p-4 pt-0 space-y-3">
             <div className="space-y-1.5">
-              <Label className="text-xs">Selecione o Motor de Extração:</Label>
+              <Label className="text-xs">Select Extraction Engine:</Label>
               <Select value={selectedEngine} onValueChange={setSelectedEngine}>
                 <SelectTrigger className="w-full h-8 text-xs">
-                  <SelectValue placeholder="Selecione o motor" />
+                  <SelectValue placeholder="Select engine" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="default">
-                    Apify Scraper (Padrão)
+                    Apify Scraper (Default)
                   </SelectItem>
                   <SelectItem value="124578ab1a147cdc8baf7376968c4f1f">
-                    Buscador Scraper (124578ab...)
+                    Search Scraper (124578ab...)
                   </SelectItem>
                 </SelectContent>
               </Select>
@@ -364,17 +362,17 @@ export default function ManageIntegrations() {
 
             <div className="rounded-md bg-slate-50 dark:bg-slate-900 p-2.5 space-y-1.5 text-xs">
               <div className="flex items-center justify-between">
-                <span className="text-muted-foreground">Status da API</span>
+                <span className="text-muted-foreground">API Status</span>
                 <span className="flex items-center gap-1 font-medium text-green-600">
-                  <CheckCircle2 className="w-3 h-3" /> Operacional
+                  <CheckCircle2 className="w-3 h-3" /> Operational
                 </span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-muted-foreground">
-                  Filtro Anti-Duplicidade
+                  Anti-Duplication Filter
                 </span>
                 <span className="font-medium text-green-600 flex items-center gap-1">
-                  <CheckCircle2 className="w-3 h-3" /> Ativo
+                  <CheckCircle2 className="w-3 h-3" /> Active
                 </span>
               </div>
             </div>
@@ -382,8 +380,8 @@ export default function ManageIntegrations() {
             <div className="flex items-start gap-2 text-xs text-muted-foreground bg-amber-50 dark:bg-amber-900/20 p-2.5 rounded-md border border-amber-100 dark:border-amber-800">
               <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
               <p>
-                Os anúncios extraídos vão para a{' '}
-                <strong>Área de Análise</strong>. Duplicados são ignorados.
+                Extracted ads go to the <strong>Staging Area</strong>.
+                Duplicates are ignored.
               </p>
             </div>
           </CardContent>
@@ -396,11 +394,11 @@ export default function ManageIntegrations() {
               {loading ? (
                 <>
                   <RefreshCw className="w-3 h-3 mr-2 animate-spin" />
-                  Processando em Lote...
+                  Batch Processing...
                 </>
               ) : (
                 <>
-                  <Play className="w-3 h-3 mr-2" /> Executar Extração
+                  <Play className="w-3 h-3 mr-2" /> Run Extraction
                 </>
               )}
             </Button>
@@ -411,7 +409,7 @@ export default function ManageIntegrations() {
           <CardHeader className="p-4 pb-2">
             <CardTitle className="text-lg flex items-center gap-2">
               <BarChart3 className="w-4 h-4 text-blue-600" />
-              Volume de Extração (Últimos 7 dias)
+              Extraction Volume (Last 7 days)
             </CardTitle>
           </CardHeader>
           <CardContent className="p-4 pt-0 flex-1 min-h-[200px]">
@@ -458,28 +456,28 @@ export default function ManageIntegrations() {
       <Card className="mb-6">
         <CardHeader className="p-4 pb-2">
           <CardTitle className="text-lg flex items-center gap-2">
-            Mapeamento Automático de Categorias (De/Para)
+            Automatic Category Mapping (From/To)
           </CardTitle>
           <CardDescription className="text-xs">
-            Defina regras para renomear automaticamente as categorias dos
-            anúncios durante a extração.
+            Define rules to automatically rename ad categories during
+            extraction.
           </CardDescription>
         </CardHeader>
         <CardContent className="p-4 pt-0 space-y-4">
           <div className="flex flex-col sm:flex-row gap-2 items-end">
             <div className="flex-1 space-y-1 w-full">
-              <Label className="text-xs">Categoria Original (Origem)</Label>
+              <Label className="text-xs">Original Category (Source)</Label>
               <Input
-                placeholder="Ex: Vaga de Programador"
+                placeholder="Ex: Programmer Job"
                 value={newSource}
                 onChange={(e) => setNewSource(e.target.value)}
                 className="h-8 text-xs"
               />
             </div>
             <div className="flex-1 space-y-1 w-full">
-              <Label className="text-xs">Nova Categoria (Destino)</Label>
+              <Label className="text-xs">New Category (Target)</Label>
               <Input
-                placeholder="Ex: Tecnologia"
+                placeholder="Ex: Technology"
                 value={newTarget}
                 onChange={(e) => setNewTarget(e.target.value)}
                 className="h-8 text-xs"
@@ -489,7 +487,7 @@ export default function ManageIntegrations() {
               onClick={addMapping}
               className="h-8 text-xs px-4 bg-emerald-600 hover:bg-emerald-700 text-white w-full sm:w-auto"
             >
-              <Plus className="w-3 h-3 mr-1" /> Adicionar Regra
+              <Plus className="w-3 h-3 mr-1" /> Add Rule
             </Button>
           </div>
 
@@ -498,9 +496,9 @@ export default function ManageIntegrations() {
               <table className="w-full text-xs text-left">
                 <thead className="bg-muted/50 border-b">
                   <tr>
-                    <th className="p-2 font-medium">De (Original)</th>
-                    <th className="p-2 font-medium">Para (Destino)</th>
-                    <th className="p-2 font-medium w-16 text-center">Ação</th>
+                    <th className="p-2 font-medium">From (Original)</th>
+                    <th className="p-2 font-medium">To (Target)</th>
+                    <th className="p-2 font-medium w-16 text-center">Action</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y">
@@ -532,12 +530,10 @@ export default function ManageIntegrations() {
       <div className="mt-6 space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
           <div>
-            <h2 className="text-xl font-bold tracking-tight">
-              Área de Análise (Staging)
-            </h2>
+            <h2 className="text-xl font-bold tracking-tight">Staging Area</h2>
             <p className="text-sm text-muted-foreground">
-              Revise, edite e aprove os anúncios recém-importados (Exibindo até
-              500 registros para otimização).
+              Review, edit and approve newly imported ads (Showing up to 500
+              records for optimization).
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -551,7 +547,7 @@ export default function ManageIntegrations() {
               <RefreshCw
                 className={`w-3 h-3 mr-2 ${loadingJobs ? 'animate-spin' : ''}`}
               />
-              Atualizar
+              Refresh
             </Button>
           </div>
         </div>
@@ -559,27 +555,27 @@ export default function ManageIntegrations() {
         <div className="flex flex-col sm:flex-row gap-3 items-center bg-muted/30 p-2.5 rounded-md border">
           <div className="flex items-center gap-2 w-full sm:w-auto px-1">
             <Filter className="w-4 h-4 text-muted-foreground" />
-            <span className="text-xs font-medium">Filtros:</span>
+            <span className="text-xs font-medium">Filters:</span>
           </div>
           <Select value={sourceFilter} onValueChange={setSourceFilter}>
             <SelectTrigger className="w-full sm:w-[180px] h-8 text-xs bg-background">
-              <SelectValue placeholder="Fonte / Integrador" />
+              <SelectValue placeholder="Source / Integrator" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Todos os Integradores</SelectItem>
+              <SelectItem value="all">All Integrators</SelectItem>
               <SelectItem value="apify">Apify Scraper</SelectItem>
-              <SelectItem value="buscador_scraper">Buscador Scraper</SelectItem>
+              <SelectItem value="buscador_scraper">Search Scraper</SelectItem>
             </SelectContent>
           </Select>
           <Select value={dateFilter} onValueChange={setDateFilter}>
             <SelectTrigger className="w-full sm:w-[160px] h-8 text-xs bg-background">
-              <SelectValue placeholder="Período" />
+              <SelectValue placeholder="Period" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Qualquer data</SelectItem>
-              <SelectItem value="today">Hoje</SelectItem>
-              <SelectItem value="week">Últimos 7 dias</SelectItem>
-              <SelectItem value="month">Últimos 30 dias</SelectItem>
+              <SelectItem value="all">Any date</SelectItem>
+              <SelectItem value="today">Today</SelectItem>
+              <SelectItem value="week">Last 7 days</SelectItem>
+              <SelectItem value="month">Last 30 days</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -588,14 +584,14 @@ export default function ManageIntegrations() {
           <div className="text-center py-8">
             <RefreshCw className="w-6 h-6 animate-spin mx-auto text-muted-foreground" />
             <p className="text-sm text-muted-foreground mt-2">
-              Carregando anúncios pendentes...
+              Loading pending ads...
             </p>
           </div>
         ) : pendingJobs.length === 0 ? (
           <Card>
             <CardContent className="text-center py-8">
               <p className="text-sm text-muted-foreground">
-                Nenhum anúncio pendente de aprovação com os filtros atuais.
+                No ads pending approval with current filters.
               </p>
             </CardContent>
           </Card>
@@ -619,7 +615,7 @@ export default function ManageIntegrations() {
                       ) : (
                         <div className="w-12 h-12 rounded bg-muted flex items-center justify-center shrink-0">
                           <span className="text-[10px] text-muted-foreground text-center leading-tight px-1">
-                            Sem Foto
+                            No Photo
                           </span>
                         </div>
                       )}
@@ -636,19 +632,19 @@ export default function ManageIntegrations() {
                             variant="secondary"
                             className="text-[10px] px-1.5 py-0"
                           >
-                            {job.category || 'Sem Categoria'}
+                            {job.category || 'No Category'}
                           </Badge>
                           <Badge
                             variant="outline"
                             className="text-[10px] px-1.5 py-0 text-green-600 bg-green-50 dark:bg-green-950"
                           >
-                            {job.budget ? `$${job.budget}` : 'A combinar'}
+                            {job.budget ? `$${job.budget}` : 'To be discussed'}
                           </Badge>
                           <span className="text-[10px] text-muted-foreground truncate max-w-[120px]">
                             {job.location}
                           </span>
                           <span className="text-[10px] text-muted-foreground bg-muted px-1.5 py-0.5 rounded ml-auto">
-                            {job.source === 'apify' ? 'Apify' : 'Buscador'}
+                            {job.source === 'apify' ? 'Apify' : 'Search Engine'}
                           </span>
                         </div>
                       </div>
@@ -663,7 +659,7 @@ export default function ManageIntegrations() {
                         disabled={processingId === job.id}
                       >
                         <Edit className="w-3 h-3 mr-1" />
-                        Revisar
+                        Review
                       </Button>
                       <Button
                         variant="destructive"
@@ -673,7 +669,7 @@ export default function ManageIntegrations() {
                         disabled={processingId === job.id}
                       >
                         <Trash2 className="w-3 h-3 mr-1" />
-                        Descartar
+                        Discard
                       </Button>
                       <Button
                         variant="default"
@@ -683,7 +679,7 @@ export default function ManageIntegrations() {
                         disabled={processingId === job.id}
                       >
                         <Check className="w-3 h-3 mr-1" />
-                        Aprovar
+                        Approve
                       </Button>
                     </div>
                   </div>
@@ -700,16 +696,16 @@ export default function ManageIntegrations() {
       >
         <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Revisar e Editar Anúncio</DialogTitle>
+            <DialogTitle>Review and Edit Ad</DialogTitle>
             <DialogDescription>
-              Ajuste os detalhes antes de aprovar e publicar no marketplace.
+              Adjust details before approving and publishing on the marketplace.
             </DialogDescription>
           </DialogHeader>
 
           {editingJob && (
             <div className="grid gap-4 py-4">
               <div className="space-y-2">
-                <Label htmlFor="title">Título</Label>
+                <Label htmlFor="title">Title</Label>
                 <Input
                   id="title"
                   value={editingJob.title || ''}
@@ -719,7 +715,7 @@ export default function ManageIntegrations() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="description">Descrição</Label>
+                <Label htmlFor="description">Description</Label>
                 <textarea
                   id="description"
                   className="flex min-h-[120px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
@@ -734,7 +730,7 @@ export default function ManageIntegrations() {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="price">Preço ($)</Label>
+                  <Label htmlFor="price">Price ($)</Label>
                   <Input
                     id="price"
                     type="number"
@@ -748,7 +744,7 @@ export default function ManageIntegrations() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="category">Categoria</Label>
+                  <Label htmlFor="category">Category</Label>
                   <Input
                     id="category"
                     value={editingJob.category || ''}
@@ -759,7 +755,7 @@ export default function ManageIntegrations() {
                 </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="location">Localização</Label>
+                <Label htmlFor="location">Location</Label>
                 <Input
                   id="location"
                   value={editingJob.location || ''}
@@ -777,7 +773,7 @@ export default function ManageIntegrations() {
               onClick={() => setEditingJob(null)}
               className="sm:mr-auto"
             >
-              Cancelar
+              Cancel
             </Button>
             <Button
               variant="destructive"
@@ -790,7 +786,7 @@ export default function ManageIntegrations() {
               disabled={processingId === editingJob?.id}
             >
               <Trash2 className="w-4 h-4 mr-2" />
-              Descartar
+              Discard
             </Button>
             <Button
               className="bg-green-600 hover:bg-green-700 text-white"
@@ -798,7 +794,7 @@ export default function ManageIntegrations() {
               disabled={processingId === editingJob?.id}
             >
               <Check className="w-4 h-4 mr-2" />
-              Salvar e Aprovar
+              Save and Approve
             </Button>
           </DialogFooter>
         </DialogContent>
