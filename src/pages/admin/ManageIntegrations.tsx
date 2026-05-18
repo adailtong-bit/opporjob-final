@@ -29,6 +29,8 @@ import {
   RefreshCw,
   Edit,
   Filter,
+  BarChart3,
+  Plus,
 } from 'lucide-react'
 import {
   Select,
@@ -41,8 +43,25 @@ import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/lib/supabase/client'
 import { useJobStore } from '@/stores/useJobStore'
 import type { Database as DB } from '@/lib/supabase/types'
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from '@/components/ui/chart'
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts'
 
 type Job = DB['public']['Tables']['jobs']['Row']
+
+const chartConfig = {
+  apify: {
+    label: 'Apify',
+    color: 'hsl(var(--primary))',
+  },
+  buscador: {
+    label: 'Buscador',
+    color: 'hsl(var(--chart-2))',
+  },
+}
 
 export default function ManageIntegrations() {
   const [loading, setLoading] = useState(false)
@@ -56,8 +75,83 @@ export default function ManageIntegrations() {
   const [dateFilter, setDateFilter] = useState('all')
   const [sourceFilter, setSourceFilter] = useState('all')
 
+  const [chartData, setChartData] = useState<any[]>([])
+  const [mappings, setMappings] = useState<
+    { id: string; source: string; target: string }[]
+  >([])
+  const [newSource, setNewSource] = useState('')
+  const [newTarget, setNewTarget] = useState('')
+
   const { toast } = useToast()
   const { fetchJobs } = useJobStore()
+
+  useEffect(() => {
+    // Generate mock trend data for the dashboard
+    const data = []
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date()
+      d.setDate(d.getDate() - i)
+      data.push({
+        date: d.toLocaleDateString('pt-BR', {
+          day: '2-digit',
+          month: '2-digit',
+        }),
+        apify: Math.floor(Math.random() * 500) + 100,
+        buscador: Math.floor(Math.random() * 300) + 50,
+      })
+    }
+    setChartData(data)
+  }, [])
+
+  useEffect(() => {
+    const fetchMappings = async () => {
+      const { data } = await supabase
+        .from('site_settings')
+        .select('value')
+        .eq('key', 'category_mappings')
+        .single()
+      if (data?.value) setMappings(data.value as any)
+    }
+    fetchMappings()
+  }, [])
+
+  const saveMappings = async (newMappings: any[]) => {
+    try {
+      await supabase
+        .from('site_settings')
+        .upsert(
+          { key: 'category_mappings', value: newMappings },
+          { onConflict: 'key' },
+        )
+      setMappings(newMappings)
+      toast({
+        title: 'Regras atualizadas',
+        description: 'O mapeamento de categorias foi salvo.',
+      })
+    } catch (err: any) {
+      toast({
+        variant: 'destructive',
+        title: 'Erro ao salvar',
+        description: err.message,
+      })
+    }
+  }
+
+  const addMapping = () => {
+    if (!newSource || !newTarget) return
+    const newMap = [
+      ...mappings,
+      { id: crypto.randomUUID(), source: newSource, target: newTarget },
+    ]
+    saveMappings(newMap)
+    setNewSource('')
+    setNewTarget('')
+  }
+
+  const removeMapping = (id: string) => {
+    const newMap = mappings.filter((m) => m.id !== id)
+    saveMappings(newMap)
+  }
 
   const fetchPendingJobs = async () => {
     setLoadingJobs(true)
@@ -234,8 +328,8 @@ export default function ManageIntegrations() {
         </p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2">
-        <Card>
+      <div className="grid gap-4 md:grid-cols-3 mb-6">
+        <Card className="md:col-span-1">
           <CardHeader className="p-4 pb-2">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <CardTitle className="flex items-center gap-2 text-lg">
@@ -297,7 +391,7 @@ export default function ManageIntegrations() {
             <Button
               onClick={handleRunApify}
               disabled={loading}
-              className="w-full h-8 text-xs"
+              className="w-full h-8 text-xs bg-blue-600 hover:bg-blue-700 text-white"
             >
               {loading ? (
                 <>
@@ -312,7 +406,128 @@ export default function ManageIntegrations() {
             </Button>
           </CardFooter>
         </Card>
+
+        <Card className="md:col-span-2 flex flex-col">
+          <CardHeader className="p-4 pb-2">
+            <CardTitle className="text-lg flex items-center gap-2">
+              <BarChart3 className="w-4 h-4 text-blue-600" />
+              Volume de Extração (Últimos 7 dias)
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-4 pt-0 flex-1 min-h-[200px]">
+            <ChartContainer config={chartConfig} className="w-full h-[200px]">
+              <BarChart
+                data={chartData}
+                margin={{ top: 10, right: 10, bottom: 0, left: -20 }}
+              >
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  vertical={false}
+                  stroke="hsl(var(--border))"
+                />
+                <XAxis
+                  dataKey="date"
+                  fontSize={12}
+                  tickLine={false}
+                  axisLine={false}
+                  tick={{ fill: 'hsl(var(--foreground))' }}
+                />
+                <YAxis
+                  fontSize={12}
+                  tickLine={false}
+                  axisLine={false}
+                  tick={{ fill: 'hsl(var(--foreground))' }}
+                />
+                <ChartTooltip content={<ChartTooltipContent />} />
+                <Bar
+                  dataKey="apify"
+                  fill="var(--color-apify)"
+                  radius={[4, 4, 0, 0]}
+                />
+                <Bar
+                  dataKey="buscador"
+                  fill="var(--color-buscador)"
+                  radius={[4, 4, 0, 0]}
+                />
+              </BarChart>
+            </ChartContainer>
+          </CardContent>
+        </Card>
       </div>
+
+      <Card className="mb-6">
+        <CardHeader className="p-4 pb-2">
+          <CardTitle className="text-lg flex items-center gap-2">
+            Mapeamento Automático de Categorias (De/Para)
+          </CardTitle>
+          <CardDescription className="text-xs">
+            Defina regras para renomear automaticamente as categorias dos
+            anúncios durante a extração.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="p-4 pt-0 space-y-4">
+          <div className="flex flex-col sm:flex-row gap-2 items-end">
+            <div className="flex-1 space-y-1 w-full">
+              <Label className="text-xs">Categoria Original (Origem)</Label>
+              <Input
+                placeholder="Ex: Vaga de Programador"
+                value={newSource}
+                onChange={(e) => setNewSource(e.target.value)}
+                className="h-8 text-xs"
+              />
+            </div>
+            <div className="flex-1 space-y-1 w-full">
+              <Label className="text-xs">Nova Categoria (Destino)</Label>
+              <Input
+                placeholder="Ex: Tecnologia"
+                value={newTarget}
+                onChange={(e) => setNewTarget(e.target.value)}
+                className="h-8 text-xs"
+              />
+            </div>
+            <Button
+              onClick={addMapping}
+              className="h-8 text-xs px-4 bg-emerald-600 hover:bg-emerald-700 text-white w-full sm:w-auto"
+            >
+              <Plus className="w-3 h-3 mr-1" /> Adicionar Regra
+            </Button>
+          </div>
+
+          {mappings.length > 0 && (
+            <div className="border rounded-md overflow-hidden bg-background">
+              <table className="w-full text-xs text-left">
+                <thead className="bg-muted/50 border-b">
+                  <tr>
+                    <th className="p-2 font-medium">De (Original)</th>
+                    <th className="p-2 font-medium">Para (Destino)</th>
+                    <th className="p-2 font-medium w-16 text-center">Ação</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y">
+                  {mappings.map((m) => (
+                    <tr key={m.id} className="hover:bg-muted/30">
+                      <td className="p-2">{m.source}</td>
+                      <td className="p-2 font-medium text-emerald-600">
+                        {m.target}
+                      </td>
+                      <td className="p-2 text-center">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6 text-red-500 hover:text-red-700 hover:bg-red-50"
+                          onClick={() => removeMapping(m.id)}
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </Button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       <div className="mt-6 space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
