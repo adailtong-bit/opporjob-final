@@ -31,7 +31,7 @@ export function MainHeader() {
 
           <div className="hidden md:flex items-center gap-2">
             <Button variant="ghost" size="sm" asChild>
-              <Link to="/auth">Sign In</Link>
+              <Link to="/login">Sign In</Link>
             </Button>
             <Button size="sm" asChild>
               <Link to="/register">Get Started</Link>
