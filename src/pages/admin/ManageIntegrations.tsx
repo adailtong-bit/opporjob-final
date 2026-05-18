@@ -10,6 +10,16 @@ import {
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import {
   CheckCircle2,
   Play,
   AlertCircle,
@@ -17,6 +27,7 @@ import {
   Trash2,
   Check,
   RefreshCw,
+  Edit,
 } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/lib/supabase/client'
@@ -30,6 +41,8 @@ export default function ManageIntegrations() {
   const [pendingJobs, setPendingJobs] = useState<Job[]>([])
   const [loadingJobs, setLoadingJobs] = useState(false)
   const [processingId, setProcessingId] = useState<string | null>(null)
+
+  const [editingJob, setEditingJob] = useState<Job | null>(null)
 
   const { toast } = useToast()
   const { fetchJobs } = useJobStore()
@@ -70,7 +83,7 @@ export default function ManageIntegrations() {
       if (data?.success) {
         toast({
           title: 'Extração Concluída',
-          description: `Foram importados ${data.count} anúncios para a área de análise.`,
+          description: `Foram importados ${data.count} novos anúncios para a área de análise. Anúncios já existentes foram ignorados para evitar duplicidade.`,
         })
         await fetchPendingJobs()
       } else {
@@ -103,6 +116,43 @@ export default function ManageIntegrations() {
       })
 
       setPendingJobs((prev) => prev.filter((job) => job.id !== id))
+      await fetchJobs()
+    } catch (err: any) {
+      toast({
+        variant: 'destructive',
+        title: 'Erro ao aprovar',
+        description: err.message,
+      })
+    } finally {
+      setProcessingId(null)
+    }
+  }
+
+  const handleSaveAndApprove = async () => {
+    if (!editingJob) return
+    setProcessingId(editingJob.id)
+    try {
+      const { error } = await supabase
+        .from('jobs')
+        .update({
+          title: editingJob.title,
+          description: editingJob.description,
+          budget: editingJob.budget,
+          category: editingJob.category,
+          location: editingJob.location,
+          status: 'open',
+        })
+        .eq('id', editingJob.id)
+
+      if (error) throw error
+
+      toast({
+        title: 'Anúncio Aprovado',
+        description: 'O anúncio foi atualizado e publicado com sucesso.',
+      })
+
+      setPendingJobs((prev) => prev.filter((job) => job.id !== editingJob.id))
+      setEditingJob(null)
       await fetchJobs()
     } catch (err: any) {
       toast({
@@ -163,7 +213,7 @@ export default function ManageIntegrations() {
             </div>
             <CardDescription>
               Integração ativa utilizando API Key. Extrai dados automaticamente
-              de marketplaces como OfferUp e Craigslist.
+              de marketplaces externos.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -176,13 +226,11 @@ export default function ManageIntegrations() {
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-muted-foreground">
-                  Última Sincronização
+                  Filtro Anti-Duplicidade
                 </span>
-                <span className="font-medium">Nunca</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-muted-foreground">Chave Configurada</span>
-                <span className="font-medium">apify_api_***RqDK</span>
+                <span className="font-medium text-green-600 flex items-center gap-1">
+                  <CheckCircle2 className="w-4 h-4" /> Ativo
+                </span>
               </div>
             </div>
 
@@ -190,8 +238,8 @@ export default function ManageIntegrations() {
               <AlertCircle className="w-5 h-5 text-amber-600 shrink-0" />
               <p>
                 Os anúncios extraídos serão enviados para a{' '}
-                <strong>Área de Análise</strong> abaixo, onde você poderá
-                aprovar ou descartar antes de publicá-los.
+                <strong>Área de Análise</strong> abaixo. O sistema identificará
+                pelo ID original e ignorará automaticamente anúncios repetidos.
               </p>
             </div>
           </CardContent>
@@ -223,7 +271,7 @@ export default function ManageIntegrations() {
               Área de Análise (Staging)
             </h2>
             <p className="text-muted-foreground">
-              Revise os anúncios importados antes de publicá-los.
+              Revise, edite e aprove os anúncios recém-importados.
             </p>
           </div>
           <Button
@@ -301,7 +349,17 @@ export default function ManageIntegrations() {
                       </div>
                     </div>
 
-                    <div className="flex gap-2 w-full sm:w-auto shrink-0 mt-4 sm:mt-0">
+                    <div className="flex gap-2 w-full sm:w-auto shrink-0 mt-4 sm:mt-0 flex-wrap sm:flex-nowrap">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="flex-1 sm:flex-none"
+                        onClick={() => setEditingJob(job)}
+                        disabled={processingId === job.id}
+                      >
+                        <Edit className="w-4 h-4 mr-2" />
+                        Revisar
+                      </Button>
                       <Button
                         variant="destructive"
                         size="sm"
@@ -330,6 +388,116 @@ export default function ManageIntegrations() {
           </div>
         )}
       </div>
+
+      <Dialog
+        open={!!editingJob}
+        onOpenChange={(open) => !open && setEditingJob(null)}
+      >
+        <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Revisar e Editar Anúncio</DialogTitle>
+            <DialogDescription>
+              Ajuste os detalhes antes de aprovar e publicar no marketplace.
+            </DialogDescription>
+          </DialogHeader>
+
+          {editingJob && (
+            <div className="grid gap-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="title">Título</Label>
+                <Input
+                  id="title"
+                  value={editingJob.title || ''}
+                  onChange={(e) =>
+                    setEditingJob({ ...editingJob, title: e.target.value })
+                  }
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="description">Descrição</Label>
+                <textarea
+                  id="description"
+                  className="flex min-h-[120px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                  value={editingJob.description || ''}
+                  onChange={(e) =>
+                    setEditingJob({
+                      ...editingJob,
+                      description: e.target.value,
+                    })
+                  }
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="price">Preço ($)</Label>
+                  <Input
+                    id="price"
+                    type="number"
+                    value={editingJob.budget || ''}
+                    onChange={(e) =>
+                      setEditingJob({
+                        ...editingJob,
+                        budget: parseFloat(e.target.value) || null,
+                      })
+                    }
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="category">Categoria</Label>
+                  <Input
+                    id="category"
+                    value={editingJob.category || ''}
+                    onChange={(e) =>
+                      setEditingJob({ ...editingJob, category: e.target.value })
+                    }
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="location">Localização</Label>
+                <Input
+                  id="location"
+                  value={editingJob.location || ''}
+                  onChange={(e) =>
+                    setEditingJob({ ...editingJob, location: e.target.value })
+                  }
+                />
+              </div>
+            </div>
+          )}
+
+          <DialogFooter className="flex-col sm:flex-row gap-2 mt-4">
+            <Button
+              variant="outline"
+              onClick={() => setEditingJob(null)}
+              className="sm:mr-auto"
+            >
+              Cancelar
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => {
+                if (editingJob) {
+                  handleDiscard(editingJob.id)
+                  setEditingJob(null)
+                }
+              }}
+              disabled={processingId === editingJob?.id}
+            >
+              <Trash2 className="w-4 h-4 mr-2" />
+              Descartar
+            </Button>
+            <Button
+              className="bg-green-600 hover:bg-green-700 text-white"
+              onClick={handleSaveAndApprove}
+              disabled={processingId === editingJob?.id}
+            >
+              <Check className="w-4 h-4 mr-2" />
+              Salvar e Aprovar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
