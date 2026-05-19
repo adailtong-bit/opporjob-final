@@ -7,18 +7,17 @@ Deno.serve(async (req: Request) => {
   }
 
   try {
-    // O código anterior foi completamente removido para evitar o bloqueio
+    // O código anterior foi completamente removido para evitar o bloqueio 
     // de segurança (Secret Scanning) do GitHub.
     // Todas as referências a chaves, tokens e cabeçalhos de autorização foram retiradas.
     // A função agora apenas retorna sucesso sem fazer requisições externas,
     // permitindo que o sincronismo ocorra sem bloqueios.
 
     return new Response(
-      JSON.stringify({
-        success: true,
+      JSON.stringify({ 
+        success: true, 
         count: 0,
-        message:
-          'Integração temporariamente desativada para manutenção de segurança.',
+        message: "Integração temporariamente desativada para manutenção de segurança."
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
