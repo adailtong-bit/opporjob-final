@@ -29,10 +29,15 @@ Deno.serve(async (req: Request) => {
       throw new Error('O ID do dataset (datasetId) é obrigatório.')
     }
 
-    const apiUrl = new URL(`https://api.apify.com/v2/datasets/${datasetId}/items`)
-    apiUrl.searchParams.append('token', apifyToken)
+    const apiUrl = new URL(
+      `https://api.apify.com/v2/datasets/${datasetId}/items`,
+    )
 
-    const response = await fetch(apiUrl.toString())
+    const response = await fetch(apiUrl.toString(), {
+      headers: {
+        Authorization: `Bearer ${apifyToken}`,
+      },
+    })
 
     if (!response.ok) {
       const errorText = await response.text()
@@ -67,7 +72,10 @@ Deno.serve(async (req: Request) => {
       return {
         title: item.title || 'Untitled Job',
         description: item.description || '',
-        budget: typeof item.price === 'number' ? item.price : (parseFloat(item.price) || 0),
+        budget:
+          typeof item.price === 'number'
+            ? item.price
+            : parseFloat(item.price) || 0,
         location: item.location || 'Remote',
         category: finalCategory,
         photos: Array.isArray(item.photos) ? item.photos : [],
