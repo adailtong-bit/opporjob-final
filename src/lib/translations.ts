@@ -966,6 +966,95 @@ export const translations: Translations = {
     'admin.push.sending': 'Enviando...',
     'admin.push.success': 'Notificações enviadas com sucesso!',
 
+    'admin.integrations.page_title': 'Integrações',
+    'admin.integrations.page_subtitle':
+      'Gerencie suas conexões com serviços externos',
+    'admin.integrations.github.title': 'Integração GitHub',
+    'admin.integrations.github.repo_name': 'Nome do Repositório',
+    'admin.integrations.github.status': 'Status da Conexão',
+    'admin.integrations.github.connect': 'Conectar GitHub',
+    'admin.integrations.github.disconnect': 'Desconectar',
+    'admin.integrations.github.sync': 'Sincronizar Agora',
+    'admin.integrations.apify.title': 'Integração Apify',
+    'admin.integrations.apify.job_import': 'Importação de Jobs',
+    'admin.integrations.apify.crawler_status': 'Status do Crawler',
+    'admin.integrations.apify.execute': 'Executar Importação',
+    'admin.integrations.supabase.title': 'Integração Supabase',
+    'admin.integrations.supabase.db_connectivity': 'Conectividade do Banco',
+    'admin.integrations.supabase.edge_functions': 'Edge Functions',
+    'admin.integrations.status.connected': 'Conectado com sucesso',
+    'admin.integrations.status.sync_error': 'Erro de sincronização',
+    'admin.integrations.status.action_required': 'Ação necessária',
+
+    'admin.integrations.scraper.title': 'Integração de Scraper',
+    'admin.integrations.scraper.connected': 'Conectado',
+    'admin.integrations.scraper.desc':
+      'Integração ativa usando API Key. Extrai dados automaticamente.',
+    'admin.integrations.scraper.engine_label': 'Selecione o Motor de Extração:',
+    'admin.integrations.scraper.engine_default': 'Scraper Apify (Padrão)',
+    'admin.integrations.scraper.engine_custom':
+      'Scraper de Busca (Motor Customizado)',
+    'admin.integrations.scraper.api_status': 'Status da API',
+    'admin.integrations.scraper.operational': 'Operacional',
+    'admin.integrations.scraper.filter': 'Filtro Anti-Duplicação',
+    'admin.integrations.scraper.active': 'Ativo',
+    'admin.integrations.scraper.warning':
+      'Anúncios extraídos vão para a Área de Staging. Duplicatas são ignoradas.',
+    'admin.integrations.scraper.batch': 'Processamento em Lote...',
+    'admin.integrations.scraper.run': 'Executar Extração',
+
+    'admin.integrations.chart.title': 'Volume de Extração (Últimos 7 dias)',
+    'admin.integrations.chart.apify': 'Apify',
+    'admin.integrations.chart.search': 'Busca',
+
+    'admin.integrations.staging.title': 'Área de Staging',
+    'admin.integrations.staging.desc':
+      'Revise, edite e aprove anúncios recém importados (Mostrando até 500 registros para otimização).',
+    'admin.integrations.staging.refresh': 'Atualizar',
+    'admin.integrations.staging.filters': 'Filtros:',
+    'admin.integrations.staging.source': 'Fonte / Integrador',
+    'admin.integrations.staging.all_sources': 'Todos Integradores',
+    'admin.integrations.staging.period': 'Período',
+    'admin.integrations.staging.any_date': 'Qualquer data',
+    'admin.integrations.staging.today': 'Hoje',
+    'admin.integrations.staging.week': 'Últimos 7 dias',
+    'admin.integrations.staging.month': 'Últimos 30 dias',
+    'admin.integrations.staging.loading': 'Carregando anúncios pendentes...',
+    'admin.integrations.staging.empty':
+      'Nenhum anúncio pendente de aprovação com os filtros atuais.',
+    'admin.integrations.staging.no_photo': 'Sem Foto',
+    'admin.integrations.staging.no_category': 'Sem Categoria',
+    'admin.integrations.staging.tbd': 'A combinar',
+    'admin.integrations.staging.review': 'Revisar',
+    'admin.integrations.staging.discard': 'Descartar',
+    'admin.integrations.staging.approve': 'Aprovar',
+
+    'admin.integrations.dialog.title': 'Revisar e Editar Anúncio',
+    'admin.integrations.dialog.desc':
+      'Ajuste detalhes antes de aprovar e publicar no marketplace.',
+    'admin.integrations.dialog.field_title': 'Título',
+    'admin.integrations.dialog.field_desc': 'Descrição',
+    'admin.integrations.dialog.field_price': 'Preço ($)',
+    'admin.integrations.dialog.field_cat': 'Categoria',
+    'admin.integrations.dialog.field_loc': 'Localização',
+    'admin.integrations.dialog.cancel': 'Cancelar',
+    'admin.integrations.dialog.save': 'Salvar e Aprovar',
+
+    'admin.integrations.toast.extracted.title': 'Extração Concluída',
+    'admin.integrations.toast.extracted.desc':
+      'novos anúncios foram importados para a área de staging. Anúncios existentes foram ignorados para evitar duplicação.',
+    'admin.integrations.toast.error.title': 'Erro na Integração',
+    'admin.integrations.toast.error.desc':
+      'Não foi possível conectar ao Apify.',
+    'admin.integrations.toast.approved.title': 'Anúncio Aprovado',
+    'admin.integrations.toast.approved.desc':
+      'O anúncio foi publicado com sucesso no marketplace.',
+    'admin.integrations.toast.approved_edit.desc':
+      'O anúncio foi atualizado e publicado com sucesso.',
+    'admin.integrations.toast.discarded.title': 'Anúncio Descartado',
+    'admin.integrations.toast.discarded.desc':
+      'O anúncio foi permanentemente removido.',
+
     'auth.login.secure_access': 'Acesso Seguro',
     'auth.login.secure_access_desc':
       'Acesse o painel integrado de Gestão de Obras, Equipamentos e Compras.',
@@ -2165,6 +2254,94 @@ export const translations: Translations = {
     'admin.push.sending': 'Sending...',
     'admin.push.success': 'Notifications sent successfully!',
 
+    'admin.integrations.page_title': 'Integrations',
+    'admin.integrations.page_subtitle':
+      'Manage your external service connections',
+    'admin.integrations.github.title': 'GitHub Integration',
+    'admin.integrations.github.repo_name': 'Repository Name',
+    'admin.integrations.github.status': 'Connection Status',
+    'admin.integrations.github.connect': 'Connect GitHub',
+    'admin.integrations.github.disconnect': 'Disconnect',
+    'admin.integrations.github.sync': 'Sync Now',
+    'admin.integrations.apify.title': 'Apify Integration',
+    'admin.integrations.apify.job_import': 'Job Import',
+    'admin.integrations.apify.crawler_status': 'Crawler Status',
+    'admin.integrations.apify.execute': 'Execute Import',
+    'admin.integrations.supabase.title': 'Supabase Integration',
+    'admin.integrations.supabase.db_connectivity': 'Database Connectivity',
+    'admin.integrations.supabase.edge_functions': 'Edge Functions',
+    'admin.integrations.status.connected': 'Connected successfully',
+    'admin.integrations.status.sync_error': 'Synchronization error',
+    'admin.integrations.status.action_required': 'Action required',
+
+    'admin.integrations.scraper.title': 'Scraper Integration',
+    'admin.integrations.scraper.connected': 'Connected',
+    'admin.integrations.scraper.desc':
+      'Active integration using API Key. Extracts data automatically.',
+    'admin.integrations.scraper.engine_label': 'Select Extraction Engine:',
+    'admin.integrations.scraper.engine_default': 'Apify Scraper (Default)',
+    'admin.integrations.scraper.engine_custom':
+      'Search Scraper (Custom Engine)',
+    'admin.integrations.scraper.api_status': 'API Status',
+    'admin.integrations.scraper.operational': 'Operational',
+    'admin.integrations.scraper.filter': 'Anti-Duplication Filter',
+    'admin.integrations.scraper.active': 'Active',
+    'admin.integrations.scraper.warning':
+      'Extracted ads go to the Staging Area. Duplicates are ignored.',
+    'admin.integrations.scraper.batch': 'Batch Processing...',
+    'admin.integrations.scraper.run': 'Run Extraction',
+
+    'admin.integrations.chart.title': 'Extraction Volume (Last 7 days)',
+    'admin.integrations.chart.apify': 'Apify',
+    'admin.integrations.chart.search': 'Search',
+
+    'admin.integrations.staging.title': 'Staging Area',
+    'admin.integrations.staging.desc':
+      'Review, edit and approve newly imported ads (Showing up to 500 records for optimization).',
+    'admin.integrations.staging.refresh': 'Refresh',
+    'admin.integrations.staging.filters': 'Filters:',
+    'admin.integrations.staging.source': 'Source / Integrator',
+    'admin.integrations.staging.all_sources': 'All Integrators',
+    'admin.integrations.staging.period': 'Period',
+    'admin.integrations.staging.any_date': 'Any date',
+    'admin.integrations.staging.today': 'Today',
+    'admin.integrations.staging.week': 'Last 7 days',
+    'admin.integrations.staging.month': 'Last 30 days',
+    'admin.integrations.staging.loading': 'Loading pending ads...',
+    'admin.integrations.staging.empty':
+      'No ads pending approval with current filters.',
+    'admin.integrations.staging.no_photo': 'No Photo',
+    'admin.integrations.staging.no_category': 'No Category',
+    'admin.integrations.staging.tbd': 'To be discussed',
+    'admin.integrations.staging.review': 'Review',
+    'admin.integrations.staging.discard': 'Discard',
+    'admin.integrations.staging.approve': 'Approve',
+
+    'admin.integrations.dialog.title': 'Review and Edit Ad',
+    'admin.integrations.dialog.desc':
+      'Adjust details before approving and publishing on the marketplace.',
+    'admin.integrations.dialog.field_title': 'Title',
+    'admin.integrations.dialog.field_desc': 'Description',
+    'admin.integrations.dialog.field_price': 'Price ($)',
+    'admin.integrations.dialog.field_cat': 'Category',
+    'admin.integrations.dialog.field_loc': 'Location',
+    'admin.integrations.dialog.cancel': 'Cancel',
+    'admin.integrations.dialog.save': 'Save and Approve',
+
+    'admin.integrations.toast.extracted.title': 'Extraction Completed',
+    'admin.integrations.toast.extracted.desc':
+      'new ads were imported to the staging area. Existing ads were ignored to avoid duplication.',
+    'admin.integrations.toast.error.title': 'Integration Error',
+    'admin.integrations.toast.error.desc': 'Could not connect to Apify.',
+    'admin.integrations.toast.approved.title': 'Ad Approved',
+    'admin.integrations.toast.approved.desc':
+      'The ad was successfully published on the marketplace.',
+    'admin.integrations.toast.approved_edit.desc':
+      'The ad was successfully updated and published.',
+    'admin.integrations.toast.discarded.title': 'Ad Discarded',
+    'admin.integrations.toast.discarded.desc':
+      'The ad was permanently removed.',
+
     'auth.login.secure_access': 'Secure Access',
     'auth.login.secure_access_desc':
       'Access the integrated Construction, Equipment, and Purchasing Management panel.',
@@ -3269,6 +3446,96 @@ export const translations: Translations = {
     'admin.push.send': 'Enviar Notificación',
     'admin.push.sending': 'Enviando...',
     'admin.push.success': '¡Notificaciones enviadas con éxito!',
+
+    'admin.integrations.page_title': 'Integraciones',
+    'admin.integrations.page_subtitle':
+      'Gestione sus conexiones con servicios externos',
+    'admin.integrations.github.title': 'Integración GitHub',
+    'admin.integrations.github.repo_name': 'Nombre del Repositorio',
+    'admin.integrations.github.status': 'Estado de Conexión',
+    'admin.integrations.github.connect': 'Conectar GitHub',
+    'admin.integrations.github.disconnect': 'Desconectar',
+    'admin.integrations.github.sync': 'Sincronizar Ahora',
+    'admin.integrations.apify.title': 'Integración Apify',
+    'admin.integrations.apify.job_import': 'Importación de Trabajos',
+    'admin.integrations.apify.crawler_status': 'Estado del Crawler',
+    'admin.integrations.apify.execute': 'Ejecutar Importación',
+    'admin.integrations.supabase.title': 'Integración Supabase',
+    'admin.integrations.supabase.db_connectivity':
+      'Conectividad de Base de Datos',
+    'admin.integrations.supabase.edge_functions': 'Edge Functions',
+    'admin.integrations.status.connected': 'Conectado con éxito',
+    'admin.integrations.status.sync_error': 'Error de sincronización',
+    'admin.integrations.status.action_required': 'Acción requerida',
+
+    'admin.integrations.scraper.title': 'Integración de Scraper',
+    'admin.integrations.scraper.connected': 'Conectado',
+    'admin.integrations.scraper.desc':
+      'Integración activa usando API Key. Extrae datos automáticamente.',
+    'admin.integrations.scraper.engine_label':
+      'Seleccione el Motor de Extracción:',
+    'admin.integrations.scraper.engine_default': 'Scraper Apify (Por defecto)',
+    'admin.integrations.scraper.engine_custom':
+      'Scraper de Búsqueda (Motor Personalizado)',
+    'admin.integrations.scraper.api_status': 'Estado de la API',
+    'admin.integrations.scraper.operational': 'Operacional',
+    'admin.integrations.scraper.filter': 'Filtro Anti-Duplicación',
+    'admin.integrations.scraper.active': 'Activo',
+    'admin.integrations.scraper.warning':
+      'Los anuncios extraídos van al Área de Staging. Se ignoran los duplicados.',
+    'admin.integrations.scraper.batch': 'Procesamiento por Lotes...',
+    'admin.integrations.scraper.run': 'Ejecutar Extracción',
+
+    'admin.integrations.chart.title': 'Volumen de Extracción (Últimos 7 días)',
+    'admin.integrations.chart.apify': 'Apify',
+    'admin.integrations.chart.search': 'Búsqueda',
+
+    'admin.integrations.staging.title': 'Área de Staging',
+    'admin.integrations.staging.desc':
+      'Revise, edite y apruebe anuncios recién importados (Mostrando hasta 500 registros para optimización).',
+    'admin.integrations.staging.refresh': 'Actualizar',
+    'admin.integrations.staging.filters': 'Filtros:',
+    'admin.integrations.staging.source': 'Fuente / Integrador',
+    'admin.integrations.staging.all_sources': 'Todos los Integradores',
+    'admin.integrations.staging.period': 'Período',
+    'admin.integrations.staging.any_date': 'Cualquier fecha',
+    'admin.integrations.staging.today': 'Hoy',
+    'admin.integrations.staging.week': 'Últimos 7 días',
+    'admin.integrations.staging.month': 'Últimos 30 días',
+    'admin.integrations.staging.loading': 'Cargando anuncios pendientes...',
+    'admin.integrations.staging.empty':
+      'No hay anuncios pendientes de aprobación con los filtros actuales.',
+    'admin.integrations.staging.no_photo': 'Sin Foto',
+    'admin.integrations.staging.no_category': 'Sin Categoría',
+    'admin.integrations.staging.tbd': 'A convenir',
+    'admin.integrations.staging.review': 'Revisar',
+    'admin.integrations.staging.discard': 'Descartar',
+    'admin.integrations.staging.approve': 'Aprobar',
+
+    'admin.integrations.dialog.title': 'Revisar y Editar Anuncio',
+    'admin.integrations.dialog.desc':
+      'Ajuste detalles antes de aprobar y publicar en el marketplace.',
+    'admin.integrations.dialog.field_title': 'Título',
+    'admin.integrations.dialog.field_desc': 'Descripción',
+    'admin.integrations.dialog.field_price': 'Precio ($)',
+    'admin.integrations.dialog.field_cat': 'Categoría',
+    'admin.integrations.dialog.field_loc': 'Ubicación',
+    'admin.integrations.dialog.cancel': 'Cancelar',
+    'admin.integrations.dialog.save': 'Guardar y Aprobar',
+
+    'admin.integrations.toast.extracted.title': 'Extracción Completada',
+    'admin.integrations.toast.extracted.desc':
+      'nuevos anuncios fueron importados al área de staging. Los anuncios existentes fueron ignorados para evitar duplicación.',
+    'admin.integrations.toast.error.title': 'Error de Integración',
+    'admin.integrations.toast.error.desc': 'No se pudo conectar a Apify.',
+    'admin.integrations.toast.approved.title': 'Anuncio Aprobado',
+    'admin.integrations.toast.approved.desc':
+      'El anuncio se publicó con éxito en el marketplace.',
+    'admin.integrations.toast.approved_edit.desc':
+      'El anuncio se actualizó y publicó con éxito.',
+    'admin.integrations.toast.discarded.title': 'Anuncio Descartado',
+    'admin.integrations.toast.discarded.desc':
+      'El anuncio fue eliminado permanentemente.',
 
     'auth.login.secure_access': 'Acceso Seguro',
     'auth.login.secure_access_desc':

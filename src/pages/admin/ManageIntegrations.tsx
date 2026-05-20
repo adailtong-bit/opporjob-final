@@ -30,7 +30,7 @@ import {
   Edit,
   Filter,
   BarChart3,
-  Plus,
+  Github,
 } from 'lucide-react'
 import {
   Select,
@@ -42,6 +42,7 @@ import {
 import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/lib/supabase/client'
 import { useJobStore } from '@/stores/useJobStore'
+import { useLanguageStore } from '@/stores/useLanguageStore'
 import type { Database as DB } from '@/lib/supabase/types'
 import {
   ChartContainer,
@@ -51,17 +52,6 @@ import {
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts'
 
 type Job = DB['public']['Tables']['jobs']['Row']
-
-const chartConfig = {
-  apify: {
-    label: 'Apify',
-    color: 'hsl(var(--primary))',
-  },
-  buscador: {
-    label: 'Search',
-    color: 'hsl(var(--chart-2))',
-  },
-}
 
 export default function ManageIntegrations() {
   const [loading, setLoading] = useState(false)
@@ -79,6 +69,18 @@ export default function ManageIntegrations() {
 
   const { toast } = useToast()
   const { fetchJobs } = useJobStore()
+  const { t } = useLanguageStore()
+
+  const chartConfig = {
+    apify: {
+      label: t('admin.integrations.chart.apify') || 'Apify',
+      color: 'hsl(var(--primary))',
+    },
+    buscador: {
+      label: t('admin.integrations.chart.search') || 'Search',
+      color: 'hsl(var(--chart-2))',
+    },
+  }
 
   useEffect(() => {
     // Generate mock trend data for the dashboard
@@ -154,8 +156,8 @@ export default function ManageIntegrations() {
 
       if (data?.success) {
         toast({
-          title: 'Extraction Completed',
-          description: `${data.count} new ads were imported to the staging area. Existing ads were ignored to avoid duplication.`,
+          title: t('admin.integrations.toast.extracted.title'),
+          description: `${data.count} ${t('admin.integrations.toast.extracted.desc')}`,
         })
         await fetchPendingJobs()
       } else {
@@ -164,8 +166,8 @@ export default function ManageIntegrations() {
     } catch (err: any) {
       toast({
         variant: 'destructive',
-        title: 'Integration Error',
-        description: err.message || 'Could not connect to Apify.',
+        title: t('admin.integrations.toast.error.title'),
+        description: err.message || t('admin.integrations.toast.error.desc'),
       })
     } finally {
       setLoading(false)
@@ -183,8 +185,8 @@ export default function ManageIntegrations() {
       if (error) throw error
 
       toast({
-        title: 'Ad Approved',
-        description: 'The ad was successfully published on the marketplace.',
+        title: t('admin.integrations.toast.approved.title'),
+        description: t('admin.integrations.toast.approved.desc'),
       })
 
       setPendingJobs((prev) => prev.filter((job) => job.id !== id))
@@ -219,8 +221,8 @@ export default function ManageIntegrations() {
       if (error) throw error
 
       toast({
-        title: 'Ad Approved',
-        description: 'The ad was successfully updated and published.',
+        title: t('admin.integrations.toast.approved.title'),
+        description: t('admin.integrations.toast.approved_edit.desc'),
       })
 
       setPendingJobs((prev) => prev.filter((job) => job.id !== editingJob.id))
@@ -245,8 +247,8 @@ export default function ManageIntegrations() {
       if (error) throw error
 
       toast({
-        title: 'Ad Discarded',
-        description: 'The ad was permanently removed.',
+        title: t('admin.integrations.toast.discarded.title'),
+        description: t('admin.integrations.toast.discarded.desc'),
       })
 
       setPendingJobs((prev) => prev.filter((job) => job.id !== id))
@@ -264,42 +266,78 @@ export default function ManageIntegrations() {
   return (
     <div className="space-y-4 max-w-7xl mx-auto pb-8">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Data Integrations</h1>
+        <h1 className="text-2xl font-bold tracking-tight">
+          {t('admin.integrations.page_title')}
+        </h1>
         <p className="text-sm text-muted-foreground">
-          Manage the automated collection of services and products from other
-          platforms.
+          {t('admin.integrations.page_subtitle')}
         </p>
       </div>
 
       <div className="grid gap-4 md:grid-cols-3 mb-6">
         <Card className="md:col-span-1">
           <CardHeader className="p-4 pb-2">
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <Github className="w-4 h-4 text-blue-600" />
+              {t('admin.integrations.github.title')}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-4 pt-0 space-y-3">
+            <div className="space-y-1.5">
+              <Label className="text-xs">
+                {t('admin.integrations.github.repo_name')}:
+              </Label>
+              <div className="text-sm font-medium">opporjob/core-platform</div>
+            </div>
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-muted-foreground">
+                {t('admin.integrations.github.status')}
+              </span>
+              <Badge className="bg-green-500 w-fit text-xs px-2 py-0.5">
+                {t('admin.integrations.status.connected')}
+              </Badge>
+            </div>
+          </CardContent>
+          <CardFooter className="p-4 pt-0 gap-2">
+            <Button className="flex-1 h-8 text-xs">
+              {t('admin.integrations.github.sync')}
+            </Button>
+            <Button variant="outline" className="flex-1 h-8 text-xs">
+              {t('admin.integrations.github.disconnect')}
+            </Button>
+          </CardFooter>
+        </Card>
+
+        <Card className="md:col-span-1">
+          <CardHeader className="p-4 pb-2">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <CardTitle className="flex items-center gap-2 text-lg">
                 <Database className="w-4 h-4 text-blue-600" />
-                Scraper Integration
+                {t('admin.integrations.scraper.title')}
               </CardTitle>
               <Badge className="bg-green-500 w-fit text-xs px-2 py-0.5">
-                Connected
+                {t('admin.integrations.scraper.connected')}
               </Badge>
             </div>
             <CardDescription className="text-xs mt-1">
-              Active integration using API Key. Extracts data automatically.
+              {t('admin.integrations.scraper.desc')}
             </CardDescription>
           </CardHeader>
           <CardContent className="p-4 pt-0 space-y-3">
             <div className="space-y-1.5">
-              <Label className="text-xs">Select Extraction Engine:</Label>
+              <Label className="text-xs">
+                {t('admin.integrations.scraper.engine_label')}
+              </Label>
               <Select value={selectedEngine} onValueChange={setSelectedEngine}>
                 <SelectTrigger className="w-full h-8 text-xs">
                   <SelectValue placeholder="Select engine" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="default">
-                    Apify Scraper (Default)
+                    {t('admin.integrations.scraper.engine_default')}
                   </SelectItem>
                   <SelectItem value="search_scraper_engine">
-                    Search Scraper (Custom Engine)
+                    {t('admin.integrations.scraper.engine_custom')}
                   </SelectItem>
                 </SelectContent>
               </Select>
@@ -307,27 +345,28 @@ export default function ManageIntegrations() {
 
             <div className="rounded-md bg-slate-50 dark:bg-slate-900 p-2.5 space-y-1.5 text-xs">
               <div className="flex items-center justify-between">
-                <span className="text-muted-foreground">API Status</span>
+                <span className="text-muted-foreground">
+                  {t('admin.integrations.scraper.api_status')}
+                </span>
                 <span className="flex items-center gap-1 font-medium text-green-600">
-                  <CheckCircle2 className="w-3 h-3" /> Operational
+                  <CheckCircle2 className="w-3 h-3" />{' '}
+                  {t('admin.integrations.scraper.operational')}
                 </span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-muted-foreground">
-                  Anti-Duplication Filter
+                  {t('admin.integrations.scraper.filter')}
                 </span>
                 <span className="font-medium text-green-600 flex items-center gap-1">
-                  <CheckCircle2 className="w-3 h-3" /> Active
+                  <CheckCircle2 className="w-3 h-3" />{' '}
+                  {t('admin.integrations.scraper.active')}
                 </span>
               </div>
             </div>
 
             <div className="flex items-start gap-2 text-xs text-muted-foreground bg-amber-50 dark:bg-amber-900/20 p-2.5 rounded-md border border-amber-100 dark:border-amber-800">
               <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
-              <p>
-                Extracted ads go to the <strong>Staging Area</strong>.
-                Duplicates are ignored.
-              </p>
+              <p>{t('admin.integrations.scraper.warning')}</p>
             </div>
           </CardContent>
           <CardFooter className="p-4 pt-0">
@@ -339,26 +378,63 @@ export default function ManageIntegrations() {
               {loading ? (
                 <>
                   <RefreshCw className="w-3 h-3 mr-2 animate-spin" />
-                  Batch Processing...
+                  {t('admin.integrations.scraper.batch')}
                 </>
               ) : (
                 <>
-                  <Play className="w-3 h-3 mr-2" /> Run Extraction
+                  <Play className="w-3 h-3 mr-2" />{' '}
+                  {t('admin.integrations.scraper.run')}
                 </>
               )}
             </Button>
           </CardFooter>
         </Card>
 
-        <Card className="md:col-span-2 flex flex-col">
+        <Card className="md:col-span-1">
+          <CardHeader className="p-4 pb-2">
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <Database className="w-4 h-4 text-emerald-600" />
+              {t('admin.integrations.supabase.title')}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-4 pt-0 space-y-3">
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-muted-foreground">
+                {t('admin.integrations.supabase.db_connectivity')}
+              </span>
+              <Badge className="bg-green-500 w-fit text-xs px-2 py-0.5">
+                {t('admin.integrations.status.connected')}
+              </Badge>
+            </div>
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-muted-foreground">
+                {t('admin.integrations.supabase.edge_functions')}
+              </span>
+              <span className="font-medium text-green-600 flex items-center gap-1">
+                <CheckCircle2 className="w-3 h-3" />{' '}
+                {t('admin.integrations.scraper.operational')}
+              </span>
+            </div>
+          </CardContent>
+          <CardFooter className="p-4 pt-0 mt-auto">
+            <Button variant="outline" className="w-full h-8 text-xs">
+              <AlertCircle className="w-3 h-3 mr-2" />{' '}
+              {t('admin.integrations.status.action_required')}
+            </Button>
+          </CardFooter>
+        </Card>
+      </div>
+
+      <div className="mb-6">
+        <Card className="w-full">
           <CardHeader className="p-4 pb-2">
             <CardTitle className="text-lg flex items-center gap-2">
               <BarChart3 className="w-4 h-4 text-blue-600" />
-              Extraction Volume (Last 7 days)
+              {t('admin.integrations.chart.title')}
             </CardTitle>
           </CardHeader>
-          <CardContent className="p-4 pt-0 flex-1 min-h-[200px]">
-            <ChartContainer config={chartConfig} className="w-full h-[200px]">
+          <CardContent className="p-4 pt-0 h-[220px]">
+            <ChartContainer config={chartConfig} className="w-full h-full">
               <BarChart
                 data={chartData}
                 margin={{ top: 10, right: 10, bottom: 0, left: -20 }}
@@ -401,10 +477,11 @@ export default function ManageIntegrations() {
       <div className="mt-6 space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
           <div>
-            <h2 className="text-xl font-bold tracking-tight">Staging Area</h2>
+            <h2 className="text-xl font-bold tracking-tight">
+              {t('admin.integrations.staging.title')}
+            </h2>
             <p className="text-sm text-muted-foreground">
-              Review, edit and approve newly imported ads (Showing up to 500
-              records for optimization).
+              {t('admin.integrations.staging.desc')}
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -418,7 +495,7 @@ export default function ManageIntegrations() {
               <RefreshCw
                 className={`w-3 h-3 mr-2 ${loadingJobs ? 'animate-spin' : ''}`}
               />
-              Refresh
+              {t('admin.integrations.staging.refresh')}
             </Button>
           </div>
         </div>
@@ -426,27 +503,47 @@ export default function ManageIntegrations() {
         <div className="flex flex-col sm:flex-row gap-3 items-center bg-muted/30 p-2.5 rounded-md border">
           <div className="flex items-center gap-2 w-full sm:w-auto px-1">
             <Filter className="w-4 h-4 text-muted-foreground" />
-            <span className="text-xs font-medium">Filters:</span>
+            <span className="text-xs font-medium">
+              {t('admin.integrations.staging.filters')}
+            </span>
           </div>
           <Select value={sourceFilter} onValueChange={setSourceFilter}>
             <SelectTrigger className="w-full sm:w-[180px] h-8 text-xs bg-background">
-              <SelectValue placeholder="Source / Integrator" />
+              <SelectValue
+                placeholder={t('admin.integrations.staging.source')}
+              />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Integrators</SelectItem>
-              <SelectItem value="apify">Apify Scraper</SelectItem>
-              <SelectItem value="buscador_scraper">Search Scraper</SelectItem>
+              <SelectItem value="all">
+                {t('admin.integrations.staging.all_sources')}
+              </SelectItem>
+              <SelectItem value="apify">
+                {t('admin.integrations.scraper.engine_default')}
+              </SelectItem>
+              <SelectItem value="buscador_scraper">
+                {t('admin.integrations.scraper.engine_custom')}
+              </SelectItem>
             </SelectContent>
           </Select>
           <Select value={dateFilter} onValueChange={setDateFilter}>
             <SelectTrigger className="w-full sm:w-[160px] h-8 text-xs bg-background">
-              <SelectValue placeholder="Period" />
+              <SelectValue
+                placeholder={t('admin.integrations.staging.period')}
+              />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Any date</SelectItem>
-              <SelectItem value="today">Today</SelectItem>
-              <SelectItem value="week">Last 7 days</SelectItem>
-              <SelectItem value="month">Last 30 days</SelectItem>
+              <SelectItem value="all">
+                {t('admin.integrations.staging.any_date')}
+              </SelectItem>
+              <SelectItem value="today">
+                {t('admin.integrations.staging.today')}
+              </SelectItem>
+              <SelectItem value="week">
+                {t('admin.integrations.staging.week')}
+              </SelectItem>
+              <SelectItem value="month">
+                {t('admin.integrations.staging.month')}
+              </SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -455,14 +552,14 @@ export default function ManageIntegrations() {
           <div className="text-center py-8">
             <RefreshCw className="w-6 h-6 animate-spin mx-auto text-muted-foreground" />
             <p className="text-sm text-muted-foreground mt-2">
-              Loading pending ads...
+              {t('admin.integrations.staging.loading')}
             </p>
           </div>
         ) : pendingJobs.length === 0 ? (
           <Card>
             <CardContent className="text-center py-8">
               <p className="text-sm text-muted-foreground">
-                No ads pending approval with current filters.
+                {t('admin.integrations.staging.empty')}
               </p>
             </CardContent>
           </Card>
@@ -486,7 +583,7 @@ export default function ManageIntegrations() {
                       ) : (
                         <div className="w-12 h-12 rounded bg-muted flex items-center justify-center shrink-0">
                           <span className="text-[10px] text-muted-foreground text-center leading-tight px-1">
-                            No Photo
+                            {t('admin.integrations.staging.no_photo')}
                           </span>
                         </div>
                       )}
@@ -503,19 +600,24 @@ export default function ManageIntegrations() {
                             variant="secondary"
                             className="text-[10px] px-1.5 py-0"
                           >
-                            {job.category || 'No Category'}
+                            {job.category ||
+                              t('admin.integrations.staging.no_category')}
                           </Badge>
                           <Badge
                             variant="outline"
                             className="text-[10px] px-1.5 py-0 text-green-600 bg-green-50 dark:bg-green-950"
                           >
-                            {job.budget ? `$${job.budget}` : 'To be discussed'}
+                            {job.budget
+                              ? `$${job.budget}`
+                              : t('admin.integrations.staging.tbd')}
                           </Badge>
                           <span className="text-[10px] text-muted-foreground truncate max-w-[120px]">
                             {job.location}
                           </span>
                           <span className="text-[10px] text-muted-foreground bg-muted px-1.5 py-0.5 rounded ml-auto">
-                            {job.source === 'apify' ? 'Apify' : 'Search Engine'}
+                            {job.source === 'apify'
+                              ? t('admin.integrations.chart.apify')
+                              : t('admin.integrations.chart.search')}
                           </span>
                         </div>
                       </div>
@@ -530,7 +632,7 @@ export default function ManageIntegrations() {
                         disabled={processingId === job.id}
                       >
                         <Edit className="w-3 h-3 mr-1" />
-                        Review
+                        {t('admin.integrations.staging.review')}
                       </Button>
                       <Button
                         variant="destructive"
@@ -540,7 +642,7 @@ export default function ManageIntegrations() {
                         disabled={processingId === job.id}
                       >
                         <Trash2 className="w-3 h-3 mr-1" />
-                        Discard
+                        {t('admin.integrations.staging.discard')}
                       </Button>
                       <Button
                         variant="default"
@@ -550,7 +652,7 @@ export default function ManageIntegrations() {
                         disabled={processingId === job.id}
                       >
                         <Check className="w-3 h-3 mr-1" />
-                        Approve
+                        {t('admin.integrations.staging.approve')}
                       </Button>
                     </div>
                   </div>
@@ -567,16 +669,18 @@ export default function ManageIntegrations() {
       >
         <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Review and Edit Ad</DialogTitle>
+            <DialogTitle>{t('admin.integrations.dialog.title')}</DialogTitle>
             <DialogDescription>
-              Adjust details before approving and publishing on the marketplace.
+              {t('admin.integrations.dialog.desc')}
             </DialogDescription>
           </DialogHeader>
 
           {editingJob && (
             <div className="grid gap-4 py-4">
               <div className="space-y-2">
-                <Label htmlFor="title">Title</Label>
+                <Label htmlFor="title">
+                  {t('admin.integrations.dialog.field_title')}
+                </Label>
                 <Input
                   id="title"
                   value={editingJob.title || ''}
@@ -586,7 +690,9 @@ export default function ManageIntegrations() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="description">Description</Label>
+                <Label htmlFor="description">
+                  {t('admin.integrations.dialog.field_desc')}
+                </Label>
                 <textarea
                   id="description"
                   className="flex min-h-[120px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
@@ -601,7 +707,9 @@ export default function ManageIntegrations() {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="price">Price ($)</Label>
+                  <Label htmlFor="price">
+                    {t('admin.integrations.dialog.field_price')}
+                  </Label>
                   <Input
                     id="price"
                     type="number"
@@ -615,7 +723,9 @@ export default function ManageIntegrations() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="category">Category</Label>
+                  <Label htmlFor="category">
+                    {t('admin.integrations.dialog.field_cat')}
+                  </Label>
                   <Input
                     id="category"
                     value={editingJob.category || ''}
@@ -626,7 +736,9 @@ export default function ManageIntegrations() {
                 </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="location">Location</Label>
+                <Label htmlFor="location">
+                  {t('admin.integrations.dialog.field_loc')}
+                </Label>
                 <Input
                   id="location"
                   value={editingJob.location || ''}
@@ -644,7 +756,7 @@ export default function ManageIntegrations() {
               onClick={() => setEditingJob(null)}
               className="sm:mr-auto"
             >
-              Cancel
+              {t('admin.integrations.dialog.cancel')}
             </Button>
             <Button
               variant="destructive"
@@ -657,7 +769,7 @@ export default function ManageIntegrations() {
               disabled={processingId === editingJob?.id}
             >
               <Trash2 className="w-4 h-4 mr-2" />
-              Discard
+              {t('admin.integrations.staging.discard')}
             </Button>
             <Button
               className="bg-green-600 hover:bg-green-700 text-white"
@@ -665,7 +777,7 @@ export default function ManageIntegrations() {
               disabled={processingId === editingJob?.id}
             >
               <Check className="w-4 h-4 mr-2" />
-              Save and Approve
+              {t('admin.integrations.dialog.save')}
             </Button>
           </DialogFooter>
         </DialogContent>
