@@ -75,12 +75,10 @@ Deno.serve(async (req: Request) => {
       for (let i = 0; i < jobsToInsert.length; i += BATCH_SIZE) {
         try {
           const batch = jobsToInsert.slice(i, i + BATCH_SIZE)
-          const { error } = await supabaseClient
-            .from('jobs')
-            .upsert(batch, {
-              onConflict: 'external_id',
-              ignoreDuplicates: true,
-            })
+          const { error } = await supabaseClient.from('jobs').upsert(batch, {
+            onConflict: 'external_id',
+            ignoreDuplicates: true,
+          })
 
           if (error) {
             console.error('Batch insert error:', error)
