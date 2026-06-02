@@ -104,18 +104,22 @@ export function PartnerEditModal({
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="grid gap-2">
-              <Label>Email</Label>
+              <Label>{t('partner.edit.email') || 'Email'}</Label>
               <Input
                 type="email"
-                placeholder="email@empresa.com"
+                placeholder={
+                  t('partner.edit.email_placeholder') || 'email@empresa.com'
+                }
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
             </div>
             <div className="grid gap-2">
-              <Label>Telefone</Label>
+              <Label>{t('partner.edit.phone') || 'Telefone'}</Label>
               <Input
-                placeholder="(00) 00000-0000"
+                placeholder={
+                  t('partner.edit.phone_placeholder') || '(00) 00000-0000'
+                }
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
               />
@@ -123,40 +127,47 @@ export function PartnerEditModal({
           </div>
 
           <div className="grid gap-2">
-            <Label>Especialidade</Label>
+            <Label>
+              {t('partner.edit.specialty_label') || 'Especialidade'}
+            </Label>
             <Input
-              placeholder="Ex: Engenharia Elétrica, Hidráulica, Acabamento..."
+              placeholder={
+                t('partner.edit.specialty_placeholder') ||
+                'Ex: Engenharia Elétrica, Hidráulica, Acabamento...'
+              }
               value={specialty}
               onChange={(e) => setSpecialty(e.target.value)}
             />
           </div>
 
           <div className="grid gap-2">
-            <Label>Endereço Físico</Label>
+            <Label>
+              {t('partner.edit.address_label') || 'Endereço Físico'}
+            </Label>
             <div className="grid grid-cols-2 gap-3">
               <Input
-                placeholder="Rua, Número"
+                placeholder={t('partner.edit.address_street') || 'Rua, Número'}
                 value={address.street}
                 onChange={(e) =>
                   setAddress({ ...address, street: e.target.value })
                 }
               />
               <Input
-                placeholder="Cidade"
+                placeholder={t('partner.edit.address_city') || 'Cidade'}
                 value={address.city}
                 onChange={(e) =>
                   setAddress({ ...address, city: e.target.value })
                 }
               />
               <Input
-                placeholder="Estado"
+                placeholder={t('partner.edit.address_state') || 'Estado'}
                 value={address.state}
                 onChange={(e) =>
                   setAddress({ ...address, state: e.target.value })
                 }
               />
               <Input
-                placeholder="CEP"
+                placeholder={t('partner.edit.address_zip') || 'CEP'}
                 value={address.zipCode}
                 onChange={(e) =>
                   setAddress({ ...address, zipCode: e.target.value })
@@ -209,14 +220,17 @@ export function PartnerEditModal({
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <Input
-                    placeholder="Email do contato"
+                    placeholder={
+                      t('partner.edit.contact_email_placeholder') ||
+                      'Email do contato'
+                    }
                     value={newContact.email}
                     onChange={(e) =>
                       setNewContact({ ...newContact, email: e.target.value })
                     }
                   />
                   <Input
-                    placeholder="Telefone"
+                    placeholder={t('partner.edit.phone') || 'Telefone'}
                     value={newContact.phone}
                     onChange={(e) =>
                       setNewContact({ ...newContact, phone: e.target.value })

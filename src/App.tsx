@@ -149,8 +149,14 @@ const AuthSync = () => {
               id: user.id,
               name: data?.name || user.user_metadata?.name || 'User',
               email: user.email!,
-              role: (data?.role as any) || (isAdmin ? 'admin' : 'contractor'),
-              entityType: (data?.entity_type as any) || 'individual',
+              role:
+                (data?.role as any) ||
+                user.user_metadata?.role ||
+                (isAdmin ? 'admin' : 'contractor'),
+              entityType:
+                (data?.entity_type as any) ||
+                user.user_metadata?.entityType ||
+                'individual',
               companyName: data?.company_name || undefined,
               phone: data?.phone || undefined,
               taxId: data?.tax_id || undefined,

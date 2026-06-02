@@ -265,9 +265,12 @@ export function MainSidebar() {
                         }
                         tooltip={item.title}
                       >
-                        <Link to={item.url}>
-                          <item.icon />
-                          <span>{item.title}</span>
+                        <Link
+                          to={item.url}
+                          className="flex-1 overflow-hidden flex items-center gap-2"
+                        >
+                          <item.icon className="shrink-0" />
+                          <span className="truncate">{item.title}</span>
                         </Link>
                       </SidebarMenuButton>
                     </SidebarMenuItem>

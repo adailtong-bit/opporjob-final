@@ -51,8 +51,9 @@ export function TeamMemberModal({
     if (!selectedMemberId || !role) {
       toast({
         variant: 'destructive',
-        title: t('error'),
-        description: t('val.required'),
+        title: t('error') || 'Erro',
+        description:
+          t('val.required') || 'Preencha todos os campos obrigatórios.',
       })
       return
     }
@@ -67,8 +68,10 @@ export function TeamMemberModal({
       if (exists) {
         toast({
           variant: 'destructive',
-          title: t('error'),
-          description: t('team.error.duplicate'),
+          title: t('error') || 'Erro',
+          description:
+            t('team.error.duplicate') ||
+            'Este membro já está alocado neste projeto.',
         })
         return
       }
@@ -82,7 +85,10 @@ export function TeamMemberModal({
       registrationId: member.id,
     })
 
-    toast({ title: t('success'), description: t('team.added') })
+    toast({
+      title: t('success') || 'Sucesso',
+      description: t('team.added') || 'Membro adicionado à equipe com sucesso.',
+    })
     setSelectedMemberId('')
     setRole('')
     onClose()
@@ -92,55 +98,93 @@ export function TeamMemberModal({
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Alocar Membro da Equipe</DialogTitle>
+          <DialogTitle>
+            {t('team.modal.title') || 'Adicionar Membro à Equipe'}
+          </DialogTitle>
           <DialogDescription>
-            Selecione um profissional da sua equipe corporativa para trabalhar
-            neste projeto.
+            {t('team.modal.desc') || 'Selecione um profissional da sua equipe.'}
           </DialogDescription>
         </DialogHeader>
 
         {availableMembers.length === 0 ? (
           <div className="py-6 text-center space-y-4">
             <p className="text-sm text-muted-foreground">
-              Você não possui membros cadastrados na sua equipe corporativa.
+              {t('team.modal.empty') ||
+                'Você não possui membros cadastrados na equipe.'}
             </p>
             <Button asChild variant="outline">
-              <Link to="/team">Gerenciar Equipe Corporativa</Link>
+              <Link to="/team">
+                {t('team.modal.manage') || 'Gerenciar Equipe'}
+              </Link>
             </Button>
           </div>
         ) : (
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
-              <Label>Membro da Equipe</Label>
+              <Label>{t('team.modal.member_label') || 'Profissional'}</Label>
               <Select
                 onValueChange={setSelectedMemberId}
                 value={selectedMemberId}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Selecione um membro..." />
+                  <SelectValue
+                    placeholder={
+                      t('team.modal.member_placeholder') ||
+                      'Selecione o profissional...'
+                    }
+                  />
                 </SelectTrigger>
                 <SelectContent>
-                  {availableMembers.map((m) => (
-                    <SelectItem key={m.id} value={m.id}>
-                      {m.name} ({m.role})
-                    </SelectItem>
-                  ))}
+                  {availableMembers.map((m) => {
+                    const roleMap: Record<string, string> = {
+                      Engineer: 'Engenheiro',
+                      Electrician: 'Eletricista',
+                      Tiler: 'Azulejista',
+                      Roofer: 'Telhadista',
+                      Other: 'Outro',
+                    }
+                    const translatedRole =
+                      t(`role.${m.role.toLowerCase().replace(' ', '_')}`) ||
+                      roleMap[m.role] ||
+                      m.role
+
+                    return (
+                      <SelectItem key={m.id} value={m.id}>
+                        {m.name} ({translatedRole})
+                      </SelectItem>
+                    )
+                  })}
                 </SelectContent>
               </Select>
             </div>
 
             <div className="grid gap-2">
-              <Label>Função no Projeto</Label>
+              <Label>{t('team.modal.role_label') || 'Função no Projeto'}</Label>
               <Select onValueChange={setRole} value={role}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Selecione..." />
+                  <SelectValue
+                    placeholder={
+                      t('team.modal.role_placeholder') ||
+                      'Selecione a função...'
+                    }
+                  />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Engineer">Engenheiro</SelectItem>
-                  <SelectItem value="Electrician">Eletricista</SelectItem>
-                  <SelectItem value="Tiler">Azulejista</SelectItem>
-                  <SelectItem value="Roofer">Telhadista</SelectItem>
-                  <SelectItem value="Other">Outro</SelectItem>
+                  <SelectItem value="Engineer">
+                    {t('role.engineer') || 'Engenheiro'}
+                  </SelectItem>
+                  <SelectItem value="Electrician">
+                    {t('role.electrician') || 'Eletricista'}
+                  </SelectItem>
+                  <SelectItem value="Tiler">
+                    {t('role.tiler') || 'Azulejista'}
+                  </SelectItem>
+                  <SelectItem value="Roofer">
+                    {t('role.roofer') || 'Telhadista'}
+                  </SelectItem>
+                  <SelectItem value="Other">
+                    {t('role.other') || 'Outro'}
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -149,7 +193,7 @@ export function TeamMemberModal({
 
         <DialogFooter>
           <Button onClick={handleSave} disabled={availableMembers.length === 0}>
-            {t('confirm')}
+            {t('confirm') || 'Confirmar'}
           </Button>
         </DialogFooter>
       </DialogContent>

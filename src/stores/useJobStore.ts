@@ -77,6 +77,7 @@ export const useJobStore = create<JobState>((set, get) => ({
   loading: false,
   fetchJobs: async () => {
     set({ loading: true })
+    // Explicitly specify the relationship (bids!bids_job_id_fkey) to avoid PostgREST HTTP 300 Ambiguity errors (PGRST201)
     const { data: jobsData, error } = await supabase
       .from('jobs')
       .select('*, bids!bids_job_id_fkey(*)')
@@ -99,6 +100,7 @@ export const useJobStore = create<JobState>((set, get) => ({
         source: d.source,
         externalId: d.external_id,
         photos: d.photos || [],
+        acceptedBidId: d.accepted_bid_id,
         createdAt: new Date(d.created_at),
         bids: (d.bids || []).map((b: any) => ({
           id: b.id,
@@ -143,7 +145,7 @@ export const useJobStore = create<JobState>((set, get) => ({
           location: job.location,
           budget: job.budget,
           owner_id: job.ownerId || null,
-          owner_name: job.ownerName || 'Guest',
+          owner_name: job.ownerName || 'Visitante',
           status: 'open',
           photos: job.photos || [],
         },

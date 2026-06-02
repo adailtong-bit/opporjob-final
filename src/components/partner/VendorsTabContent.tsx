@@ -42,7 +42,7 @@ export function VendorsTabContent() {
   const { vendors, fetchVendors, addVendor, updateVendor, deleteVendor } =
     useVendorStore()
   const { toast } = useToast()
-  const { formatCurrency, formatDate } = useLanguageStore()
+  const { t, formatCurrency, formatDate } = useLanguageStore()
 
   const materialOrders = useMaterialStore((state: any) => state.orders || [])
 
@@ -78,17 +78,17 @@ export function VendorsTabContent() {
   const handleSave = async () => {
     if (!formData.name) {
       toast({
-        title: 'Razão Social / Nome é obrigatório',
+        title: t('vendor.toast.name_required'),
         variant: 'destructive',
       })
       return
     }
     if (editingVendor) {
       await updateVendor(editingVendor.id, formData)
-      toast({ title: 'Fornecedor atualizado com sucesso' })
+      toast({ title: t('vendor.toast.updated') })
     } else {
       await addVendor(formData)
-      toast({ title: 'Fornecedor cadastrado com sucesso' })
+      toast({ title: t('vendor.toast.created') })
     }
     setIsModalOpen(false)
     setFormData(defaultFormData)
@@ -117,9 +117,9 @@ export function VendorsTabContent() {
   }
 
   const handleDelete = async (id: string) => {
-    if (confirm('Tem certeza que deseja remover este fornecedor?')) {
+    if (confirm(t('vendor.toast.delete_confirm'))) {
       await deleteVendor(id)
-      toast({ title: 'Fornecedor removido' })
+      toast({ title: t('vendor.toast.deleted') })
     }
   }
 
@@ -141,12 +141,10 @@ export function VendorsTabContent() {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-card p-6 rounded-xl border shadow-sm">
         <div>
           <h2 className="text-xl font-bold flex items-center gap-2">
-            <Store className="h-5 w-5 text-primary" /> Gestão de Fornecedores
-            Corporativos
+            <Store className="h-5 w-5 text-primary" /> {t('vendor.title')}
           </h2>
           <p className="text-muted-foreground text-sm mt-1">
-            Cadastre parceiros com dados completos de faturamento, logística e
-            pagamento.
+            {t('vendor.desc')}
           </p>
         </div>
         <Button
@@ -157,7 +155,7 @@ export function VendorsTabContent() {
           }}
           className="w-full md:w-auto"
         >
-          <Plus className="mr-2 h-4 w-4" /> Novo Fornecedor
+          <Plus className="mr-2 h-4 w-4" /> {t('vendor.new_btn')}
         </Button>
       </div>
 
@@ -166,14 +164,13 @@ export function VendorsTabContent() {
           <CardContent className="flex flex-col items-center justify-center py-16 text-muted-foreground">
             <Store className="h-16 w-16 mb-4 opacity-20" />
             <p className="text-lg font-medium text-foreground mb-1">
-              Nenhum fornecedor cadastrado
+              {t('vendor.empty.title')}
             </p>
             <p className="text-sm mb-4 text-center max-w-sm">
-              Adicione lojas e distribuidores com dados completos de faturamento
-              (CNPJ, Endereço, Banco/PIX).
+              {t('vendor.empty.desc')}
             </p>
             <Button variant="outline" onClick={() => setIsModalOpen(true)}>
-              Cadastrar Fornecedor
+              {t('vendor.empty.btn')}
             </Button>
           </CardContent>
         </Card>
@@ -197,10 +194,15 @@ export function VendorsTabContent() {
                       variant="secondary"
                       className="text-[10px] font-normal w-fit"
                     >
-                      {vendor.category || 'Geral'}
+                      {vendor.category
+                        ? t(`category.${vendor.category.toLowerCase()}`) ||
+                          vendor.category
+                        : t('vendor.general')}
                     </Badge>
                     {vendor.document && (
-                      <span className="text-xs">CNPJ: {vendor.document}</span>
+                      <span className="text-xs">
+                        {t('vendor.cnpj').replace('{doc}', vendor.document)}
+                      </span>
                     )}
                   </CardDescription>
                 </div>
@@ -245,7 +247,8 @@ export function VendorsTabContent() {
                   )}
                   {vendor.pix_key && (
                     <p className="flex items-center gap-2 text-xs text-emerald-600 dark:text-emerald-400 font-medium">
-                      <CreditCard className="h-3 w-3" /> PIX Cadastrado
+                      <CreditCard className="h-3 w-3" />{' '}
+                      {t('vendor.pix_registered')}
                     </p>
                   )}
                 </div>
@@ -254,7 +257,8 @@ export function VendorsTabContent() {
                   className="w-full bg-blue-50/50 hover:bg-blue-50 hover:text-blue-700 border-blue-100 transition-colors"
                   onClick={() => openHistory(vendor)}
                 >
-                  <ShoppingCart className="mr-2 h-4 w-4" /> Histórico de Compras
+                  <ShoppingCart className="mr-2 h-4 w-4" />{' '}
+                  {t('vendor.purchase_history')}
                 </Button>
               </CardContent>
             </Card>
@@ -268,26 +272,26 @@ export function VendorsTabContent() {
           <DialogHeader className="p-6 pb-4 border-b">
             <DialogTitle className="text-xl">
               {editingVendor
-                ? 'Editar Fornecedor'
-                : 'Cadastrar Novo Fornecedor'}
+                ? t('vendor.modal.edit_title')
+                : t('vendor.modal.new_title')}
             </DialogTitle>
-            <CardDescription>
-              Preencha os dados corporativos para emissão de faturas e
-              pagamentos.
-            </CardDescription>
+            <CardDescription>{t('vendor.modal.desc')}</CardDescription>
           </DialogHeader>
 
           <div className="flex-1 overflow-y-auto p-6">
             <Tabs defaultValue="geral" className="w-full">
               <TabsList className="grid w-full grid-cols-3 mb-6">
                 <TabsTrigger value="geral">
-                  <Building2 className="w-4 h-4 mr-2" /> Geral & Contato
+                  <Building2 className="w-4 h-4 mr-2" />{' '}
+                  {t('vendor.modal.tab.general')}
                 </TabsTrigger>
                 <TabsTrigger value="endereco">
-                  <MapPin className="w-4 h-4 mr-2" /> Endereço
+                  <MapPin className="w-4 h-4 mr-2" />{' '}
+                  {t('vendor.modal.tab.address')}
                 </TabsTrigger>
                 <TabsTrigger value="financeiro">
-                  <CreditCard className="w-4 h-4 mr-2" /> Financeiro
+                  <CreditCard className="w-4 h-4 mr-2" />{' '}
+                  {t('vendor.modal.tab.finance')}
                 </TabsTrigger>
               </TabsList>
 
@@ -298,7 +302,7 @@ export function VendorsTabContent() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2 sm:col-span-2">
                     <Label>
-                      Razão Social / Nome{' '}
+                      {t('vendor.modal.name')}{' '}
                       <span className="text-destructive">*</span>
                     </Label>
                     <Input
@@ -306,52 +310,52 @@ export function VendorsTabContent() {
                       onChange={(e) =>
                         setFormData({ ...formData, name: e.target.value })
                       }
-                      placeholder="Nome completo da empresa"
+                      placeholder={t('vendor.modal.name_placeholder')}
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label>CNPJ / CPF</Label>
+                    <Label>{t('vendor.modal.doc')}</Label>
                     <Input
                       value={formData.document}
                       onChange={(e) =>
                         setFormData({ ...formData, document: e.target.value })
                       }
-                      placeholder="00.000.000/0001-00"
+                      placeholder={t('vendor.modal.doc_placeholder')}
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label>Categoria de Fornecimento</Label>
+                    <Label>{t('vendor.modal.category')}</Label>
                     <Input
                       value={formData.category}
                       onChange={(e) =>
                         setFormData({ ...formData, category: e.target.value })
                       }
-                      placeholder="Ex: Materiais Elétricos, Locação..."
+                      placeholder={t('vendor.modal.category_placeholder')}
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label>E-mail Comercial</Label>
+                    <Label>{t('vendor.modal.email')}</Label>
                     <Input
                       type="email"
                       value={formData.email}
                       onChange={(e) =>
                         setFormData({ ...formData, email: e.target.value })
                       }
-                      placeholder="faturamento@empresa.com"
+                      placeholder={t('vendor.modal.email_placeholder')}
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label>Telefone / WhatsApp</Label>
+                    <Label>{t('vendor.modal.phone')}</Label>
                     <Input
                       value={formData.phone}
                       onChange={(e) =>
                         setFormData({ ...formData, phone: e.target.value })
                       }
-                      placeholder="(00) 00000-0000"
+                      placeholder={t('vendor.modal.phone_placeholder')}
                     />
                   </div>
                   <div className="space-y-2 sm:col-span-2">
-                    <Label>Site Institucional</Label>
+                    <Label>{t('vendor.modal.website')}</Label>
                     <div className="flex">
                       <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 bg-muted text-muted-foreground">
                         <Globe className="w-4 h-4" />
@@ -362,7 +366,7 @@ export function VendorsTabContent() {
                         onChange={(e) =>
                           setFormData({ ...formData, website: e.target.value })
                         }
-                        placeholder="www.empresa.com.br"
+                        placeholder={t('vendor.modal.website_placeholder')}
                       />
                     </div>
                   </div>
@@ -375,37 +379,37 @@ export function VendorsTabContent() {
               >
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div className="space-y-2 sm:col-span-1">
-                    <Label>CEP</Label>
+                    <Label>{t('vendor.modal.zip')}</Label>
                     <Input
                       value={formData.zip_code}
                       onChange={(e) =>
                         setFormData({ ...formData, zip_code: e.target.value })
                       }
-                      placeholder="00000-000"
+                      placeholder={t('vendor.modal.zip_placeholder')}
                     />
                   </div>
                   <div className="space-y-2 sm:col-span-2">
-                    <Label>Logradouro / Rua</Label>
+                    <Label>{t('vendor.modal.street')}</Label>
                     <Input
                       value={formData.street}
                       onChange={(e) =>
                         setFormData({ ...formData, street: e.target.value })
                       }
-                      placeholder="Avenida Principal..."
+                      placeholder={t('vendor.modal.street_placeholder')}
                     />
                   </div>
                   <div className="space-y-2 sm:col-span-1">
-                    <Label>Número</Label>
+                    <Label>{t('vendor.modal.number')}</Label>
                     <Input
                       value={formData.number}
                       onChange={(e) =>
                         setFormData({ ...formData, number: e.target.value })
                       }
-                      placeholder="1234"
+                      placeholder={t('vendor.modal.number_placeholder')}
                     />
                   </div>
                   <div className="space-y-2 sm:col-span-2">
-                    <Label>Bairro</Label>
+                    <Label>{t('vendor.modal.neighborhood')}</Label>
                     <Input
                       value={formData.neighborhood}
                       onChange={(e) =>
@@ -414,27 +418,27 @@ export function VendorsTabContent() {
                           neighborhood: e.target.value,
                         })
                       }
-                      placeholder="Centro"
+                      placeholder={t('vendor.modal.neighborhood_placeholder')}
                     />
                   </div>
                   <div className="space-y-2 sm:col-span-2">
-                    <Label>Cidade</Label>
+                    <Label>{t('vendor.modal.city')}</Label>
                     <Input
                       value={formData.city}
                       onChange={(e) =>
                         setFormData({ ...formData, city: e.target.value })
                       }
-                      placeholder="São Paulo"
+                      placeholder={t('vendor.modal.city_placeholder')}
                     />
                   </div>
                   <div className="space-y-2 sm:col-span-1">
-                    <Label>Estado (UF)</Label>
+                    <Label>{t('vendor.modal.state')}</Label>
                     <Input
                       value={formData.state}
                       onChange={(e) =>
                         setFormData({ ...formData, state: e.target.value })
                       }
-                      placeholder="SP"
+                      placeholder={t('vendor.modal.state_placeholder')}
                       maxLength={2}
                     />
                   </div>
@@ -448,25 +452,25 @@ export function VendorsTabContent() {
                 <div className="bg-emerald-50 dark:bg-emerald-950/20 p-4 rounded-lg border border-emerald-100 dark:border-emerald-900 mb-4">
                   <div className="space-y-2">
                     <Label className="text-emerald-800 dark:text-emerald-400">
-                      Chave PIX Principal
+                      {t('vendor.modal.pix')}
                     </Label>
                     <Input
                       value={formData.pix_key}
                       onChange={(e) =>
                         setFormData({ ...formData, pix_key: e.target.value })
                       }
-                      placeholder="CNPJ, Email, Celular ou Chave Aleatória"
+                      placeholder={t('vendor.modal.pix_placeholder')}
                       className="border-emerald-200 dark:border-emerald-800"
                     />
                   </div>
                 </div>
 
                 <h4 className="font-semibold text-sm mb-2 mt-6">
-                  Dados Bancários Tradicionais
+                  {t('vendor.modal.bank_data')}
                 </h4>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label>Banco</Label>
+                    <Label>{t('vendor.modal.bank')}</Label>
                     <Input
                       value={formData.bank_data.bank}
                       onChange={(e) =>
@@ -478,11 +482,11 @@ export function VendorsTabContent() {
                           },
                         })
                       }
-                      placeholder="Ex: Itaú (341)"
+                      placeholder={t('vendor.modal.bank_placeholder')}
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label>Agência</Label>
+                    <Label>{t('vendor.modal.agency')}</Label>
                     <Input
                       value={formData.bank_data.agency}
                       onChange={(e) =>
@@ -494,11 +498,11 @@ export function VendorsTabContent() {
                           },
                         })
                       }
-                      placeholder="0000-0"
+                      placeholder={t('vendor.modal.agency_placeholder')}
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label>Conta</Label>
+                    <Label>{t('vendor.modal.account')}</Label>
                     <Input
                       value={formData.bank_data.account}
                       onChange={(e) =>
@@ -510,11 +514,11 @@ export function VendorsTabContent() {
                           },
                         })
                       }
-                      placeholder="00000-0"
+                      placeholder={t('vendor.modal.account_placeholder')}
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label>Tipo de Conta</Label>
+                    <Label>{t('vendor.modal.account_type')}</Label>
                     <Input
                       value={formData.bank_data.accountType}
                       onChange={(e) =>
@@ -526,7 +530,7 @@ export function VendorsTabContent() {
                           },
                         })
                       }
-                      placeholder="Corrente / Poupança"
+                      placeholder={t('vendor.modal.account_type_placeholder')}
                     />
                   </div>
                 </div>
@@ -536,9 +540,9 @@ export function VendorsTabContent() {
 
           <DialogFooter className="p-6 pt-4 border-t">
             <Button variant="ghost" onClick={() => setIsModalOpen(false)}>
-              Cancelar
+              {t('vendor.modal.cancel')}
             </Button>
-            <Button onClick={handleSave}>Salvar Cadastro Completo</Button>
+            <Button onClick={handleSave}>{t('vendor.modal.save')}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -552,23 +556,21 @@ export function VendorsTabContent() {
           <DialogHeader className="flex-shrink-0">
             <DialogTitle className="flex items-center gap-2">
               <Store className="h-5 w-5 text-muted-foreground" />
-              Histórico - {viewHistoryVendor?.name}
+              {t('vendor.history.title').replace(
+                '{name}',
+                viewHistoryVendor?.name || '',
+              )}
             </DialogTitle>
-            <CardDescription>
-              Visualização centralizada de todas as compras e integração
-              financeira.
-            </CardDescription>
+            <CardDescription>{t('vendor.history.desc')}</CardDescription>
           </DialogHeader>
           <div className="flex-1 overflow-y-auto pr-2 py-4 space-y-4">
             {vendorOrders.length === 0 ? (
               <div className="text-center py-12 text-muted-foreground bg-muted/20 rounded-lg border border-dashed flex flex-col items-center">
                 <PackageOpen className="h-10 w-10 mb-3 opacity-30" />
                 <p className="font-medium text-foreground">
-                  Sem registro de compras
+                  {t('vendor.history.empty.title')}
                 </p>
-                <p className="text-sm">
-                  Nenhum pedido efetuado com este fornecedor ainda.
-                </p>
+                <p className="text-sm">{t('vendor.history.empty.desc')}</p>
               </div>
             ) : (
               <div className="space-y-4">
@@ -580,7 +582,10 @@ export function VendorsTabContent() {
                     <div className="bg-muted/30 p-3 px-4 border-b flex justify-between items-center text-sm">
                       <div className="font-semibold text-primary flex items-center gap-2">
                         <ShoppingCart className="h-4 w-4" />
-                        Pedido #{order.id?.substring(0, 6).toUpperCase()}
+                        {t('vendor.history.order').replace(
+                          '{id}',
+                          order.id?.substring(0, 6).toUpperCase(),
+                        )}
                       </div>
                       <div className="flex gap-3 items-center">
                         <span className="text-muted-foreground text-xs font-medium">
@@ -593,7 +598,7 @@ export function VendorsTabContent() {
                             variant="secondary"
                             className="bg-blue-50 text-blue-700 hover:bg-blue-50 border-blue-200 text-[10px]"
                           >
-                            Vinculado à Obra
+                            {t('vendor.history.linked')}
                           </Badge>
                         )}
                       </div>
@@ -631,11 +636,11 @@ export function VendorsTabContent() {
                       <div className="mt-4 pt-3 border-t flex justify-between items-center">
                         <div className="flex flex-col gap-1">
                           <span className="text-sm font-medium text-muted-foreground">
-                            Valor Total do Pedido
+                            {t('vendor.history.total')}
                           </span>
                           <span className="text-[10px] text-muted-foreground flex items-center gap-1">
-                            <CreditCard className="w-3 h-3" /> Integrado ao
-                            fluxo de "Contas a Pagar"
+                            <CreditCard className="w-3 h-3" />{' '}
+                            {t('vendor.history.integrated')}
                           </span>
                         </div>
                         <span className="font-bold text-lg text-primary tabular-nums">
