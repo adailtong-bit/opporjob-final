@@ -107,15 +107,21 @@ Deno.serve(async (req: Request) => {
     let totalInserted = 0
 
     for (let i = 0; i < jobsToInsert.length; i += BATCH_SIZE) {
-      const batch = jobsToInsert.slice(i, i + BATCH_SIZE)
-      const { error } = await supabaseClient
-        .from('jobs')
-        .upsert(batch, { onConflict: 'external_id', ignoreDuplicates: true })
+      try {
+        const batch = jobsToInsert.slice(i, i + BATCH_SIZE)
+        const { error } = await supabaseClient
+          .from('jobs')
+          .upsert(batch, { onConflict: 'external_id', ignoreDuplicates: true })
 
-      if (error) {
-        throw error
+        if (error) {
+          console.error('Batch insert error:', error)
+          // Continue to next batch instead of throwing to prevent total failure
+        } else {
+          totalInserted += batch.length
+        }
+      } catch (batchErr) {
+        console.error('Batch processing exception:', batchErr)
       }
-      totalInserted += batch.length
     }
 
     return new Response(

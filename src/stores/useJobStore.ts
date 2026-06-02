@@ -222,10 +222,10 @@ export const useJobStore = create<JobState>((set, get) => ({
           : j,
       ),
     }))
-    await supabase
-      .from('jobs')
-      .update({ status: 'in_progress' })
-      .eq('id', jobId)
+    await supabase.rpc('award_job', {
+      job_id_param: jobId,
+      bid_id_param: bidId,
+    })
     await get().fetchJobs()
   },
   completeJob: async (jobId) => {

@@ -65,6 +65,7 @@ export type Database = {
           executor_name: string | null
           id: string
           job_id: string | null
+          status: string | null
         }
         Insert: {
           amount?: number | null
@@ -74,6 +75,7 @@ export type Database = {
           executor_name?: string | null
           id?: string
           job_id?: string | null
+          status?: string | null
         }
         Update: {
           amount?: number | null
@@ -83,6 +85,7 @@ export type Database = {
           executor_name?: string | null
           id?: string
           job_id?: string | null
+          status?: string | null
         }
         Relationships: [
           {
@@ -324,6 +327,7 @@ export type Database = {
       }
       jobs: {
         Row: {
+          accepted_bid_id: string | null
           budget: number | null
           category: string | null
           created_at: string | null
@@ -334,6 +338,7 @@ export type Database = {
           owner_id: string | null
           owner_name: string | null
           photos: Json | null
+          progress: number | null
           source: string | null
           status: string | null
           sub_category: string | null
@@ -342,6 +347,7 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          accepted_bid_id?: string | null
           budget?: number | null
           category?: string | null
           created_at?: string | null
@@ -352,6 +358,7 @@ export type Database = {
           owner_id?: string | null
           owner_name?: string | null
           photos?: Json | null
+          progress?: number | null
           source?: string | null
           status?: string | null
           sub_category?: string | null
@@ -360,6 +367,7 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          accepted_bid_id?: string | null
           budget?: number | null
           category?: string | null
           created_at?: string | null
@@ -370,6 +378,7 @@ export type Database = {
           owner_id?: string | null
           owner_name?: string | null
           photos?: Json | null
+          progress?: number | null
           source?: string | null
           status?: string | null
           sub_category?: string | null
@@ -377,7 +386,15 @@ export type Database = {
           type?: string | null
           updated_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: 'jobs_accepted_bid_id_fkey'
+            columns: ['accepted_bid_id']
+            isOneToOne: false
+            referencedRelation: 'bids'
+            referencedColumns: ['id']
+          },
+        ]
       }
       marketing_content: {
         Row: {
@@ -539,6 +556,7 @@ export type Database = {
           id: string
           name: string
           owner_id: string | null
+          progress: number | null
           status: string | null
           total_budget: number | null
           updated_at: string | null
@@ -549,6 +567,7 @@ export type Database = {
           id?: string
           name: string
           owner_id?: string | null
+          progress?: number | null
           status?: string | null
           total_budget?: number | null
           updated_at?: string | null
@@ -559,6 +578,7 @@ export type Database = {
           id?: string
           name?: string
           owner_id?: string | null
+          progress?: number | null
           status?: string | null
           total_budget?: number | null
           updated_at?: string | null
@@ -705,6 +725,7 @@ export type Database = {
           name: string
           neighborhood: string | null
           number: string | null
+          owner_id: string | null
           phone: string | null
           pix_key: string | null
           state: string | null
@@ -725,6 +746,7 @@ export type Database = {
           name: string
           neighborhood?: string | null
           number?: string | null
+          owner_id?: string | null
           phone?: string | null
           pix_key?: string | null
           state?: string | null
@@ -745,6 +767,7 @@ export type Database = {
           name?: string
           neighborhood?: string | null
           number?: string | null
+          owner_id?: string | null
           phone?: string | null
           pix_key?: string | null
           state?: string | null
@@ -761,6 +784,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      award_job: {
+        Args: { bid_id_param: string; job_id_param: string }
+        Returns: boolean
+      }
       is_admin: { Args: never; Returns: boolean }
     }
     Enums: {
@@ -922,6 +949,7 @@ export const Constants = {
 //   amount: numeric (nullable, default: 0)
 //   description: text (nullable)
 //   created_at: timestamp with time zone (nullable, default: now())
+//   status: text (nullable, default: 'pending'::text)
 // Table: categories
 //   id: text (not null)
 //   name: text (not null)
@@ -997,6 +1025,8 @@ export const Constants = {
 //   photos: jsonb (nullable, default: '[]'::jsonb)
 //   created_at: timestamp with time zone (nullable, default: now())
 //   updated_at: timestamp with time zone (nullable, default: now())
+//   accepted_bid_id: uuid (nullable)
+//   progress: numeric (nullable, default: 0)
 // Table: marketing_content
 //   id: uuid (not null, default: gen_random_uuid())
 //   key: text (not null)
@@ -1051,6 +1081,7 @@ export const Constants = {
 //   total_budget: numeric (nullable, default: 0)
 //   created_at: timestamp with time zone (nullable, default: now())
 //   updated_at: timestamp with time zone (nullable, default: now())
+//   progress: numeric (nullable, default: 0)
 // Table: push_subscriptions
 //   id: uuid (not null, default: gen_random_uuid())
 //   user_id: uuid (not null)
@@ -1097,6 +1128,7 @@ export const Constants = {
 //   zip_code: text (nullable)
 //   pix_key: text (nullable)
 //   bank_data: jsonb (nullable, default: '{}'::jsonb)
+//   owner_id: uuid (nullable)
 
 // --- CONSTRAINTS ---
 // Table: audit_logs
@@ -1120,9 +1152,11 @@ export const Constants = {
 //   FOREIGN KEY invoices_receiver_id_fkey: FOREIGN KEY (receiver_id) REFERENCES profiles(id) ON DELETE CASCADE
 //   FOREIGN KEY invoices_vendor_id_fkey: FOREIGN KEY (vendor_id) REFERENCES vendors(id) ON DELETE SET NULL
 // Table: jobs
+//   FOREIGN KEY jobs_accepted_bid_id_fkey: FOREIGN KEY (accepted_bid_id) REFERENCES bids(id) ON DELETE SET NULL
 //   UNIQUE jobs_external_id_key: UNIQUE (external_id)
 //   FOREIGN KEY jobs_owner_id_fkey: FOREIGN KEY (owner_id) REFERENCES auth.users(id) ON DELETE CASCADE
 //   PRIMARY KEY jobs_pkey: PRIMARY KEY (id)
+//   CHECK jobs_progress_check: CHECK (((progress >= (0)::numeric) AND (progress <= (100)::numeric)))
 // Table: marketing_content
 //   UNIQUE marketing_content_key_key: UNIQUE (key)
 //   PRIMARY KEY marketing_content_pkey: PRIMARY KEY (id)
@@ -1137,6 +1171,7 @@ export const Constants = {
 //   CHECK check_project_budget_positive: CHECK ((total_budget >= (0)::numeric))
 //   FOREIGN KEY projects_owner_id_fkey: FOREIGN KEY (owner_id) REFERENCES auth.users(id) ON DELETE CASCADE
 //   PRIMARY KEY projects_pkey: PRIMARY KEY (id)
+//   CHECK projects_progress_check: CHECK (((progress >= (0)::numeric) AND (progress <= (100)::numeric)))
 // Table: push_subscriptions
 //   UNIQUE push_subscriptions_endpoint_key: UNIQUE (endpoint)
 //   PRIMARY KEY push_subscriptions_pkey: PRIMARY KEY (id)
@@ -1153,6 +1188,7 @@ export const Constants = {
 //   FOREIGN KEY subcategories_category_id_fkey: FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE CASCADE
 //   PRIMARY KEY subcategories_pkey: PRIMARY KEY (id)
 // Table: vendors
+//   FOREIGN KEY vendors_owner_id_fkey: FOREIGN KEY (owner_id) REFERENCES auth.users(id)
 //   PRIMARY KEY vendors_pkey: PRIMARY KEY (id)
 
 // --- ROW LEVEL SECURITY POLICIES ---
@@ -1162,8 +1198,8 @@ export const Constants = {
 // Table: bids
 //   Policy "auth_insert_bids" (INSERT, PERMISSIVE) roles={public}
 //     WITH CHECK: (auth.uid() = executor_id)
-//   Policy "public_read_bids" (SELECT, PERMISSIVE) roles={public}
-//     USING: true
+//   Policy "authenticated_read_bids" (SELECT, PERMISSIVE) roles={authenticated}
+//     USING: ((auth.uid() = executor_id) OR (auth.uid() IN ( SELECT jobs.owner_id    FROM jobs   WHERE (jobs.id = bids.job_id))) OR is_admin())
 // Table: categories
 //   Policy "admin_all_categories" (ALL, PERMISSIVE) roles={authenticated}
 //     USING: (is_admin() = true)
@@ -1249,15 +1285,58 @@ export const Constants = {
 //     USING: true
 // Table: vendors
 //   Policy "vendors_delete" (DELETE, PERMISSIVE) roles={authenticated}
-//     USING: true
+//     USING: ((owner_id = auth.uid()) OR is_admin())
 //   Policy "vendors_insert" (INSERT, PERMISSIVE) roles={authenticated}
-//     WITH CHECK: true
+//     WITH CHECK: ((owner_id = auth.uid()) OR is_admin())
 //   Policy "vendors_select" (SELECT, PERMISSIVE) roles={authenticated}
-//     USING: true
+//     USING: ((owner_id = auth.uid()) OR is_admin())
 //   Policy "vendors_update" (UPDATE, PERMISSIVE) roles={authenticated}
-//     USING: true
+//     USING: ((owner_id = auth.uid()) OR is_admin())
 
 // --- DATABASE FUNCTIONS ---
+// FUNCTION award_job(uuid, uuid)
+//   CREATE OR REPLACE FUNCTION public.award_job(job_id_param uuid, bid_id_param uuid)
+//    RETURNS boolean
+//    LANGUAGE plpgsql
+//    SECURITY DEFINER
+//   AS $function$
+//   DECLARE
+//     v_job_status text;
+//     v_job_owner uuid;
+//   BEGIN
+//     -- Lock job row
+//     SELECT status, owner_id INTO v_job_status, v_job_owner
+//     FROM public.jobs
+//     WHERE id = job_id_param
+//     FOR UPDATE;
+//
+//     IF NOT FOUND THEN
+//       RAISE EXCEPTION 'Job not found';
+//     END IF;
+//
+//     IF v_job_owner != auth.uid() AND NOT public.is_admin() THEN
+//       RAISE EXCEPTION 'Not authorized';
+//     END IF;
+//
+//     IF v_job_status != 'open' THEN
+//       RAISE EXCEPTION 'Job is not open';
+//     END IF;
+//
+//     -- Atomically reject others and accept the selected bid
+//     UPDATE public.bids
+//     SET status = CASE WHEN id = bid_id_param THEN 'accepted' ELSE 'rejected' END
+//     WHERE job_id = job_id_param;
+//
+//     -- Update job status and link accepted bid
+//     UPDATE public.jobs
+//     SET status = 'in_progress',
+//         accepted_bid_id = bid_id_param
+//     WHERE id = job_id_param;
+//
+//     RETURN true;
+//   END;
+//   $function$
+//
 // FUNCTION handle_new_user()
 //   CREATE OR REPLACE FUNCTION public.handle_new_user()
 //    RETURNS trigger
@@ -1364,6 +1443,8 @@ export const Constants = {
 //
 
 // --- TRIGGERS ---
+// Table: bids
+//   audit_bids: CREATE TRIGGER audit_bids AFTER INSERT OR DELETE OR UPDATE ON public.bids FOR EACH ROW EXECUTE FUNCTION log_audit_event()
 // Table: invoices
 //   audit_invoices: CREATE TRIGGER audit_invoices AFTER INSERT OR DELETE OR UPDATE ON public.invoices FOR EACH ROW EXECUTE FUNCTION log_audit_event()
 //   enforce_paid_invoice_lock: CREATE TRIGGER enforce_paid_invoice_lock BEFORE UPDATE ON public.invoices FOR EACH ROW EXECUTE FUNCTION lock_paid_invoices()

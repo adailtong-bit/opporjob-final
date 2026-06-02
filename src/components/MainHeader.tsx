@@ -1,9 +1,11 @@
 import { Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import logoImg from '@/assets/corepm-f1280.png'
-import { Menu, LogOut, PlusCircle } from 'lucide-react'
+import { Menu, PlusCircle } from 'lucide-react'
+import { useLanguageStore } from '@/stores/useLanguageStore'
 
 export function MainHeader() {
+  const { t } = useLanguageStore()
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 items-center justify-between px-4 md:px-6 mx-auto">
@@ -25,16 +27,16 @@ export function MainHeader() {
               className="flex items-center gap-2 transition-colors hover:text-primary text-foreground/80 font-semibold"
             >
               <PlusCircle className="h-4 w-4" />
-              Post a Job
+              {t('sidebar.post_job')}
             </Link>
           </nav>
 
           <div className="hidden md:flex items-center gap-2">
             <Button variant="ghost" size="sm" asChild>
-              <Link to="/login">Sign In</Link>
+              <Link to="/login">{t('nav.login')}</Link>
             </Button>
             <Button size="sm" asChild>
-              <Link to="/register">Get Started</Link>
+              <Link to="/register">{t('nav.start')}</Link>
             </Button>
           </div>
 

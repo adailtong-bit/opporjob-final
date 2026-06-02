@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react'
 import { Search, X } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { useCategoryStore } from '@/stores/useCategoryStore'
+import { useLanguageStore } from '@/stores/useLanguageStore'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Label } from '@/components/ui/label'
@@ -18,17 +19,21 @@ export function CategorySelector({
   onClose,
 }: CategorySelectorProps) {
   const { categories } = useCategoryStore()
+  const { t } = useLanguageStore()
   const [search, setSearch] = useState('')
 
   const allSubCategories = useMemo(() => {
     const list: { id: string; name: string }[] = []
     categories.forEach((cat) => {
       cat.subCategories.forEach((sub) => {
-        list.push({ id: sub.id, name: sub.name })
+        list.push({
+          id: sub.id,
+          name: sub.translationKey ? t(sub.translationKey) : sub.name,
+        })
       })
     })
     return list.sort((a, b) => a.name.localeCompare(b.name))
-  }, [categories])
+  }, [categories, t])
 
   const filtered = useMemo(() => {
     if (!search.trim()) return allSubCategories

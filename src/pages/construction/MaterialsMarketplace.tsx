@@ -432,18 +432,17 @@ export default function MaterialsMarketplace() {
           )}
           <div>
             <h1 className="text-3xl font-bold tracking-tight">
-              Materials & Purchases
+              {t('market.title')}
             </h1>
-            <p className="text-muted-foreground">
-              Search for products, specify variations and allocate costs to
-              projects.
-            </p>
+            <p className="text-muted-foreground">{t('market.desc')}</p>
           </div>
         </div>
 
         <div className="flex items-center gap-4 w-full md:w-auto justify-between md:justify-end">
           <div className="text-right hidden md:block">
-            <p className="text-sm text-muted-foreground">Cart Value</p>
+            <p className="text-sm text-muted-foreground">
+              {t('market.cart.total')}
+            </p>
             <p className="font-bold text-lg text-primary">
               {formatCurrency(cartTotal)}
             </p>
@@ -453,7 +452,7 @@ export default function MaterialsMarketplace() {
             disabled={cart.length === 0}
             className="relative bg-primary hover:bg-primary/90"
           >
-            <ShoppingCart className="mr-2 h-4 w-4" /> Checkout
+            <ShoppingCart className="mr-2 h-4 w-4" /> {t('market.checkout')}
             {cart.length > 0 && (
               <span className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs shadow-md">
                 {cart.length}
@@ -475,10 +474,10 @@ export default function MaterialsMarketplace() {
         </div>
         <Select value={categoryFilter} onValueChange={setCategoryFilter}>
           <SelectTrigger className="w-[180px] bg-background">
-            <SelectValue placeholder="Category" />
+            <SelectValue placeholder={t('market.category')} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Categories</SelectItem>
+            <SelectItem value="all">{t('market.all_categories')}</SelectItem>
             <SelectItem value="Estrutura">Structure</SelectItem>
             <SelectItem value="Alvenaria">Masonry</SelectItem>
             <SelectItem value="Acabamento">Finishing</SelectItem>
@@ -486,10 +485,10 @@ export default function MaterialsMarketplace() {
         </Select>
         <Select value={vendorFilter} onValueChange={setVendorFilter}>
           <SelectTrigger className="w-[180px] bg-background">
-            <SelectValue placeholder="Fornecedor" />
+            <SelectValue placeholder={t('proj.vendor_short')} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Todos Fornecedores</SelectItem>
+            <SelectItem value="all">All</SelectItem>
             {Array.from(
               new Set([
                 ...materials.map((m) => m.supplier),

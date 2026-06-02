@@ -83,7 +83,9 @@ export default function UserProfile() {
       try {
         const { data, error } = await supabase
           .from('profiles')
-          .select('*')
+          .select(
+            'id, name, company_name, avatar_url, role, city, state, portfolio_photos, priced_services, document',
+          )
           .eq('id', id)
           .single()
 

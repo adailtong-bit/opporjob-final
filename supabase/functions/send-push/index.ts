@@ -70,7 +70,7 @@ Deno.serve(async (req: Request) => {
       url: payload.url || '/',
     })
 
-    const sendPromises = subscriptions.map((sub: any) => {
+    const sendPromises = subscriptions.map(async (sub: any) => {
       if (!VAPID_PUBLIC_KEY) {
         console.log('Skipping real push, no VAPID keys set. MOCK success.')
         return Promise.resolve()
@@ -82,20 +82,20 @@ Deno.serve(async (req: Request) => {
           p256dh: sub.p256dh,
         },
       }
-      return webpush
-        .sendNotification(pushSubscription, pushPayload)
-        .catch((err) => {
-          console.error('Error sending push to endpoint:', sub.endpoint, err)
-          if (err.statusCode === 410 || err.statusCode === 404) {
-            return supabaseClient
-              .from('push_subscriptions')
-              .delete()
-              .eq('id', sub.id)
-          }
-        })
+      try {
+        await webpush.sendNotification(pushSubscription, pushPayload)
+      } catch (err: any) {
+        console.error('Error sending push to endpoint:', sub.endpoint, err)
+        if (err.statusCode === 410 || err.statusCode === 404) {
+          await supabaseClient
+            .from('push_subscriptions')
+            .delete()
+            .eq('id', sub.id)
+        }
+      }
     })
 
-    await Promise.all(sendPromises)
+    await Promise.allSettled(sendPromises)
 
     return new Response(
       JSON.stringify({ success: true, count: subscriptions.length }),

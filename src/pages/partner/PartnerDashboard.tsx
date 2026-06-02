@@ -49,7 +49,7 @@ export default function PartnerDashboard() {
   const { projects, addPartnerTeamMember, addQuote } = useProjectStore()
   const { contractors } = useContractorStore()
   const { toast } = useToast()
-  const { formatCurrency, formatDate } = useLanguageStore()
+  const { t, formatCurrency, formatDate } = useLanguageStore()
 
   const [isTeamModalOpen, setIsTeamModalOpen] = useState(false)
   const [isPoolModalOpen, setIsPoolModalOpen] = useState(false)
@@ -93,7 +93,7 @@ export default function PartnerDashboard() {
         registrationId: contractor.id,
       })
 
-      toast({ title: 'Profissional adicionado à equipe' })
+      toast({ title: t('partner.pool.toast_success') })
       setIsPoolModalOpen(false)
       setSelectedContractorId('')
     }
@@ -134,8 +134,8 @@ export default function PartnerDashboard() {
     })
 
     toast({
-      title: 'Orçamento enviado!',
-      description: 'O contratante irá avaliar a sua proposta.',
+      title: t('partner.quote_modal.toast_success'),
+      description: t('partner.quote_modal.toast_desc'),
     })
     setIsQuoteOpen(false)
     setQuoteItems([])
@@ -147,10 +147,10 @@ export default function PartnerDashboard() {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">
-            Painel do Parceiro
+            {t('partner.dashboard.title')}
           </h1>
           <p className="text-muted-foreground">
-            Gestão de Obras, Orçamentos e Equipes |{' '}
+            {t('partner.dashboard.subtitle')}
             {activePartner?.companyName || user?.name}
           </p>
         </div>
@@ -160,7 +160,8 @@ export default function PartnerDashboard() {
             className="text-lg py-1 px-3 bg-yellow-50 text-yellow-700 border-yellow-200"
           >
             <Star className="w-4 h-4 mr-1 fill-current" />
-            Score: {activePartner?.performanceScore || 0}
+            {t('partner.dashboard.score')}{' '}
+            {activePartner?.performanceScore || 0}
           </Badge>
         </div>
       </div>
@@ -169,7 +170,7 @@ export default function PartnerDashboard() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
-              Projetos Ativos
+              {t('partner.dashboard.active_projects')}
             </CardTitle>
             <Building2 className="h-4 w-4 text-primary" />
           </CardHeader>
@@ -180,7 +181,7 @@ export default function PartnerDashboard() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
-              Equipe Alocada
+              {t('partner.dashboard.allocated_team')}
             </CardTitle>
             <Users className="h-4 w-4 text-blue-500" />
           </CardHeader>
@@ -193,7 +194,7 @@ export default function PartnerDashboard() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
-              Recebíveis Previstos
+              {t('partner.dashboard.expected_receivables')}
             </CardTitle>
             <FileText className="h-4 w-4 text-green-500" />
           </CardHeader>
@@ -208,16 +209,16 @@ export default function PartnerDashboard() {
       <Tabs defaultValue="projects">
         <TabsList className="w-full justify-start overflow-x-auto flex-nowrap h-auto p-1 py-1.5 scrollbar-none">
           <TabsTrigger value="projects" className="whitespace-nowrap">
-            Meus Projetos & Tarefas
+            {t('partner.tabs.projects')}
           </TabsTrigger>
           <TabsTrigger value="quotes" className="whitespace-nowrap">
-            Orçamentos (Propostas)
+            {t('partner.tabs.quotes')}
           </TabsTrigger>
           <TabsTrigger value="team" className="whitespace-nowrap">
-            Minha Equipe
+            {t('partner.tabs.team')}
           </TabsTrigger>
           <TabsTrigger value="vendors" className="whitespace-nowrap">
-            Fornecedores
+            {t('partner.tabs.vendors')}
           </TabsTrigger>
         </TabsList>
 
@@ -237,11 +238,10 @@ export default function PartnerDashboard() {
                 <div className="mb-4 bg-muted/30 p-3 rounded-lg border text-sm flex flex-col md:flex-row justify-between md:items-center gap-4">
                   <div>
                     <p className="font-semibold text-primary mb-1">
-                      Suas Atividades Atribuídas:
+                      {t('partner.projects.assigned_tasks')}
                     </p>
                     <p className="text-muted-foreground">
-                      Use as opções da tarefa para solicitar medições ao
-                      contratante.
+                      {t('partner.projects.tasks_desc')}
                     </p>
                   </div>
                 </div>
@@ -260,13 +260,11 @@ export default function PartnerDashboard() {
           <Card>
             <CardHeader className="flex flex-row justify-between items-center">
               <div>
-                <CardTitle>Meus Orçamentos</CardTitle>
-                <CardDescription>
-                  Envie novas propostas e acompanhe as aprovações.
-                </CardDescription>
+                <CardTitle>{t('partner.quotes.title')}</CardTitle>
+                <CardDescription>{t('partner.quotes.desc')}</CardDescription>
               </div>
               <Button onClick={() => setIsQuoteOpen(true)}>
-                <Plus className="mr-2 h-4 w-4" /> Enviar Proposta
+                <Plus className="mr-2 h-4 w-4" /> {t('partner.quotes.send_btn')}
               </Button>
             </CardHeader>
             <CardContent>
@@ -277,7 +275,7 @@ export default function PartnerDashboard() {
                     .map((q) => ({ ...q, projectName: p.name })),
                 ).length === 0 ? (
                   <div className="text-center text-muted-foreground py-8 border-2 border-dashed rounded-lg">
-                    Nenhuma proposta enviada.
+                    {t('partner.quotes.empty')}
                   </div>
                 ) : (
                   partnerProjects
@@ -293,10 +291,11 @@ export default function PartnerDashboard() {
                       >
                         <div>
                           <div className="font-medium">
-                            Orçamento para {quote.projectName}
+                            {t('partner.quotes.quote_for')} {quote.projectName}
                           </div>
                           <div className="text-sm text-muted-foreground">
-                            {quote.items.length} itens • Enviado em{' '}
+                            {quote.items.length} {t('partner.quotes.items')} •{' '}
+                            {t('partner.quotes.sent_on')}{' '}
                             {formatDate
                               ? formatDate(
                                   new Date(quote.createdAt),
@@ -321,9 +320,12 @@ export default function PartnerDashboard() {
                               quote.status === 'approved' ? 'bg-green-500' : ''
                             }
                           >
-                            {quote.status === 'pending' && 'Em Análise'}
-                            {quote.status === 'approved' && 'Aprovado'}
-                            {quote.status === 'rejected' && 'Rejeitado'}
+                            {quote.status === 'pending' &&
+                              t('partner.quotes.status.pending')}
+                            {quote.status === 'approved' &&
+                              t('partner.quotes.status.approved')}
+                            {quote.status === 'rejected' &&
+                              t('partner.quotes.status.rejected')}
                           </Badge>
                         </div>
                       </div>
@@ -341,25 +343,25 @@ export default function PartnerDashboard() {
         <TabsContent value="team" className="mt-4">
           <div className="flex justify-end gap-2 mb-4">
             <Button variant="outline" onClick={() => setIsPoolModalOpen(true)}>
-              <UserCheck className="mr-2 h-4 w-4" /> Buscar no Banco de Talentos
+              <UserCheck className="mr-2 h-4 w-4" />{' '}
+              {t('partner.team.search_pool')}
             </Button>
             <Button onClick={() => setIsTeamModalOpen(true)}>
-              <Plus className="mr-2 h-4 w-4" /> Novo Membro
+              <Plus className="mr-2 h-4 w-4" /> {t('partner.team.new_member')}
             </Button>
           </div>
 
           <Card>
             <CardHeader>
-              <CardTitle>Membros da Equipe</CardTitle>
+              <CardTitle>{t('partner.team.members_title')}</CardTitle>
               <CardDescription>
-                Profissionais vinculados à sua empresa.
+                {t('partner.team.members_desc')}
               </CardDescription>
             </CardHeader>
             <CardContent>
               {activePartner?.team.length === 0 ? (
                 <div className="text-center py-8 text-muted-foreground border-2 border-dashed rounded-lg">
-                  Nenhum membro registrado. Adicione manualmente ou busque no
-                  banco de talentos.
+                  {t('partner.team.empty')}
                 </div>
               ) : (
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -375,18 +377,18 @@ export default function PartnerDashboard() {
                       <div className="text-sm text-muted-foreground space-y-1">
                         <p className="flex items-center gap-2">
                           <span className="text-xs uppercase font-semibold">
-                            Email:
+                            {t('partner.team.email')}
                           </span>{' '}
                           {member.email}
                         </p>
                         <p className="flex items-center gap-2">
                           <span className="text-xs uppercase font-semibold">
-                            Tel:
+                            {t('partner.team.phone')}
                           </span>{' '}
                           {member.phone}
                         </p>
                         <p className="text-xs mt-2 bg-muted p-1 rounded w-fit">
-                          ID: {member.registrationId}
+                          {t('partner.team.id')} {member.registrationId}
                         </p>
                       </div>
                     </div>
@@ -412,13 +414,13 @@ export default function PartnerDashboard() {
       <Dialog open={isPoolModalOpen} onOpenChange={setIsPoolModalOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Selecionar do Banco de Talentos</DialogTitle>
+            <DialogTitle>{t('partner.pool.title')}</DialogTitle>
           </DialogHeader>
           <div className="py-4 space-y-4">
-            <Label>Profissionais Disponíveis</Label>
+            <Label>{t('partner.pool.label')}</Label>
             <Select onValueChange={setSelectedContractorId}>
               <SelectTrigger>
-                <SelectValue placeholder="Selecione um profissional..." />
+                <SelectValue placeholder={t('partner.pool.placeholder')} />
               </SelectTrigger>
               <SelectContent>
                 {availableContractors.map((c) => (
@@ -429,7 +431,7 @@ export default function PartnerDashboard() {
               </SelectContent>
             </Select>
             <p className="text-xs text-muted-foreground">
-              Adicionando este profissional à sua equipe permanente.
+              {t('partner.pool.desc')}
             </p>
           </div>
           <DialogFooter>
@@ -437,7 +439,7 @@ export default function PartnerDashboard() {
               onClick={handleAddFromPool}
               disabled={!selectedContractorId}
             >
-              Adicionar à Equipe
+              {t('partner.pool.add_btn')}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -447,17 +449,19 @@ export default function PartnerDashboard() {
       <Dialog open={isQuoteOpen} onOpenChange={setIsQuoteOpen}>
         <DialogContent className="sm:max-w-xl">
           <DialogHeader>
-            <DialogTitle>Enviar Nova Proposta / Orçamento</DialogTitle>
+            <DialogTitle>{t('partner.quote_modal.title')}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label>Para qual projeto?</Label>
+              <Label>{t('partner.quote_modal.project_label')}</Label>
               <Select
                 value={selectedProjectForQuote}
                 onValueChange={setSelectedProjectForQuote}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Selecione o projeto" />
+                  <SelectValue
+                    placeholder={t('partner.quote_modal.project_placeholder')}
+                  />
                 </SelectTrigger>
                 <SelectContent>
                   {partnerProjects.map((p) => (
@@ -470,11 +474,11 @@ export default function PartnerDashboard() {
             </div>
 
             <div className="border rounded-md p-4 space-y-4 bg-muted/20">
-              <Label>Itens do Orçamento</Label>
+              <Label>{t('partner.quote_modal.items_label')}</Label>
               <div className="flex flex-col sm:flex-row gap-2 items-end">
                 <div className="flex-1 space-y-2 w-full">
                   <Input
-                    placeholder="Descrição do serviço/material"
+                    placeholder={t('partner.quote_modal.desc_placeholder')}
                     value={quoteDesc}
                     onChange={(e) => setQuoteDesc(e.target.value)}
                   />
@@ -490,7 +494,7 @@ export default function PartnerDashboard() {
                   variant="secondary"
                   className="w-full sm:w-auto mt-2 sm:mt-0"
                 >
-                  Adicionar
+                  {t('partner.quote_modal.add_btn')}
                 </Button>
               </div>
 
@@ -520,7 +524,7 @@ export default function PartnerDashboard() {
                 </ul>
               )}
               <div className="text-right pt-2 font-bold text-lg">
-                Total:{' '}
+                {t('partner.quote_modal.total')}{' '}
                 {formatCurrency(quoteItems.reduce((a, b) => a + b.amount, 0))}
               </div>
             </div>
@@ -530,7 +534,7 @@ export default function PartnerDashboard() {
               onClick={handleSubmitQuote}
               disabled={!selectedProjectForQuote || quoteItems.length === 0}
             >
-              Enviar Orçamento
+              {t('partner.quote_modal.submit_btn')}
             </Button>
           </DialogFooter>
         </DialogContent>

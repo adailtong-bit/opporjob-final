@@ -46,9 +46,12 @@ export const useVendorStore = create<VendorState>((set, get) => ({
     }
   },
   addVendor: async (vendor) => {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
     const { data, error } = await supabase
       .from('vendors')
-      .insert([vendor])
+      .insert([{ ...vendor, owner_id: user?.id }])
       .select()
       .single()
     if (!error && data) {
