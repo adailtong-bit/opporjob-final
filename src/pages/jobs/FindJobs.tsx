@@ -284,7 +284,7 @@ export default function FindJobs() {
               </SelectItem>
               {jobCategories.map((cat) => (
                 <SelectItem key={cat.id} value={cat.name}>
-                  {cat.name}
+                  {cat.translationKey ? t(cat.translationKey) : cat.name}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -292,14 +292,20 @@ export default function FindJobs() {
 
           <Select value={typeFilter} onValueChange={handleTypeChange}>
             <SelectTrigger className="bg-background">
-              <SelectValue placeholder="Tipo de Anúncio" />
+              <SelectValue placeholder={t('find.filter.type.all')} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Todos os Anúncios</SelectItem>
-              <SelectItem value="job">Vagas e Serviços</SelectItem>
-              <SelectItem value="product">Produtos (Venda)</SelectItem>
-              <SelectItem value="rental">Aluguéis</SelectItem>
-              <SelectItem value="community">Doação / Comunidade</SelectItem>
+              <SelectItem value="all">{t('find.filter.type.all')}</SelectItem>
+              <SelectItem value="job">{t('post.type.job.label')}</SelectItem>
+              <SelectItem value="product">
+                {t('post.type.product.label')}
+              </SelectItem>
+              <SelectItem value="rental">
+                {t('post.type.rental.label')}
+              </SelectItem>
+              <SelectItem value="community">
+                {t('post.type.community.label')}
+              </SelectItem>
             </SelectContent>
           </Select>
 
@@ -317,12 +323,14 @@ export default function FindJobs() {
 
           <Select value={sortBy} onValueChange={setSortBy}>
             <SelectTrigger className="bg-background">
-              <SelectValue placeholder="Ordenar por" />
+              <SelectValue placeholder={t('general.select')} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="recent">Mais Recentes</SelectItem>
-              <SelectItem value="rating">Melhor Avaliados</SelectItem>
-              <SelectItem value="proximity">Mais Próximos</SelectItem>
+              <SelectItem value="recent">{t('find.sort.recent')}</SelectItem>
+              <SelectItem value="rating">{t('find.sort.rating')}</SelectItem>
+              <SelectItem value="proximity">
+                {t('find.sort.proximity')}
+              </SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -351,7 +359,13 @@ export default function FindJobs() {
                 <div className="flex justify-between items-start mb-2">
                   <div className="flex gap-2 flex-wrap">
                     <Badge variant="outline" className="text-xs">
-                      {job.category}
+                      {categories.find((c) => c.name === job.category)
+                        ?.translationKey
+                        ? t(
+                            categories.find((c) => c.name === job.category)!
+                              .translationKey!,
+                          )
+                        : job.category}
                     </Badge>
                     {job.listingType && job.listingType !== 'job' && (
                       <Badge className="bg-purple-100 text-purple-700 hover:bg-purple-100 border-purple-200 uppercase text-[10px]">

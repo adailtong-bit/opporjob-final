@@ -147,10 +147,10 @@ export default function MyJobs() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">
-            Minhas Atividades
+            {t('sidebar.my_jobs')}
           </h1>
           <p className="text-muted-foreground">
-            Acompanhe vagas que você publicou ou nas quais você se candidatou.
+            {t('proj.partner.manage_activities')}
           </p>
         </div>
         <Button asChild>
@@ -162,14 +162,16 @@ export default function MyJobs() {
 
       <Tabs defaultValue={defaultTab} className="w-full">
         <TabsList className="grid w-full grid-cols-2 max-w-md mb-6">
-          <TabsTrigger value="my-ads">Meus Anúncios</TabsTrigger>
-          <TabsTrigger value="my-interests">Meus Interesses</TabsTrigger>
+          <TabsTrigger value="my-ads">{t('home.my_ads.title')}</TabsTrigger>
+          <TabsTrigger value="my-interests">
+            {t('dashboard.tabs.interests')}
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="my-ads" className="space-y-6 animate-fade-in">
           <Card>
             <CardHeader>
-              <CardTitle>Anúncios Publicados</CardTitle>
+              <CardTitle>{t('home.my_ads.title')}</CardTitle>
             </CardHeader>
             <CardContent>
               {myContractedJobs.length === 0 ? (

@@ -46,7 +46,7 @@ export default function NewProject() {
   const navigate = useNavigate()
   const { addProject } = useProjectStore()
   const { toast } = useToast()
-  const { formatDate } = useLanguageStore()
+  const { formatDate, t } = useLanguageStore()
 
   const [loading, setLoading] = useState(false)
   const [formData, setFormData] = useState({
@@ -86,9 +86,8 @@ export default function NewProject() {
     if (!formData.name || !formData.address.city || !formData.address.state) {
       toast({
         variant: 'destructive',
-        title: 'Campos Obrigatórios',
-        description:
-          'Por favor, preencha nome e os dados de endereço do projeto.',
+        title: t('proj.new.req_title'),
+        description: t('proj.new.req_desc'),
       })
       return
     }
@@ -159,8 +158,8 @@ export default function NewProject() {
 
     setLoading(false)
     toast({
-      title: 'Projeto Iniciado!',
-      description: 'Estrutura do projeto criada com sucesso.',
+      title: t('proj.new.success_title'),
+      description: t('proj.new.success_desc'),
     })
     navigate('/construction/dashboard')
   }
@@ -173,29 +172,25 @@ export default function NewProject() {
         </Button>
         <div>
           <h1 className="text-3xl font-bold tracking-tight">
-            Novo Projeto de Obra
+            {t('proj.new.title')}
           </h1>
-          <p className="text-muted-foreground">
-            Inicialize o fluxo de construção e defina a região.
-          </p>
+          <p className="text-muted-foreground">{t('proj.new.subtitle')}</p>
         </div>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Dados Principais</CardTitle>
-          <CardDescription>
-            Defina as informações base para o gerenciamento.
-          </CardDescription>
+          <CardTitle>{t('proj.new.main_data')}</CardTitle>
+          <CardDescription>{t('proj.new.main_data_desc')}</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="space-y-2 md:col-span-2">
-                <Label htmlFor="name">Nome do Projeto</Label>
+                <Label htmlFor="name">{t('proj.new.name_label')}</Label>
                 <Input
                   id="name"
-                  placeholder="Ex: Residencial Flores"
+                  placeholder={t('proj.new.name_placeholder')}
                   value={formData.name}
                   onChange={(e) =>
                     setFormData({ ...formData, name: e.target.value })
@@ -204,7 +199,8 @@ export default function NewProject() {
               </div>
               <div className="space-y-2">
                 <Label className="flex items-center gap-2">
-                  <Globe className="h-4 w-4 text-primary" /> Região / País
+                  <Globe className="h-4 w-4 text-primary" />{' '}
+                  {t('proj.new.region_label')}
                 </Label>
                 <Select
                   value={formData.region}
@@ -216,8 +212,8 @@ export default function NewProject() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="BR">Brasil</SelectItem>
-                    <SelectItem value="US">USA (Florida/Orlando)</SelectItem>
+                    <SelectItem value="BR">{t('country.br')}</SelectItem>
+                    <SelectItem value="US">{t('country.us_fl')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -226,14 +222,14 @@ export default function NewProject() {
             <div className="border rounded-lg p-4 bg-muted/20 space-y-4">
               <div className="flex items-center gap-2 mb-2">
                 <MapPin className="h-4 w-4 text-primary" />
-                <h3 className="font-semibold text-sm">Endereço da Obra</h3>
+                <h3 className="font-semibold text-sm">
+                  {t('proj.new.address_title')}
+                </h3>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="zipCode">
-                    {formData.region === 'BR' ? 'CEP' : 'Zip Code'}
-                  </Label>
+                  <Label htmlFor="zipCode">{t('proj.new.zip_label')}</Label>
                   <Input
                     id="zipCode"
                     placeholder={
@@ -246,12 +242,10 @@ export default function NewProject() {
                   />
                 </div>
                 <div className="space-y-2 md:col-span-2">
-                  <Label htmlFor="street">
-                    {formData.region === 'BR' ? 'Logradouro' : 'Street'}
-                  </Label>
+                  <Label htmlFor="street">{t('proj.new.street_label')}</Label>
                   <Input
                     id="street"
-                    placeholder="Endereço"
+                    placeholder={t('proj.new.street_placeholder')}
                     value={formData.address.street}
                     onChange={(e) =>
                       handleAddressChange('street', e.target.value)
@@ -262,7 +256,7 @@ export default function NewProject() {
 
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="number">Número</Label>
+                  <Label htmlFor="number">{t('proj.new.number_label')}</Label>
                   <Input
                     id="number"
                     placeholder="123"
@@ -273,10 +267,12 @@ export default function NewProject() {
                   />
                 </div>
                 <div className="space-y-2 md:col-span-3">
-                  <Label htmlFor="complement">Complemento</Label>
+                  <Label htmlFor="complement">
+                    {t('proj.new.complement_label')}
+                  </Label>
                   <Input
                     id="complement"
-                    placeholder="Apto, Bloco, etc."
+                    placeholder={t('proj.new.complement_placeholder')}
                     value={formData.address.complement}
                     onChange={(e) =>
                       handleAddressChange('complement', e.target.value)
@@ -287,10 +283,12 @@ export default function NewProject() {
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="neighborhood">Bairro / District</Label>
+                  <Label htmlFor="neighborhood">
+                    {t('proj.new.neighborhood_label')}
+                  </Label>
                   <Input
                     id="neighborhood"
-                    placeholder="Bairro"
+                    placeholder={t('proj.new.neighborhood_label')}
                     value={formData.address.neighborhood}
                     onChange={(e) =>
                       handleAddressChange('neighborhood', e.target.value)
@@ -298,10 +296,10 @@ export default function NewProject() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="city">Cidade</Label>
+                  <Label htmlFor="city">{t('proj.new.city_label')}</Label>
                   <Input
                     id="city"
-                    placeholder="Cidade"
+                    placeholder={t('proj.new.city_label')}
                     value={formData.address.city}
                     onChange={(e) =>
                       handleAddressChange('city', e.target.value)
@@ -309,7 +307,7 @@ export default function NewProject() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="state">Estado / State</Label>
+                  <Label htmlFor="state">{t('proj.new.state_label')}</Label>
                   <Input
                     id="state"
                     placeholder={formData.region === 'BR' ? 'SP' : 'FL'}
@@ -325,7 +323,7 @@ export default function NewProject() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>Data de Início</Label>
+                <Label>{t('proj.new.start_date')}</Label>
                 <Popover>
                   <PopoverTrigger asChild>
                     <Button
@@ -339,7 +337,7 @@ export default function NewProject() {
                       {formData.startDate ? (
                         formatDate(formData.startDate, 'PPP')
                       ) : (
-                        <span>Selecione</span>
+                        <span>{t('general.select')}</span>
                       )}
                     </Button>
                   </PopoverTrigger>
@@ -356,7 +354,7 @@ export default function NewProject() {
                 </Popover>
               </div>
               <div className="space-y-2">
-                <Label>Previsão de Término</Label>
+                <Label>{t('proj.new.end_date')}</Label>
                 <Popover>
                   <PopoverTrigger asChild>
                     <Button
@@ -370,7 +368,7 @@ export default function NewProject() {
                       {formData.endDate ? (
                         formatDate(formData.endDate, 'PPP')
                       ) : (
-                        <span>Selecione</span>
+                        <span>{t('general.select')}</span>
                       )}
                     </Button>
                   </PopoverTrigger>
@@ -390,7 +388,7 @@ export default function NewProject() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="budget">Orçamento Estimado Total</Label>
+                <Label htmlFor="budget">{t('proj.new.budget')}</Label>
                 <CurrencyInput
                   id="budget"
                   value={formData.totalBudget}
@@ -401,9 +399,7 @@ export default function NewProject() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="threshold">
-                  Limite de Aprovação de Compras
-                </Label>
+                <Label htmlFor="threshold">{t('proj.new.threshold')}</Label>
                 <CurrencyInput
                   id="threshold"
                   value={formData.purchaseApprovalThreshold}
@@ -413,19 +409,19 @@ export default function NewProject() {
                       purchaseApprovalThreshold: value,
                     })
                   }
-                  placeholder="R$ 1.000,00"
+                  placeholder="1,000.00"
                 />
                 <p className="text-[10px] text-muted-foreground mt-1">
-                  Compras no app acima deste valor exigirão aprovação gerencial.
+                  {t('proj.new.threshold_desc')}
                 </p>
               </div>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="desc">Descrição</Label>
+              <Label htmlFor="desc">{t('proj.new.description')}</Label>
               <Textarea
                 id="desc"
-                placeholder="Detalhes do empreendimento..."
+                placeholder={t('proj.new.desc_placeholder')}
                 value={formData.description}
                 onChange={(e) =>
                   setFormData({ ...formData, description: e.target.value })
@@ -435,13 +431,19 @@ export default function NewProject() {
 
             <div className="bg-muted/50 p-4 rounded-lg space-y-2">
               <Label className="font-semibold flex items-center gap-2">
-                Workflow Padrão ({DEFAULT_STAGES_TEMPLATE.length} Etapas Macro)
+                {t('proj.new.workflow', {
+                  count: DEFAULT_STAGES_TEMPLATE.length,
+                })}
               </Label>
               <ul className="text-sm text-muted-foreground list-disc pl-5 space-y-1">
                 {DEFAULT_STAGES_TEMPLATE.slice(0, 5).map((s, i) => (
                   <li key={i}>{s.name}</li>
                 ))}
-                <li>... e mais {DEFAULT_STAGES_TEMPLATE.length - 5} etapas.</li>
+                <li>
+                  {t('proj.new.workflow_more', {
+                    count: DEFAULT_STAGES_TEMPLATE.length - 5,
+                  })}
+                </li>
               </ul>
             </div>
 
@@ -452,7 +454,7 @@ export default function NewProject() {
               disabled={loading}
             >
               {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Criar Projeto
+              {t('proj.new.submit')}
             </Button>
           </form>
         </CardContent>

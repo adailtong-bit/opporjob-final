@@ -185,22 +185,19 @@ export default function EquipmentManager() {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">
-            Gestão de Máquinas
+            {t('eq.manager.title')}
           </h1>
-          <p className="text-muted-foreground">
-            Controle de Aluguel, Manutenção e Check-in/Check-out de
-            equipamentos.
-          </p>
+          <p className="text-muted-foreground">{t('eq.manager.desc')}</p>
         </div>
         <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
           <DialogTrigger asChild>
             <Button>
-              <Plus className="mr-2 h-4 w-4" /> Registrar Máquina
+              <Plus className="mr-2 h-4 w-4" /> {t('eq.new')}
             </Button>
           </DialogTrigger>
           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>Registrar Nova Máquina</DialogTitle>
+              <DialogTitle>{t('eq.register.title')}</DialogTitle>
             </DialogHeader>
             <div className="grid gap-4 py-4">
               <div className="grid md:grid-cols-2 gap-4">
@@ -258,7 +255,7 @@ export default function EquipmentManager() {
 
               <div className="border-t pt-4">
                 <Label className="text-base font-semibold mb-2 block">
-                  Dados de Aluguel e Financeiro
+                  {t('eq.finance.title')}
                 </Label>
                 <div className="grid md:grid-cols-2 gap-4">
                   <div className="grid gap-2">

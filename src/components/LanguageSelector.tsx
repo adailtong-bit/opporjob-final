@@ -15,7 +15,7 @@ export function LanguageSelector() {
     if (currentLanguage === 'pt') return 'Português'
     if (currentLanguage === 'en') return 'English'
     if (currentLanguage === 'es') return 'Español'
-    return 'Português'
+    return 'English'
   }
 
   return (
