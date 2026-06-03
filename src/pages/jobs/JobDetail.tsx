@@ -66,7 +66,10 @@ export default function JobDetail() {
       </div>
     )
 
-  const isJobListing = !job.listingType || job.listingType === 'job'
+  const isJobListing =
+    !job.listingType ||
+    job.listingType === 'job' ||
+    job.listingType === 'service'
   const isOwner = user?.id === job.ownerId
   const hasBidded = user
     ? job.bids.some((b) => b.executorId === user.id)
@@ -217,20 +220,28 @@ export default function JobDetail() {
   const getListingTypeLabel = (type?: string) => {
     switch (type) {
       case 'product':
-        return 'Produto / Desapego'
+        return 'Produto Novo'
+      case 'desapego':
+        return 'Desapego / Usado'
       case 'rental':
         return 'Aluguel'
       case 'community':
+      case 'donation':
         return 'Comunidade / Doação'
       case 'job':
+        return 'Vaga'
+      case 'service':
+        return 'Serviço'
       default:
         return 'Vaga / Serviço'
     }
   }
 
   let displayPrice = job.budget || 0
-  if (job.listingType === 'product') displayPrice = job.salePrice || 0
-  if (job.listingType === 'rental') displayPrice = job.rentalRate || 0
+  if (job.listingType === 'product' && job.salePrice)
+    displayPrice = job.salePrice
+  if (job.listingType === 'rental' && job.rentalRate)
+    displayPrice = job.rentalRate
 
   return (
     <div className="space-y-6 max-w-5xl mx-auto pb-24 lg:pb-10 p-4 md:p-8 pt-6 animate-fade-in w-full">

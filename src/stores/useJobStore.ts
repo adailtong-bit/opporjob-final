@@ -61,7 +61,7 @@ interface JobState {
   jobs: Job[]
   loading: boolean
   fetchJobs: () => Promise<void>
-  addJob: (job: any) => Promise<void>
+  addJob: (job: any) => Promise<any>
   getJob: (id: string) => Job | undefined
   updateJob: (id: string, job: Partial<Job>) => Promise<void>
   deleteJob: (id: string) => Promise<void>
@@ -100,6 +100,7 @@ export const useJobStore = create<JobState>((set, get) => ({
         source: d.source,
         externalId: d.external_id,
         photos: d.photos || [],
+        listingType: d.listing_type,
         acceptedBidId: d.accepted_bid_id,
         createdAt: new Date(d.created_at),
         bids: (d.bids || []).map((b: any) => ({
@@ -118,43 +119,37 @@ export const useJobStore = create<JobState>((set, get) => ({
     }
   },
   addJob: async (job) => {
-    const tempId = Math.random().toString(36).substr(2, 9)
-    // Optimistic update
-    set((state) => ({
-      jobs: [
-        {
-          ...job,
-          id: tempId,
-          status: 'open',
-          createdAt: new Date(),
-          bids: [],
-        },
-        ...state.jobs,
-      ],
-    }))
+    const payload: any = {
+      title: job.title,
+      description: job.description,
+      type: job.pricingType || 'fixed',
+      listing_type: job.listingType,
+      category: job.category,
+      sub_category: job.subCategory,
+      location: job.location,
+      budget: job.budget,
+      owner_id: job.ownerId || null,
+      owner_name: job.ownerName || 'Visitante',
+      status: 'open',
+      photos: job.photos || [],
+      source: 'internal',
+    }
 
     const { data, error } = await supabase
       .from('jobs')
-      .insert([
-        {
-          title: job.title,
-          description: job.description,
-          type: job.type || 'fixed',
-          category: job.category,
-          sub_category: job.subCategory,
-          location: job.location,
-          budget: job.budget,
-          owner_id: job.ownerId || null,
-          owner_name: job.ownerName || 'Visitante',
-          status: 'open',
-          photos: job.photos || [],
-        },
-      ])
+      .insert([payload])
       .select()
 
-    if (!error && data) {
-      await get().fetchJobs()
+    if (error) {
+      throw error
     }
+
+    if (data && data.length > 0) {
+      await get().fetchJobs()
+      return data[0]
+    }
+
+    return null
   },
   getJob: (id) => get().jobs.find((j) => j.id === id),
   updateJob: async (id, job) => {
