@@ -44,7 +44,7 @@ import { PremiumConstructionModal } from '@/components/PremiumConstructionModal'
 export default function ConstructionDashboard() {
   const { projects } = useProjectStore()
   const { user } = useAuthStore()
-  const { t, formatCurrency, formatDate } = useLanguageStore()
+  const { t, formatCurrency, formatDate, currentLanguage } = useLanguageStore()
   const navigate = useNavigate()
 
   const [showPremiumModal, setShowPremiumModal] = useState(false)
@@ -273,13 +273,11 @@ export default function ConstructionDashboard() {
         <Card className="bg-emerald-50/50 border-emerald-100">
           <CardHeader className="pb-2">
             <CardTitle className="text-base text-emerald-800">
-              {t('construction.admin_access', undefined) ||
-                'Administrative Access'}
+              {t('construction.admin_access')}
             </CardTitle>
           </CardHeader>
           <CardContent className="text-sm text-emerald-700">
-            {t('construction.admin_access_desc', undefined) ||
-              'You have unlimited access to Construction Management as an administrator. No charges apply.'}
+            {t('construction.admin_access_desc')}
           </CardContent>
         </Card>
       )}
@@ -407,7 +405,10 @@ export default function ConstructionDashboard() {
                       {t('construction.start')}
                     </span>
                     <span className="font-medium">
-                      {formatDate(project.startDate, 'MM/dd/yyyy')}
+                      {formatDate(
+                        project.startDate,
+                        currentLanguage === 'en' ? 'MM/dd/yyyy' : 'dd/MM/yyyy',
+                      )}
                     </span>
                   </div>
                   <div>

@@ -9,6 +9,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { useNavigate } from 'react-router-dom'
 import { Crown } from 'lucide-react'
+import { useLanguageStore } from '@/stores/useLanguageStore'
 
 interface PremiumConstructionModalProps {
   open: boolean
@@ -20,6 +21,7 @@ export function PremiumConstructionModal({
   onOpenChange,
 }: PremiumConstructionModalProps) {
   const navigate = useNavigate()
+  const { t } = useLanguageStore()
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -29,12 +31,10 @@ export function PremiumConstructionModal({
             <Crown className="h-8 w-8 text-amber-600" />
           </div>
           <DialogTitle className="text-2xl font-bold text-center">
-            Recurso Premium
+            {t('premium.modal.title')}
           </DialogTitle>
           <DialogDescription className="text-center pt-2 text-base">
-            O módulo de Gestão de Obras permite vincular serviços a etapas,
-            gerenciar custos, materiais e equipes. Escolha um plano adequado ao
-            tamanho da sua obra para desbloquear este recurso.
+            {t('premium.modal.desc')}
           </DialogDescription>
         </DialogHeader>
         <DialogFooter className="flex-col sm:flex-col gap-2 mt-6">
@@ -45,14 +45,14 @@ export function PremiumConstructionModal({
               navigate('/construction/plans')
             }}
           >
-            Ver Planos de Gestão
+            {t('premium.modal.btn_view')}
           </Button>
           <Button
             variant="ghost"
             className="w-full"
             onClick={() => onOpenChange(false)}
           >
-            Agora não
+            {t('premium.modal.btn_cancel')}
           </Button>
         </DialogFooter>
       </DialogContent>

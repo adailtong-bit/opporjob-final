@@ -25,6 +25,8 @@ export const useLanguageStore = create<LanguageState>()(
       setLanguage: (lang) =>
         set({
           currentLanguage: lang,
+          currentCurrency:
+            lang === 'pt' ? 'BRL' : lang === 'es' ? 'EUR' : 'USD',
         }),
       setCurrency: (currency) => set({ currentCurrency: currency }),
       t: (key, params) => {

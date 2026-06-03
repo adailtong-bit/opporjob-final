@@ -186,7 +186,7 @@ export default function PostJob() {
         location: formattedLocation,
         budget: data.price || 0,
         ownerId: user.id,
-        ownerName: user.name || user.email || 'Visitante',
+        ownerName: user.name || user.email || t('nav.visitor'),
         photos: uploadedUrls,
       }
 
@@ -500,7 +500,7 @@ export default function PostJob() {
                       <FormLabel>{t('post.zip')}</FormLabel>
                       <FormControl>
                         <Input
-                          placeholder="00000-000"
+                          placeholder={t('settings.placeholder.zip')}
                           {...field}
                           onChange={handleZipChange}
                         />
@@ -584,7 +584,7 @@ export default function PostJob() {
                     <FormLabel>{t('post.contact_phone')}</FormLabel>
                     <FormControl>
                       <Input
-                        placeholder="(00) 00000-0000"
+                        placeholder={t('settings.placeholder.phone')}
                         {...field}
                         onChange={handlePhoneChange}
                         maxLength={15}
