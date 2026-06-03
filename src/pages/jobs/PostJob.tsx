@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react'
+import React, { useState, useRef, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -31,12 +31,10 @@ import { useJobStore } from '@/stores/useJobStore'
 import { CurrencyInput } from '@/components/CurrencyInput'
 import { supabase } from '@/lib/supabase/client'
 
-const jobSchema = z.object({
-  title: z.string().min(3, 'O título deve ter no mínimo 3 caracteres'),
-  description: z
-    .string()
-    .min(10, 'A descrição deve ter no mínimo 10 caracteres'),
-  category: z.string().min(1, 'Por favor, selecione uma categoria'),
+const baseSchema = z.object({
+  title: z.string(),
+  description: z.string(),
+  category: z.string(),
   subCategory: z.string().optional(),
   listingType: z.enum([
     'product',
@@ -49,15 +47,15 @@ const jobSchema = z.object({
   price: z.number().optional(),
   pricingType: z.string().optional(),
   phone: z.string().optional(),
-  zipCode: z.string().min(5, 'CEP inválido'),
-  street: z.string().min(2, 'Rua obrigatória'),
-  number: z.string().min(1, 'Número obrigatório'),
-  neighborhood: z.string().min(2, 'Bairro obrigatório'),
-  city: z.string().min(2, 'Cidade obrigatória'),
-  state: z.string().min(2, 'Estado obrigatório'),
+  zipCode: z.string(),
+  street: z.string(),
+  number: z.string(),
+  neighborhood: z.string(),
+  city: z.string(),
+  state: z.string(),
 })
 
-type JobFormValues = z.infer<typeof jobSchema>
+type JobFormValues = z.infer<typeof baseSchema>
 
 export default function PostJob() {
   const { currentLanguage, t } = useLanguageStore()
@@ -72,6 +70,34 @@ export default function PostJob() {
   const { categories } = useCategoryStore()
   const { user } = useAuthStore()
   const { addJob } = useJobStore()
+
+  const jobSchema = useMemo(
+    () =>
+      z.object({
+        title: z.string().min(3, t('val.min_title')),
+        description: z.string().min(10, t('val.min_desc')),
+        category: z.string().min(1, t('val.req_category')),
+        subCategory: z.string().optional(),
+        listingType: z.enum([
+          'product',
+          'donation',
+          'job',
+          'service',
+          'rental',
+          'desapego',
+        ]),
+        price: z.number().optional(),
+        pricingType: z.string().optional(),
+        phone: z.string().optional(),
+        zipCode: z.string().min(5, t('val.invalid_zip')),
+        street: z.string().min(2, t('val.req_street')),
+        number: z.string().min(1, t('val.req_number')),
+        neighborhood: z.string().min(2, t('val.req_neighborhood')),
+        city: z.string().min(2, t('val.req_city')),
+        state: z.string().min(2, t('val.req_state')),
+      }),
+    [t],
+  )
 
   const form = useForm<JobFormValues>({
     resolver: zodResolver(jobSchema),
@@ -97,8 +123,8 @@ export default function PostJob() {
   const watchCategory = form.watch('category')
   const isProductType = ['product', 'desapego'].includes(watchListingType)
   const locationLabel = isProductType
-    ? 'Endereço de Retirada'
-    : 'Local da Atividade'
+    ? t('post.pickup_address')
+    : t('post.activity_location')
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -204,7 +230,7 @@ export default function PostJob() {
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-10">
             <div className="space-y-6">
               <h3 className="text-lg font-semibold border-b pb-2">
-                1. Informações Principais
+                {t('post.section.main')}
               </h3>
 
               <FormField
@@ -219,17 +245,25 @@ export default function PostJob() {
                     >
                       <FormControl>
                         <SelectTrigger className="h-12">
-                          <SelectValue placeholder="Selecione..." />
+                          <SelectValue placeholder={t('general.select')} />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="product">Produto Novo</SelectItem>
-                        <SelectItem value="desapego">
-                          Desapego / Usado
+                        <SelectItem value="product">
+                          {t('post.type.product_new')}
                         </SelectItem>
-                        <SelectItem value="job">Vagas</SelectItem>
-                        <SelectItem value="service">Serviços</SelectItem>
-                        <SelectItem value="rental">Aluguéis</SelectItem>
+                        <SelectItem value="desapego">
+                          {t('post.type.used')}
+                        </SelectItem>
+                        <SelectItem value="job">
+                          {t('post.type.jobs')}
+                        </SelectItem>
+                        <SelectItem value="service">
+                          {t('post.type.services')}
+                        </SelectItem>
+                        <SelectItem value="rental">
+                          {t('post.type.rentals')}
+                        </SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -243,21 +277,25 @@ export default function PostJob() {
                   name="pricingType"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Forma de Cobrança</FormLabel>
+                      <FormLabel>{t('post.billing_type')}</FormLabel>
                       <Select
                         onValueChange={field.onChange}
                         defaultValue={field.value}
                       >
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Selecione..." />
+                            <SelectValue placeholder={t('general.select')} />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="fixed">Preço Fixo</SelectItem>
-                          <SelectItem value="negotiable">A Combinar</SelectItem>
+                          <SelectItem value="fixed">
+                            {t('post.pricing.fixed')}
+                          </SelectItem>
+                          <SelectItem value="negotiable">
+                            {t('post.pricing.negotiable')}
+                          </SelectItem>
                           <SelectItem value="hourly">
-                            Por Hora/Diária
+                            {t('post.pricing.hourly')}
                           </SelectItem>
                         </SelectContent>
                       </Select>
@@ -275,7 +313,7 @@ export default function PostJob() {
                         {watchListingType === 'rental'
                           ? t('post.rental_rate')
                           : isProductType
-                            ? 'Valor'
+                            ? t('post.sale_price')
                             : t('post.budget_est')}
                       </FormLabel>
                       <FormControl>
@@ -296,11 +334,11 @@ export default function PostJob() {
                 name="title"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Título do Anúncio</FormLabel>
+                    <FormLabel>{t('post.ad_title')}</FormLabel>
                     <FormControl>
                       <Input
                         className="h-11"
-                        placeholder="Ex: iPhone 12 Pro Max 256GB"
+                        placeholder={t('post.title_placeholder')}
                         {...field}
                       />
                     </FormControl>
@@ -315,7 +353,7 @@ export default function PostJob() {
                   name="category"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Categoria</FormLabel>
+                      <FormLabel>{t('post.category')}</FormLabel>
                       <Select
                         onValueChange={(val) => {
                           field.onChange(val)
@@ -325,7 +363,7 @@ export default function PostJob() {
                       >
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Selecione..." />
+                            <SelectValue placeholder={t('general.select')} />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
@@ -348,7 +386,7 @@ export default function PostJob() {
                   name="subCategory"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Subcategoria</FormLabel>
+                      <FormLabel>{t('post.subcategory')}</FormLabel>
                       <Select
                         onValueChange={field.onChange}
                         value={field.value}
@@ -356,7 +394,7 @@ export default function PostJob() {
                       >
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Selecione..." />
+                            <SelectValue placeholder={t('general.select')} />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
@@ -383,11 +421,11 @@ export default function PostJob() {
                 name="description"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Descrição Detalhada</FormLabel>
+                    <FormLabel>{t('post.detailed_desc')}</FormLabel>
                     <FormControl>
                       <Textarea
                         className="min-h-[120px] resize-y"
-                        placeholder="Descreva todos os detalhes, condições, especificações..."
+                        placeholder={t('post.desc_placeholder')}
                         {...field}
                       />
                     </FormControl>
@@ -399,7 +437,7 @@ export default function PostJob() {
 
             <div className="space-y-6">
               <h3 className="text-lg font-semibold border-b pb-2">
-                2. Galeria de Fotos
+                {t('post.section.photos')}
               </h3>
               <div className="space-y-4">
                 <div
@@ -408,10 +446,10 @@ export default function PostJob() {
                 >
                   <UploadCloud className="h-10 w-10 text-muted-foreground mx-auto mb-4" />
                   <p className="text-sm font-medium">
-                    Clique aqui para enviar fotos
+                    {t('post.photos.click_to_upload')}
                   </p>
                   <p className="text-xs text-muted-foreground mt-1">
-                    Imagens nos formatos PNG ou JPG. Máx 5MB.
+                    {t('post.photos.format_info')}
                   </p>
                   <input
                     type="file"
@@ -459,7 +497,7 @@ export default function PostJob() {
                   name="zipCode"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>CEP</FormLabel>
+                      <FormLabel>{t('post.zip')}</FormLabel>
                       <FormControl>
                         <Input
                           placeholder="00000-000"
@@ -476,7 +514,7 @@ export default function PostJob() {
                   name="street"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Rua / Logradouro</FormLabel>
+                      <FormLabel>{t('post.street')}</FormLabel>
                       <FormControl>
                         <Input {...field} />
                       </FormControl>
@@ -489,7 +527,7 @@ export default function PostJob() {
                   name="number"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Número</FormLabel>
+                      <FormLabel>{t('post.number')}</FormLabel>
                       <FormControl>
                         <Input {...field} />
                       </FormControl>
@@ -502,7 +540,7 @@ export default function PostJob() {
                   name="neighborhood"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Bairro</FormLabel>
+                      <FormLabel>{t('post.neighborhood')}</FormLabel>
                       <FormControl>
                         <Input {...field} />
                       </FormControl>
@@ -515,7 +553,7 @@ export default function PostJob() {
                   name="city"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Cidade</FormLabel>
+                      <FormLabel>{t('post.city')}</FormLabel>
                       <FormControl>
                         <Input {...field} />
                       </FormControl>
@@ -528,7 +566,7 @@ export default function PostJob() {
                   name="state"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Estado</FormLabel>
+                      <FormLabel>{t('post.state')}</FormLabel>
                       <FormControl>
                         <Input {...field} />
                       </FormControl>
@@ -543,7 +581,7 @@ export default function PostJob() {
                 name="phone"
                 render={({ field }) => (
                   <FormItem className="mt-4">
-                    <FormLabel>Telefone para Contato (Opcional)</FormLabel>
+                    <FormLabel>{t('post.contact_phone')}</FormLabel>
                     <FormControl>
                       <Input
                         placeholder="(00) 00000-0000"
@@ -563,7 +601,7 @@ export default function PostJob() {
               className="w-full h-14 text-lg font-bold"
               disabled={isSubmitting}
             >
-              {isSubmitting ? 'Publicando...' : 'Publicar Anúncio'}
+              {isSubmitting ? t('post.submitting') : t('post.submit_ad')}
             </Button>
           </form>
         </Form>
