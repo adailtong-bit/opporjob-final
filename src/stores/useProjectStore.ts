@@ -240,6 +240,14 @@ export interface ProjectInvoice {
   status: 'generated' | 'paid'
 }
 
+export interface ProjectUpdate {
+  id: string
+  title: string
+  description?: string
+  photos: string[]
+  createdAt: Date
+}
+
 export interface ProjectMessage {
   id: string
   senderId: string
@@ -328,6 +336,8 @@ export interface Project {
   complianceDocuments?: ComplianceDocument[]
   alertLeadTimeDays?: number
   ledgerEntries?: ProjectLedgerEntry[]
+  photos?: string[]
+  updates?: ProjectUpdate[]
 }
 
 interface ProjectState {
@@ -353,6 +363,8 @@ interface ProjectState {
       | 'complianceDocuments'
       | 'alertLeadTimeDays'
       | 'ledgerEntries'
+      | 'photos'
+      | 'updates'
     >,
   ) => void
   updateProject: (id: string, data: Partial<Project>) => void
@@ -579,6 +591,10 @@ interface ProjectState {
   ) => void
   deleteLedgerEntry: (projectId: string, id: string) => void
   approveLedgerEntry: (projectId: string, id: string) => void
+  addProjectUpdate: (
+    projectId: string,
+    update: Omit<ProjectUpdate, 'id' | 'createdAt'>,
+  ) => void
 }
 
 export const DEFAULT_STAGES_TEMPLATE = [
@@ -692,6 +708,8 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
           alertLeadTimeDays: 30,
           ledgerEntries: [],
           preferredVendorId: undefined,
+          photos: project.photos || [],
+          updates: [],
         },
       ],
     })),
@@ -1764,6 +1782,24 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
               ledgerEntries: (p.ledgerEntries || []).map((l) =>
                 l.id === id ? { ...l, executionStatus: 'approved' } : l,
               ),
+            }
+          : p,
+      ),
+    })),
+  addProjectUpdate: (projectId, update) =>
+    set((state) => ({
+      projects: state.projects.map((p) =>
+        p.id === projectId
+          ? {
+              ...p,
+              updates: [
+                ...(p.updates || []),
+                {
+                  ...update,
+                  id: Math.random().toString(36).substr(2, 9),
+                  createdAt: new Date(),
+                },
+              ],
             }
           : p,
       ),

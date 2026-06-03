@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import {
   useProjectStore,
@@ -31,6 +31,8 @@ import {
   MapPin,
   Globe,
   CreditCard,
+  Upload,
+  X,
 } from 'lucide-react'
 import { addDays } from 'date-fns'
 import { cn } from '@/lib/utils'
@@ -77,7 +79,10 @@ export default function NewProject() {
       city: '',
       state: '',
     },
+    photos: [] as string[],
   })
+
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     supabase
@@ -178,6 +183,42 @@ export default function NewProject() {
     }
   }, [user, searchParams])
 
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || e.target.files.length === 0) return
+    const files = Array.from(e.target.files)
+    setLoading(true)
+    const newPhotos: string[] = []
+
+    for (const file of files) {
+      if (!file.type.startsWith('image/')) continue
+      const fileExt = file.name.split('.').pop()
+      const fileName = `${Math.random().toString(36).substring(2, 15)}.${fileExt}`
+      const filePath = `${user?.id || 'guest'}/${fileName}`
+
+      const { error } = await supabase.storage
+        .from('project-images')
+        .upload(filePath, file)
+      if (!error) {
+        const { data } = supabase.storage
+          .from('project-images')
+          .getPublicUrl(filePath)
+        newPhotos.push(data.publicUrl)
+      } else {
+        newPhotos.push(URL.createObjectURL(file))
+      }
+    }
+
+    setFormData((prev) => ({ ...prev, photos: [...prev.photos, ...newPhotos] }))
+    setLoading(false)
+  }
+
+  const removePhoto = (index: number) => {
+    setFormData((prev) => ({
+      ...prev,
+      photos: prev.photos.filter((_, i) => i !== index),
+    }))
+  }
+
   const handleAddressChange = (
     field: keyof typeof formData.address,
     value: string,
@@ -269,6 +310,7 @@ export default function NewProject() {
       stages,
       inspections: defaultInspections,
       dailyLogs: [],
+      photos: formData.photos,
     }
 
     if (!hasActivePlan) {
@@ -612,6 +654,61 @@ export default function NewProject() {
                   setFormData({ ...formData, description: e.target.value })
                 }
               />
+            </div>
+
+            <div className="border rounded-lg p-4 bg-muted/20 space-y-4">
+              <div className="flex items-center gap-2 mb-2">
+                <Upload className="h-4 w-4 text-primary" />
+                <h3 className="font-semibold text-sm">
+                  {t('proj.new.photos_title') || 'Project Photos'}
+                </h3>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {t('proj.new.photos_subtitle') || 'Initial Photos'}
+              </p>
+
+              {formData.photos.length > 0 && (
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mt-2">
+                  {formData.photos.map((photo, index) => (
+                    <div
+                      key={index}
+                      className="relative group aspect-square rounded-md overflow-hidden border"
+                    >
+                      <img
+                        src={photo}
+                        alt="Upload preview"
+                        className="object-cover w-full h-full"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removePhoto(index)}
+                        className="absolute top-1 right-1 bg-black/50 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <div
+                className="mt-4 border-2 border-dashed rounded-lg p-6 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-muted/50 transition-colors"
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <Upload className="h-6 w-6 text-muted-foreground mb-2" />
+                <p className="text-sm font-medium">
+                  {t('proj.new.photos_placeholder') ||
+                    'Upload or drag and drop images here'}
+                </p>
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  className="hidden"
+                  multiple
+                  accept="image/*"
+                  onChange={handlePhotoUpload}
+                />
+              </div>
             </div>
 
             {!hasActivePlan && (

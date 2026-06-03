@@ -61,6 +61,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { ProjectPurchasing } from '@/components/construction/ProjectPurchasing'
+import { ProjectUpdates } from '@/components/construction/ProjectUpdates'
 
 export default function ProjectDetail() {
   const { id } = useParams<{ id: string }>()
@@ -301,6 +302,9 @@ export default function ProjectDetail() {
                 <SelectItem value="reports">
                   {t('proj.reports.title')}
                 </SelectItem>
+                <SelectItem value="updates">
+                  {t('proj.updates.title') || 'Updates'}
+                </SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -374,6 +378,12 @@ export default function ProjectDetail() {
               className="whitespace-nowrap px-4 py-2.5 text-sm"
             >
               {t('proj.reports.title')}
+            </TabsTrigger>
+            <TabsTrigger
+              value="updates"
+              className="whitespace-nowrap px-4 py-2.5 text-sm"
+            >
+              {t('proj.updates.title') || 'Updates'}
             </TabsTrigger>
           </TabsList>
         </div>
@@ -778,6 +788,14 @@ export default function ProjectDetail() {
           className="w-full min-w-0 animate-fade-in overflow-x-auto"
         >
           <ProjectApprovalWorkflow projectId={project.id} />
+        </TabsContent>
+
+        {/* Updates Tab */}
+        <TabsContent
+          value="updates"
+          className="w-full min-w-0 animate-fade-in overflow-x-auto"
+        >
+          <ProjectUpdates projectId={project.id} />
         </TabsContent>
       </Tabs>
 
