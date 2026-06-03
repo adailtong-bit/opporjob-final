@@ -13,7 +13,7 @@ Deno.serve(async (req: Request) => {
 
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
     const stripeKey = Deno.env.get('STRIPE_SECRET_KEY') ?? ''
@@ -84,12 +84,9 @@ Deno.serve(async (req: Request) => {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         })
       } else {
-        return new Response(
-          JSON.stringify({ success: false, status: session.payment_status }),
-          {
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          },
-        )
+        return new Response(JSON.stringify({ success: false, status: session.payment_status }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
       }
     }
 
