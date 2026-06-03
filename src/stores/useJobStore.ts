@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { supabase } from '@/lib/supabase/client'
+import { useNotificationStore } from './useNotificationStore'
 
 export interface Bid {
   id: string
@@ -255,7 +256,8 @@ export const useJobStore = create<JobState>((set, get) => ({
           : j,
       ),
     }))
-    await supabase
+
+    const { data: updatedJob } = await supabase
       .from('jobs')
       .update({
         status: 'completed',
@@ -263,6 +265,30 @@ export const useJobStore = create<JobState>((set, get) => ({
         completion_comments: payload.completionComments,
       })
       .eq('id', jobId)
+      .select('id, owner_id, title')
+      .single()
+
+    if (updatedJob && updatedJob.owner_id) {
+      const message = `Your job '${updatedJob.title}' has been completed. A new invoice is ready for payment.`
+
+      useNotificationStore.getState().addNotification({
+        userId: updatedJob.owner_id,
+        title: 'Job Completed',
+        message: message,
+        type: 'info',
+        link: `/jobs/${jobId}`,
+      })
+
+      supabase.functions.invoke('send-push', {
+        body: {
+          userId: updatedJob.owner_id,
+          title: 'Job Completed',
+          body: message,
+          url: `/jobs/${jobId}`,
+        },
+      })
+    }
+
     await get().fetchJobs()
   },
   openDispute: async (jobId) => {

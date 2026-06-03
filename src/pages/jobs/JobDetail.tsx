@@ -1,7 +1,8 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { supabase } from '@/lib/supabase/client'
 import { useJobStore } from '@/stores/useJobStore'
+import { useInvoices } from '@/hooks/use-invoices'
 import { useAuthStore } from '@/stores/useAuthStore'
 import { useMessageStore } from '@/stores/useMessageStore'
 import { useNotificationStore } from '@/stores/useNotificationStore'
@@ -59,6 +60,7 @@ export default function JobDetail() {
   const { t, formatCurrency, formatDate } = useLanguageStore()
 
   const job = getJob(id!)
+  const { invoices } = useInvoices(user?.id)
   const [bidAmount, setBidAmount] = useState('')
   const [bidDescription, setBidDescription] = useState('')
   const [chatMessage, setChatMessage] = useState('')
@@ -73,6 +75,56 @@ export default function JobDetail() {
   const [executionComments, setExecutionComments] = useState('')
   const [uploadingExecutionFiles, setUploadingExecutionFiles] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const [hasRated, setHasRated] = useState(false)
+  const [rating, setRating] = useState(0)
+  const [ratingComment, setRatingComment] = useState('')
+  const [submittingRating, setSubmittingRating] = useState(false)
+
+  const jobInvoice = invoices.find(
+    (inv) => inv.job_id === job?.id && inv.type === 'service',
+  )
+
+  useEffect(() => {
+    const checkReview = async () => {
+      if (user && job?.id) {
+        const { data } = await supabase
+          .from('reviews')
+          .select('id')
+          .eq('job_id', job.id)
+          .eq('reviewer_id', user.id)
+          .maybeSingle()
+        if (data) {
+          setHasRated(true)
+        }
+      }
+    }
+    checkReview()
+  }, [user, job?.id])
+
+  const handleSubmitRating = async () => {
+    if (rating < 1 || rating > 5) {
+      toast({ variant: 'destructive', title: 'Select 1 to 5 stars' })
+      return
+    }
+    setSubmittingRating(true)
+    const targetId = acceptedBid?.executorId || ''
+    const { error } = await supabase.from('reviews').insert({
+      job_id: job!.id,
+      reviewer_id: user!.id,
+      target_id: targetId,
+      rating,
+      comment: ratingComment,
+    })
+
+    setSubmittingRating(false)
+    if (!error) {
+      setHasRated(true)
+      toast({ title: t('job.action.already_rated') })
+    } else {
+      toast({ variant: 'destructive', title: 'Error' })
+    }
+  }
 
   if (!job)
     return (
@@ -413,7 +465,103 @@ export default function JobDetail() {
             </Card>
           )}
 
-          {(isOwner || isExecutor) &&
+          {isOwner && job.status === 'completed' && job.completionComments && (
+            <Card className="border-emerald-200 bg-emerald-50/50">
+              <CardHeader>
+                <CardTitle className="text-emerald-800 flex items-center gap-2">
+                  <CheckCircle className="h-5 w-5" />{' '}
+                  {t('job.execution.review_evidence')}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-1">
+                  <p className="text-sm font-semibold text-emerald-900">
+                    {t('job.execution.provider_comments')}
+                  </p>
+                  <p className="text-sm text-emerald-900 whitespace-pre-line bg-white/50 p-3 rounded-md border border-emerald-100 shadow-sm">
+                    {job.completionComments}
+                  </p>
+                </div>
+
+                {job.completionPhotos && job.completionPhotos.length > 0 && (
+                  <div className="space-y-1">
+                    <p className="text-sm font-semibold text-emerald-900">
+                      {t('job.execution.completion_photos')}
+                    </p>
+                    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
+                      {job.completionPhotos.map((photo, i) => (
+                        <a
+                          key={i}
+                          href={photo}
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          <img
+                            src={photo}
+                            alt={`Completion ${i}`}
+                            className="w-full aspect-square object-cover rounded border border-emerald-100 hover:opacity-80 transition-opacity shadow-sm"
+                          />
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <div className="pt-4 border-t border-emerald-200/60 mt-4 flex flex-col gap-4">
+                  {jobInvoice && jobInvoice.status !== 'paid' ? (
+                    <Button asChild className="w-full sm:w-auto self-start">
+                      <Link
+                        to={`/payment/checkout/${job.id}/${acceptedBid?.id}`}
+                      >
+                        <DollarSign className="mr-2 h-4 w-4" />{' '}
+                        {t('job.action.pay_invoice')}
+                      </Link>
+                    </Button>
+                  ) : jobInvoice &&
+                    jobInvoice.status === 'paid' &&
+                    !hasRated ? (
+                    <div className="bg-white p-5 rounded-lg border border-emerald-100 shadow-sm space-y-3">
+                      <h4 className="font-semibold text-emerald-900">
+                        {t('job.rating.title')}
+                      </h4>
+                      <div className="flex gap-2">
+                        {[1, 2, 3, 4, 5].map((star) => (
+                          <button
+                            key={star}
+                            type="button"
+                            onClick={() => setRating(star)}
+                            className={`text-3xl ${rating >= star ? 'text-yellow-400' : 'text-gray-200'} hover:scale-110 transition-transform`}
+                          >
+                            ★
+                          </button>
+                        ))}
+                      </div>
+                      <Textarea
+                        placeholder={t('job.rating.comment')}
+                        value={ratingComment}
+                        onChange={(e) => setRatingComment(e.target.value)}
+                        className="bg-white"
+                        rows={2}
+                      />
+                      <Button
+                        onClick={handleSubmitRating}
+                        disabled={submittingRating || rating === 0}
+                      >
+                        {t('job.rating.submit')}
+                      </Button>
+                    </div>
+                  ) : hasRated ? (
+                    <div className="bg-white p-3 rounded-lg border border-emerald-100 flex items-center gap-2 text-emerald-700 shadow-sm w-fit font-medium">
+                      <CheckCircle className="h-5 w-5" />{' '}
+                      {t('job.action.already_rated')}
+                    </div>
+                  ) : null}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {isExecutor &&
             job.status === 'completed' &&
             job.completionComments && (
               <Card className="border-emerald-200 bg-emerald-50/50">
@@ -424,7 +572,7 @@ export default function JobDetail() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <p className="text-sm text-emerald-900 whitespace-pre-line">
+                  <p className="text-sm text-emerald-900 whitespace-pre-line bg-white/50 p-3 rounded-md border border-emerald-100 shadow-sm">
                     {job.completionComments}
                   </p>
                   {job.completionPhotos && job.completionPhotos.length > 0 && (
