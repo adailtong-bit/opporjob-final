@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
+import { supabase } from '@/lib/supabase/client'
 import { useJobStore } from '@/stores/useJobStore'
 import { useAuthStore } from '@/stores/useAuthStore'
 import { useMessageStore } from '@/stores/useMessageStore'
@@ -30,14 +31,23 @@ import {
   CalendarDays,
   Settings2,
   Lock,
+  Upload,
+  X,
+  Loader2,
 } from 'lucide-react'
 import { useLanguageStore } from '@/stores/useLanguageStore'
 
 export default function JobDetail() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-  const { getJob, addBid, completeJob, openDispute, updateJobStatus } =
-    useJobStore()
+  const {
+    getJob,
+    addBid,
+    completeJob,
+    openDispute,
+    updateJobStatus,
+    finalizeJob,
+  } = useJobStore()
   const { user, setPendingEvaluation } = useAuthStore()
   const {
     conversations,
@@ -58,6 +68,11 @@ export default function JobDetail() {
       text: 'Chat seguro iniciado. O pagamento está protegido em Escrow.',
     },
   ])
+
+  const [executionPhotos, setExecutionPhotos] = useState<string[]>([])
+  const [executionComments, setExecutionComments] = useState('')
+  const [uploadingExecutionFiles, setUploadingExecutionFiles] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   if (!job)
     return (
@@ -394,6 +409,165 @@ export default function JobDetail() {
                     Fechado / Indisponível
                   </Button>
                 </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {(isOwner || isExecutor) &&
+            job.status === 'completed' &&
+            job.completionComments && (
+              <Card className="border-emerald-200 bg-emerald-50/50">
+                <CardHeader>
+                  <CardTitle className="text-emerald-800 flex items-center gap-2">
+                    <CheckCircle className="h-5 w-5" />{' '}
+                    {t('job.execution.completed_details')}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <p className="text-sm text-emerald-900 whitespace-pre-line">
+                    {job.completionComments}
+                  </p>
+                  {job.completionPhotos && job.completionPhotos.length > 0 && (
+                    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
+                      {job.completionPhotos.map((photo, i) => (
+                        <a
+                          key={i}
+                          href={photo}
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          <img
+                            src={photo}
+                            alt={`Completion ${i}`}
+                            className="w-full aspect-square object-cover rounded border hover:opacity-80 transition-opacity"
+                          />
+                        </a>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+
+          {isExecutor && job.status === 'in_progress' && (
+            <Card className="border-primary shadow-sm bg-primary/5">
+              <CardHeader>
+                <CardTitle>{t('job.execution.workspace')}</CardTitle>
+                <CardDescription>
+                  {t('job.execution.finalize_desc')}
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">
+                    {t('job.execution.comments')}
+                  </label>
+                  <Textarea
+                    placeholder={t('job.execution.comments_placeholder')}
+                    value={executionComments}
+                    onChange={(e) => setExecutionComments(e.target.value)}
+                    rows={3}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">
+                    {t('job.execution.photos')}
+                  </label>
+                  {executionPhotos.length > 0 && (
+                    <div className="grid grid-cols-3 sm:grid-cols-4 gap-3 mb-2">
+                      {executionPhotos.map((photo, index) => (
+                        <div
+                          key={index}
+                          className="relative group aspect-square rounded-md overflow-hidden border bg-muted"
+                        >
+                          <img
+                            src={photo}
+                            alt="Upload preview"
+                            className="object-cover w-full h-full"
+                          />
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setExecutionPhotos((prev) =>
+                                prev.filter((_, i) => i !== index),
+                              )
+                            }
+                            className="absolute top-1 right-1 bg-black/60 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  <div
+                    className="border-2 border-dashed rounded-lg p-6 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-muted/50 transition-colors"
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    {uploadingExecutionFiles ? (
+                      <Loader2 className="h-6 w-6 text-primary animate-spin mb-2" />
+                    ) : (
+                      <Upload className="h-6 w-6 text-muted-foreground mb-2" />
+                    )}
+                    <p className="text-sm text-muted-foreground">
+                      {t('job.execution.upload_photos')}
+                    </p>
+                    <input
+                      type="file"
+                      ref={fileInputRef}
+                      className="hidden"
+                      multiple
+                      accept="image/*"
+                      onChange={async (e) => {
+                        if (!e.target.files || e.target.files.length === 0)
+                          return
+                        const files = Array.from(e.target.files)
+                        setUploadingExecutionFiles(true)
+                        const newPhotos: string[] = []
+                        for (const file of files) {
+                          if (!file.type.startsWith('image/')) continue
+                          const fileExt = file.name.split('.').pop()
+                          const fileName = `${Math.random().toString(36).substring(2, 15)}.${fileExt}`
+                          const filePath = `${user?.id || 'guest'}/${fileName}`
+                          const { error } = await supabase.storage
+                            .from('project-images')
+                            .upload(filePath, file)
+                          if (!error) {
+                            const { data } = supabase.storage
+                              .from('project-images')
+                              .getPublicUrl(filePath)
+                            newPhotos.push(data.publicUrl)
+                          }
+                        }
+                        setExecutionPhotos((prev) => [...prev, ...newPhotos])
+                        setUploadingExecutionFiles(false)
+                      }}
+                    />
+                  </div>
+                </div>
+                <Button
+                  className="w-full"
+                  disabled={
+                    uploadingExecutionFiles || !executionComments.trim()
+                  }
+                  onClick={async () => {
+                    if (!executionComments.trim()) {
+                      toast({
+                        variant: 'destructive',
+                        title: t('val.required'),
+                      })
+                      return
+                    }
+                    await finalizeJob(job.id, {
+                      completionPhotos: executionPhotos,
+                      completionComments: executionComments,
+                    })
+                    toast({ title: t('job.execution.success') })
+                  }}
+                >
+                  <CheckCircle className="mr-2 h-4 w-4" />{' '}
+                  {t('job.execution.finalize')}
+                </Button>
               </CardContent>
             </Card>
           )}

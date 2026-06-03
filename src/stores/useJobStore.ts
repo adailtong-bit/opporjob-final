@@ -55,6 +55,8 @@ export interface Job {
   model?: string
   source?: string
   externalId?: string
+  completionPhotos?: string[]
+  completionComments?: string
 }
 
 interface JobState {
@@ -68,6 +70,10 @@ interface JobState {
   addBid: (jobId: string, bid: any) => Promise<void>
   acceptBid: (jobId: string, bidId: string) => Promise<void>
   completeJob: (jobId: string) => Promise<void>
+  finalizeJob: (
+    jobId: string,
+    payload: { completionPhotos: string[]; completionComments: string },
+  ) => Promise<void>
   openDispute: (jobId: string) => Promise<void>
   updateJobStatus: (jobId: string, status: Job['status']) => Promise<void>
 }
@@ -102,6 +108,8 @@ export const useJobStore = create<JobState>((set, get) => ({
         photos: d.photos || [],
         listingType: d.listing_type,
         acceptedBidId: d.accepted_bid_id,
+        completionPhotos: d.completion_photos || [],
+        completionComments: d.completion_comments,
         createdAt: new Date(d.created_at),
         bids: (d.bids || []).map((b: any) => ({
           id: b.id,
@@ -232,6 +240,29 @@ export const useJobStore = create<JobState>((set, get) => ({
       ),
     }))
     await supabase.from('jobs').update({ status: 'completed' }).eq('id', jobId)
+    await get().fetchJobs()
+  },
+  finalizeJob: async (jobId, payload) => {
+    set((state) => ({
+      jobs: state.jobs.map((j) =>
+        j.id === jobId
+          ? {
+              ...j,
+              status: 'completed',
+              completionPhotos: payload.completionPhotos,
+              completionComments: payload.completionComments,
+            }
+          : j,
+      ),
+    }))
+    await supabase
+      .from('jobs')
+      .update({
+        status: 'completed',
+        completion_photos: payload.completionPhotos,
+        completion_comments: payload.completionComments,
+      })
+      .eq('id', jobId)
     await get().fetchJobs()
   },
   openDispute: async (jobId) => {
