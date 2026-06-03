@@ -177,10 +177,12 @@ export function MainSidebar() {
       ],
     })
 
-    sections.push({
-      label: t('nav.test_tools'),
-      items: [{ title: t('nav.test_hub'), url: '/testing', icon: TestTube2 }],
-    })
+    if (isAdmin) {
+      sections.push({
+        label: t('nav.test_tools'),
+        items: [{ title: t('nav.test_hub'), url: '/testing', icon: TestTube2 }],
+      })
+    }
   }
 
   return (

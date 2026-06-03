@@ -1,3 +1,6 @@
+import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { supabase } from '@/lib/supabase/client'
 import { useAuthStore } from '@/stores/useAuthStore'
 import { Button } from '@/components/ui/button'
 import {
@@ -34,6 +37,39 @@ export default function TestingHub() {
   const { login, isAuthenticated, logout } = useAuthStore()
   const { jobs } = useJobStore()
   const { toast } = useToast()
+  const navigate = useNavigate()
+  const [isCheckingAdmin, setIsCheckingAdmin] = useState(true)
+
+  useEffect(() => {
+    const verifyAdmin = async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession()
+      if (!session) {
+        navigate('/', { replace: true })
+        return
+      }
+
+      const { data } = await supabase
+        .from('profiles')
+        .select('is_admin')
+        .eq('id', session.user.id)
+        .single()
+
+      const isAdmin =
+        data?.is_admin ||
+        session.user.email === 'adailtong@gmail.com' ||
+        session.user.email?.includes('admin')
+
+      if (!isAdmin) {
+        navigate('/', { replace: true })
+      } else {
+        setIsCheckingAdmin(false)
+      }
+    }
+
+    verifyAdmin()
+  }, [navigate])
 
   const handleTestLogin = async (email: string) => {
     if (isAuthenticated) logout()
@@ -91,6 +127,14 @@ export default function TestingHub() {
 
   const activeJobs = jobs.filter((j) => j.status === 'open')
   const historyJobs = jobs.filter((j) => j.status === 'completed')
+
+  if (isCheckingAdmin) {
+    return (
+      <div className="flex items-center justify-center min-h-[50vh]">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-8 max-w-6xl mx-auto py-8 px-4">

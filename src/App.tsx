@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import {
   BrowserRouter,
   Routes,
@@ -217,14 +217,31 @@ const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
 
 const AdminRoute = ({ children }: { children: JSX.Element }) => {
   const { user, loading } = useAuth()
+  const [isAdmin, setIsAdmin] = useState<boolean | null>(null)
 
-  if (loading) return null
+  useEffect(() => {
+    if (!loading && user) {
+      supabase
+        .from('profiles')
+        .select('is_admin')
+        .eq('id', user.id)
+        .single()
+        .then(({ data }) => {
+          setIsAdmin(
+            !!data?.is_admin ||
+              user.email === 'adailtong@gmail.com' ||
+              !!user.email?.includes('admin'),
+          )
+        })
+    } else if (!loading && !user) {
+      setIsAdmin(false)
+    }
+  }, [user, loading])
 
-  const isAdmin =
-    user?.email === 'adailtong@gmail.com' || user?.email?.includes('admin')
+  if (loading || isAdmin === null) return null
 
   if (!isAdmin) {
-    return <Navigate to="/dashboard" replace />
+    return <Navigate to="/" replace />
   }
 
   return children
@@ -744,7 +761,14 @@ const App = () => {
                 <Route path="/reports" element={<Reports />} />
                 <Route path="/team" element={<Team />} />
                 <Route path="/settings" element={<Settings />} />
-                <Route path="/testing" element={<TestingHub />} />
+                <Route
+                  path="/testing"
+                  element={
+                    <AdminRoute>
+                      <TestingHub />
+                    </AdminRoute>
+                  }
+                />
                 <Route path="/messages" element={<Messages />} />
               </Route>
             </Route>
