@@ -76,7 +76,7 @@ export default function EquipmentManager() {
     type: 'Pesado',
     serialNumber: '',
     purchaseDate: new Date(),
-    location: 'Pátio Central',
+    location: t('eq.central_warehouse'),
     rentalCondition: '',
     rentalValue: 0,
     annualDepreciation: 0,
@@ -346,12 +346,10 @@ export default function EquipmentManager() {
         <Card className="border-l-4 border-l-yellow-500 bg-yellow-50/50">
           <CardHeader className="py-4">
             <CardTitle className="text-base flex items-center gap-2 text-yellow-700">
-              <AlertTriangle className="h-5 w-5" /> Máquinas precisando de
-              Manutenção
+              <AlertTriangle className="h-5 w-5" /> {t('eq.maintenance.alert')}
             </CardTitle>
             <CardDescription>
-              {maintenanceAlerts.length} máquina(s) com manutenção preventiva
-              próxima ou atrasada.
+              {t('eq.maintenance.desc', { count: maintenanceAlerts.length })}
             </CardDescription>
           </CardHeader>
         </Card>
@@ -361,7 +359,7 @@ export default function EquipmentManager() {
         <div className="relative flex-1">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Buscar máquinas..."
+            placeholder={t('eq.search')}
             className="pl-9"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -372,10 +370,14 @@ export default function EquipmentManager() {
             <SelectValue placeholder="Filtrar por Status" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Todas as Máquinas</SelectItem>
-            <SelectItem value="available">Disponível</SelectItem>
-            <SelectItem value="in_use">Alugado / Em Obra</SelectItem>
-            <SelectItem value="maintenance">Manutenção</SelectItem>
+            <SelectItem value="all">{t('eq.all_machines')}</SelectItem>
+            <SelectItem value="available">
+              {t('eq.status.available')}
+            </SelectItem>
+            <SelectItem value="in_use">{t('eq.status.in_use')}</SelectItem>
+            <SelectItem value="maintenance">
+              {t('eq.status.maintenance')}
+            </SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -396,10 +398,10 @@ export default function EquipmentManager() {
                   }
                 >
                   {eq.status === 'available'
-                    ? 'Disponível (Pátio)'
+                    ? t('eq.status.available')
                     : eq.status === 'in_use'
-                      ? 'Em Obra (Allocated)'
-                      : 'Em Manutenção'}
+                      ? t('eq.status.in_use')
+                      : t('eq.status.maintenance')}
                 </Badge>
               </div>
               <CardTitle className="mt-2 flex items-center gap-2">
@@ -424,7 +426,7 @@ export default function EquipmentManager() {
               </div>
               {eq.status === 'in_use' && (
                 <div className="text-xs bg-blue-50 p-2 rounded text-blue-800">
-                  Projeto Alocado: <strong>{eq.projectName}</strong>
+                  {t('eq.allocated_project')}: <strong>{eq.projectName}</strong>
                 </div>
               )}
               {eq.rentalValue ? (
@@ -435,7 +437,8 @@ export default function EquipmentManager() {
               ) : null}
               <div className="flex items-center gap-2 text-sm text-muted-foreground border-t pt-2">
                 <CalendarIcon className="h-4 w-4" />
-                Próx. Manutenção: {formatDate(eq.nextMaintenance, 'dd/MM/yyyy')}
+                {t('eq.next_maint')}:{' '}
+                {formatDate(eq.nextMaintenance, 'dd/MM/yyyy')}
                 {isBefore(eq.nextMaintenance, new Date()) && (
                   <AlertTriangle className="h-4 w-4 text-red-500" />
                 )}

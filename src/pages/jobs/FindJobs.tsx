@@ -204,26 +204,23 @@ export default function FindJobs() {
       <AdSection segment="search" />
 
       <div className="flex flex-col gap-2">
-        <h1 className="text-3xl font-bold tracking-tight">
-          Buscar Oportunidades
-        </h1>
-        <p className="text-muted-foreground">
-          Encontre vagas, serviços e tarefas profissionais.
-        </p>
+        <h1 className="text-3xl font-bold tracking-tight">{t('find.title')}</h1>
+        <p className="text-muted-foreground">{t('find.desc')}</p>
 
         {isBasicUser && (
           <div className="bg-muted p-3 rounded-md text-sm border flex items-center gap-2 mt-2">
             <Zap className="h-4 w-4 text-muted-foreground shrink-0" />
             <span>
-              Você está no plano <strong>Básico</strong>. Vagas prioritárias e
-              recém-publicadas (últimas 24h) ficam ocultas.{' '}
+              <span
+                dangerouslySetInnerHTML={{ __html: t('find.basic_plan_alert') }}
+              />{' '}
               <Link
                 to="/subscription"
                 className="text-primary hover:underline font-semibold"
               >
-                Faça upgrade
+                {t('find.upgrade')}
               </Link>{' '}
-              para ter acesso imediato!
+              {t('find.basic_plan_alert_suffix')}
             </span>
           </div>
         )}
