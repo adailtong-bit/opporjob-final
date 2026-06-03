@@ -17,18 +17,18 @@ Deno.serve(async (req: Request) => {
 
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
     // Simulate payment processing time (Gateway Mock)
-    await new Promise((resolve) => setTimeout(resolve, 1000))
+    await new Promise(resolve => setTimeout(resolve, 1000))
 
     // Update the invoice status to paid
     const { data: invoice, error } = await supabaseClient
       .from('invoices')
       .update({
         status: 'paid',
-        payment_date: new Date().toISOString(),
+        payment_date: new Date().toISOString()
       })
       .eq('id', invoiceId)
       .select()
@@ -38,14 +38,20 @@ Deno.serve(async (req: Request) => {
       throw error
     }
 
-    return new Response(JSON.stringify({ success: true, invoice }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      status: 200,
-    })
+    return new Response(
+      JSON.stringify({ success: true, invoice }),
+      {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 200
+      }
+    )
   } catch (error: any) {
-    return new Response(JSON.stringify({ error: error.message }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      status: 400,
-    })
+    return new Response(
+      JSON.stringify({ error: error.message }),
+      {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 400
+      }
+    )
   }
 })
