@@ -17,6 +17,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { useToast } from '@/hooks/use-toast'
 import { useLanguageStore } from '@/stores/useLanguageStore'
 import { CreditCard, Loader2, ShieldCheck, Lock } from 'lucide-react'
+import { supabase } from '@/lib/supabase/client'
 
 export default function ConstructionCheckout() {
   const { planId } = useParams()
@@ -47,23 +48,78 @@ export default function ConstructionCheckout() {
     e.preventDefault()
     setIsProcessing(true)
 
-    // Simulate payment API call
-    setTimeout(() => {
+    try {
+      if (isAdmin) {
+        activateConstructionSubscription({
+          limit: plan.maxProjects || 9999,
+          price: 0,
+        })
+        toast({
+          title: t('checkout.admin_access'),
+          description: t('checkout.admin_access'),
+        })
+        navigate('/construction/dashboard')
+        return
+      }
+
+      // 1. Fetch user profile for billing details
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('company_name, tax_id')
+        .eq('id', user?.id || '')
+        .single()
+
+      const billingInfo = profile?.company_name
+        ? ` - Faturado para: ${profile.company_name} (Doc: ${profile.tax_id || 'N/A'})`
+        : ''
+
+      // 2. Create Invoice
+      const { data: invoice, error: insertError } = await supabase
+        .from('invoices')
+        .insert({
+          payer_id: user?.id,
+          amount: plan.price,
+          currency: 'BRL',
+          type: 'plan_subscription',
+          status: 'pending',
+          description: `Assinatura do plano: ${plan.name}${billingInfo}`,
+          due_date: new Date().toISOString(),
+        })
+        .select()
+        .single()
+
+      if (insertError) throw insertError
+
+      // 3. Call Edge Function to process payment
+      const { error: invokeError } = await supabase.functions.invoke(
+        'process-plan-payment',
+        {
+          body: { invoiceId: invoice.id },
+        },
+      )
+
+      if (invokeError) throw invokeError
+
       activateConstructionSubscription({
         limit: plan.maxProjects || 9999,
-        price: isAdmin ? 0 : plan.price,
+        price: plan.price,
       })
+
       toast({
-        title: isAdmin
-          ? t('checkout.admin_access')
-          : t('checkout.sub_confirmed'),
-        description: isAdmin
-          ? t('checkout.admin_access')
-          : t('checkout.sub_confirmed'),
+        title: t('checkout.sub_confirmed'),
+        description: t('checkout.sub_confirmed'),
       })
-      setIsProcessing(false)
       navigate('/construction/dashboard')
-    }, 2000)
+    } catch (error) {
+      console.error(error)
+      toast({
+        title: 'Erro no pagamento',
+        description: 'Não foi possível processar o pagamento. Tente novamente.',
+        variant: 'destructive',
+      })
+    } finally {
+      setIsProcessing(false)
+    }
   }
 
   return (

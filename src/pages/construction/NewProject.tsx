@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   useProjectStore,
@@ -41,9 +41,13 @@ import {
 } from '@/components/ui/popover'
 import { CurrencyInput } from '@/components/CurrencyInput'
 import { useLanguageStore } from '@/stores/useLanguageStore'
+import { supabase } from '@/lib/supabase/client'
+import { useAuth } from '@/hooks/use-auth'
 
 export default function NewProject() {
   const navigate = useNavigate()
+  const { user } = useAuth()
+  const [checkingAccess, setCheckingAccess] = useState(true)
   const { addProject } = useProjectStore()
   const { toast } = useToast()
   const { formatDate, t } = useLanguageStore()
@@ -67,6 +71,53 @@ export default function NewProject() {
       state: '',
     },
   })
+
+  useEffect(() => {
+    async function checkAccess() {
+      if (!user) {
+        setCheckingAccess(false)
+        return
+      }
+
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('is_admin')
+        .eq('id', user.id)
+        .single()
+
+      const isAdmin = profile?.is_admin || user.email === 'adailtong@gmail.com'
+
+      if (isAdmin) {
+        setCheckingAccess(false)
+        return
+      }
+
+      const thirtyDaysAgo = new Date()
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
+
+      const { data, error } = await supabase
+        .from('invoices')
+        .select('id, status, created_at')
+        .eq('payer_id', user.id)
+        .eq('type', 'plan_subscription')
+        .eq('status', 'paid')
+        .gte('created_at', thirtyDaysAgo.toISOString())
+        .order('created_at', { ascending: false })
+        .limit(1)
+
+      if (!data || data.length === 0) {
+        toast({
+          title: 'Acesso Restrito',
+          description: 'Você precisa de um plano ativo para criar novas obras.',
+          variant: 'destructive',
+        })
+        navigate('/construction/plans')
+      } else {
+        setCheckingAccess(false)
+      }
+    }
+    checkAccess()
+  }, [user, navigate, toast])
 
   const handleAddressChange = (
     field: keyof typeof formData.address,
@@ -162,6 +213,15 @@ export default function NewProject() {
       description: t('proj.new.success_desc'),
     })
     navigate('/construction/dashboard')
+  }
+
+  if (checkingAccess) {
+    return (
+      <div className="flex h-[50vh] items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <span className="ml-2 text-muted-foreground">Verificando plano...</span>
+      </div>
+    )
   }
 
   return (
