@@ -68,7 +68,7 @@ export default function UserProfile() {
     useMessageStore()
   const navigate = useNavigate()
   const { toast } = useToast()
-  const { t, formatCurrency } = useLanguageStore()
+  const { t, formatCurrency, formatDate } = useLanguageStore()
 
   const [targetUser, setTargetUser] = useState<any>(null)
   const [loading, setLoading] = useState(true)
@@ -145,14 +145,14 @@ export default function UserProfile() {
       })
       if (error) throw error
 
-      toast({ title: 'Avaliação enviada com sucesso!' })
+      toast({ title: t('success') })
       setNewReviewComment('')
 
       // Simulate Notification to the professional
       useNotificationStore.getState().addNotification({
         userId: id,
-        title: 'Nova Avaliação',
-        message: `${user.name} deixou uma avaliação de ${newReviewRating} estrelas no seu perfil.`,
+        title: 'New Review',
+        message: `${user.name} left a ${newReviewRating} star review on your profile.`,
         type: 'info',
         link: `/profile/${id}`,
       })
@@ -181,7 +181,7 @@ export default function UserProfile() {
       }))
     } catch (err: any) {
       toast({
-        title: 'Erro ao enviar avaliação',
+        title: t('error'),
         description: err.message,
         variant: 'destructive',
       })
@@ -222,14 +222,12 @@ export default function UserProfile() {
           <CardHeader className="bg-blue-50/50">
             <CardTitle className="flex items-center gap-2 text-blue-800">
               <Shield className="w-5 h-5" />
-              Selo de Verificação de Identidade
+              {t('settings.kyc.title')}
             </CardTitle>
           </CardHeader>
           <CardContent className="pt-6 space-y-4">
             <p className="text-sm text-muted-foreground">
-              Aumente suas chances de ser contratado! Profissionais com
-              identidade verificada recebem até 3x mais contatos na plataforma.
-              Envie uma foto do seu documento oficial para receber o selo.
+              {t('settings.kyc.desc')}
             </p>
             <div className="flex flex-col sm:flex-row gap-4 items-center p-4 border rounded-lg bg-muted/20">
               <div className="h-16 w-24 bg-slate-200 rounded-md border-2 border-dashed border-slate-300 flex items-center justify-center shrink-0">
@@ -237,22 +235,22 @@ export default function UserProfile() {
               </div>
               <div className="flex-1 text-center sm:text-left">
                 <h4 className="font-semibold text-sm">
-                  Status: Não Verificado
+                  Status: {t('settings.kyc.pending')}
                 </h4>
                 <p className="text-xs text-muted-foreground">
-                  Nenhum documento enviado ainda.
+                  {t('docs.empty_title')}
                 </p>
               </div>
               <Button
                 onClick={() => {
                   toast({
-                    title: 'Upload iniciado',
-                    description: 'Por favor, selecione seu documento.',
+                    title: t('docs.upload_title'),
+                    description: t('docs.upload_desc'),
                   })
                 }}
               >
-                Enviar Documento
-              </Button>
+                {t('settings.kyc.upload')}
+              </Button>{' '}
             </div>
           </CardContent>
         </Card>
@@ -349,24 +347,22 @@ export default function UserProfile() {
               <DropdownMenuItem
                 onClick={() =>
                   toast({
-                    title: 'Usuário denunciado',
-                    description: 'Nossa equipe irá analisar este perfil.',
+                    title: 'Reported',
                   })
                 }
               >
-                <Flag className="mr-2 h-4 w-4" /> Denunciar
+                <Flag className="mr-2 h-4 w-4" /> Report
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem
                 className="text-destructive"
                 onClick={() =>
                   toast({
-                    title: 'Usuário bloqueado',
-                    description: 'Você não verá mais mensagens deste usuário.',
+                    title: 'Blocked',
                   })
                 }
               >
-                <Ban className="mr-2 h-4 w-4" /> Bloquear
+                <Ban className="mr-2 h-4 w-4" /> Block
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -395,7 +391,7 @@ export default function UserProfile() {
                   variant="default"
                   className="bg-blue-600 hover:bg-blue-700 text-white gap-1 ml-2"
                 >
-                  <Shield className="h-3 w-3" /> Verificado
+                  <Shield className="h-3 w-3" /> {t('header.verified')}
                 </Badge>
               )}
             </h1>
@@ -472,13 +468,13 @@ export default function UserProfile() {
 
             <Card>
               <CardHeader>
-                <CardTitle>Avaliações</CardTitle>
-              </CardHeader>
+                <CardTitle>Reviews</CardTitle>
+              </CardHeader>{' '}
               <CardContent className="space-y-6">
                 {user && user.id !== id && (
                   <div className="bg-muted/30 p-4 rounded-lg border border-border space-y-3">
                     <h4 className="font-semibold text-sm">
-                      Deixe sua avaliação
+                      {t('job.rate_contractor')}
                     </h4>
                     <div className="flex gap-1 text-yellow-500">
                       {Array.from({ length: 5 }).map((_, i) => (
@@ -490,7 +486,7 @@ export default function UserProfile() {
                       ))}
                     </div>
                     <Textarea
-                      placeholder="Como foi o serviço prestado?"
+                      placeholder={t('messages.type_placeholder')}
                       value={newReviewComment}
                       onChange={(e) => setNewReviewComment(e.target.value)}
                       className="resize-none"
@@ -500,10 +496,10 @@ export default function UserProfile() {
                       disabled={submittingReview}
                     >
                       {submittingReview ? (
-                        'Enviando...'
+                        t('loading')
                       ) : (
                         <>
-                          Enviar Avaliação <Send className="ml-2 h-4 w-4" />
+                          {t('messages.send')} <Send className="ml-2 h-4 w-4" />
                         </>
                       )}
                     </Button>
@@ -542,7 +538,7 @@ export default function UserProfile() {
                             </div>
                           </div>
                           <span className="text-xs text-muted-foreground ml-auto">
-                            {new Date(review.created_at).toLocaleDateString()}
+                            {formatDate(review.created_at)}
                           </span>
                         </div>
                         {review.comment && (
@@ -566,7 +562,7 @@ export default function UserProfile() {
             {targetUser.services?.length > 0 && (
               <Card className="sticky top-20">
                 <CardHeader>
-                  <CardTitle>Serviços e Preços</CardTitle>
+                  <CardTitle>{t('sidebar.services')}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <ul className="space-y-4">
@@ -595,8 +591,8 @@ export default function UserProfile() {
                             className="w-full mt-1 border-primary/50 text-primary hover:bg-primary/5"
                             onClick={() => handleBookService(svc)}
                           >
-                            <ShoppingCart className="mr-2 h-4 w-4" /> Solicitar
-                            / Reservar
+                            <ShoppingCart className="mr-2 h-4 w-4" />{' '}
+                            {t('job.schedule')}
                           </Button>
                         )}
                       </li>
