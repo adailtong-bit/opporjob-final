@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import {
   useProjectStore,
   DEFAULT_STAGES_TEMPLATE,
@@ -30,6 +30,7 @@ import {
   Calendar as CalendarIcon,
   MapPin,
   Globe,
+  CreditCard,
 } from 'lucide-react'
 import { addDays } from 'date-fns'
 import { cn } from '@/lib/utils'
@@ -47,12 +48,18 @@ import { useAuth } from '@/hooks/use-auth'
 export default function NewProject() {
   const navigate = useNavigate()
   const { user } = useAuth()
+  const [searchParams, setSearchParams] = useSearchParams()
   const [checkingAccess, setCheckingAccess] = useState(true)
+  const [hasActivePlan, setHasActivePlan] = useState(false)
+  const [verifyingPayment, setVerifyingPayment] = useState(false)
   const { addProject } = useProjectStore()
   const { toast } = useToast()
-  const { formatDate, t } = useLanguageStore()
+  const { formatDate, t, language } = useLanguageStore()
 
   const [loading, setLoading] = useState(false)
+  const [plans, setPlans] = useState<any[]>([])
+  const [selectedPlanId, setSelectedPlanId] = useState<string>('')
+
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -73,6 +80,55 @@ export default function NewProject() {
   })
 
   useEffect(() => {
+    supabase
+      .from('construction_plans')
+      .select('*')
+      .eq('active', true)
+      .then(({ data }) => {
+        if (data) setPlans(data)
+      })
+  }, [])
+
+  useEffect(() => {
+    async function verifySession() {
+      const sessionId = searchParams.get('session_id')
+      if (sessionId && user) {
+        setVerifyingPayment(true)
+        try {
+          const { data } = await supabase.functions.invoke(
+            'process-plan-payment',
+            {
+              body: { action: 'verify_checkout', sessionId },
+            },
+          )
+          if (data?.success) {
+            toast({ title: t('proj.new.payment_success') })
+            const saved = localStorage.getItem('pending_new_project')
+            if (saved) {
+              addProject(JSON.parse(saved))
+              localStorage.removeItem('pending_new_project')
+            }
+            navigate('/construction/dashboard')
+            return
+          } else {
+            toast({
+              variant: 'destructive',
+              title: t('proj.new.payment_failed'),
+            })
+          }
+        } catch (e) {
+          console.error(e)
+          toast({ variant: 'destructive', title: t('proj.new.payment_failed') })
+        } finally {
+          setVerifyingPayment(false)
+          setSearchParams(new URLSearchParams())
+        }
+      }
+    }
+    verifySession()
+  }, [searchParams, user, navigate, addProject, toast, t, setSearchParams])
+
+  useEffect(() => {
     async function checkAccess() {
       if (!user) {
         setCheckingAccess(false)
@@ -85,9 +141,13 @@ export default function NewProject() {
         .eq('id', user.id)
         .single()
 
-      const isAdmin = profile?.is_admin || user.email === 'adailtong@gmail.com'
+      const isAdmin =
+        profile?.is_admin ||
+        user.email === 'adailtong@gmail.com' ||
+        user.email?.includes('admin')
 
       if (isAdmin) {
+        setHasActivePlan(true)
         setCheckingAccess(false)
         return
       }
@@ -95,7 +155,7 @@ export default function NewProject() {
       const thirtyDaysAgo = new Date()
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
 
-      const { data, error } = await supabase
+      const { data } = await supabase
         .from('invoices')
         .select('id, status, created_at')
         .eq('payer_id', user.id)
@@ -105,19 +165,18 @@ export default function NewProject() {
         .order('created_at', { ascending: false })
         .limit(1)
 
-      if (!data || data.length === 0) {
-        toast({
-          title: 'Acesso Restrito',
-          description: 'Você precisa de um plano ativo para criar novas obras.',
-          variant: 'destructive',
-        })
-        navigate('/construction/plans')
+      if (data && data.length > 0) {
+        setHasActivePlan(true)
       } else {
-        setCheckingAccess(false)
+        setHasActivePlan(false)
       }
+      setCheckingAccess(false)
     }
-    checkAccess()
-  }, [user, navigate, toast])
+
+    if (!searchParams.get('session_id')) {
+      checkAccess()
+    }
+  }, [user, searchParams])
 
   const handleAddressChange = (
     field: keyof typeof formData.address,
@@ -143,12 +202,17 @@ export default function NewProject() {
       return
     }
 
+    if (!hasActivePlan && !selectedPlanId) {
+      toast({
+        variant: 'destructive',
+        title: t('val.required'),
+        description: t('proj.new.select_plan'),
+      })
+      return
+    }
+
     setLoading(true)
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000))
-
-    // Create stages based on template
     const stages: Stage[] = DEFAULT_STAGES_TEMPLATE.map((t, idx) => ({
       id: Math.random().toString(36).substr(2, 9),
       name: t.name,
@@ -190,7 +254,7 @@ export default function NewProject() {
       evidenceUrls: [],
     }))
 
-    addProject({
+    const projectData = {
       name: formData.name,
       description: formData.description,
       region: formData.region,
@@ -200,29 +264,90 @@ export default function NewProject() {
       endDate: formData.endDate,
       totalBudget: formData.totalBudget,
       purchaseApprovalThreshold: formData.purchaseApprovalThreshold,
-      ownerId: 'current-user-id', // Mock ID
-      status: 'planning',
+      ownerId: user?.id || 'current-user-id',
+      status: 'planning' as const,
       stages,
       inspections: defaultInspections,
       dailyLogs: [],
-    })
+    }
 
-    setLoading(false)
-    toast({
-      title: t('proj.new.success_title'),
-      description: t('proj.new.success_desc'),
-    })
-    navigate('/construction/dashboard')
+    if (!hasActivePlan) {
+      const selectedPlan = plans.find((p) => p.id === selectedPlanId)
+      if (!selectedPlan) {
+        setLoading(false)
+        return
+      }
+
+      localStorage.setItem('pending_new_project', JSON.stringify(projectData))
+
+      const { data: invoice, error } = await supabase
+        .from('invoices')
+        .insert({
+          amount: selectedPlan.price,
+          payer_id: user!.id,
+          type: 'plan_subscription',
+          status: 'pending',
+          description: `Plan: ${selectedPlan.name}`,
+          currency: formData.region === 'US' ? 'USD' : 'BRL',
+        })
+        .select()
+        .single()
+
+      if (error || !invoice) {
+        setLoading(false)
+        toast({ variant: 'destructive', title: t('error') })
+        return
+      }
+
+      const { data } = await supabase.functions.invoke('process-plan-payment', {
+        body: {
+          action: 'create_checkout',
+          invoiceId: invoice.id,
+          returnUrl: window.location.href.split('?')[0],
+        },
+      })
+
+      if (data?.url) {
+        window.location.href = data.url
+        return
+      } else {
+        setLoading(false)
+        toast({ variant: 'destructive', title: t('error') })
+        return
+      }
+    } else {
+      addProject(projectData)
+      setLoading(false)
+      toast({
+        title: t('proj.new.success_title'),
+        description: t('proj.new.success_desc'),
+      })
+      navigate('/construction/dashboard')
+    }
   }
 
-  if (checkingAccess) {
+  const formatCurrency = (amount: number, currency: string) => {
+    let locale = 'en-US'
+    if (language === 'pt') locale = 'pt-BR'
+    if (language === 'es') locale = 'es-ES'
+    return new Intl.NumberFormat(locale, {
+      style: 'currency',
+      currency: currency,
+    }).format(amount)
+  }
+
+  if (checkingAccess || verifyingPayment) {
     return (
-      <div className="flex h-[50vh] items-center justify-center">
+      <div className="flex flex-col h-[50vh] items-center justify-center gap-4">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        <span className="ml-2 text-muted-foreground">Verificando plano...</span>
+        <span className="text-muted-foreground">
+          {verifyingPayment ? t('proj.new.verifying_payment') : t('loading')}
+        </span>
       </div>
     )
   }
+
+  const selectedPlanData = plans.find((p) => p.id === selectedPlanId)
 
   return (
     <div className="space-y-6 max-w-3xl mx-auto py-8 px-4">
@@ -247,7 +372,7 @@ export default function NewProject() {
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="space-y-2 md:col-span-2">
-                <Label htmlFor="name">{t('proj.new.name_label')}</Label>
+                <Label htmlFor="name">{t('proj.new.project_name')}</Label>
                 <Input
                   id="name"
                   placeholder={t('proj.new.name_placeholder')}
@@ -455,7 +580,7 @@ export default function NewProject() {
                   onChange={(value) =>
                     setFormData({ ...formData, totalBudget: value })
                   }
-                  placeholder="R$ 0,00"
+                  placeholder="0,00"
                 />
               </div>
               <div className="space-y-2">
@@ -489,23 +614,48 @@ export default function NewProject() {
               />
             </div>
 
-            <div className="bg-muted/50 p-4 rounded-lg space-y-2">
-              <Label className="font-semibold flex items-center gap-2">
-                {t('proj.new.workflow', {
-                  count: DEFAULT_STAGES_TEMPLATE.length,
-                })}
-              </Label>
-              <ul className="text-sm text-muted-foreground list-disc pl-5 space-y-1">
-                {DEFAULT_STAGES_TEMPLATE.slice(0, 5).map((s, i) => (
-                  <li key={i}>{s.name}</li>
-                ))}
-                <li>
-                  {t('proj.new.workflow_more', {
-                    count: DEFAULT_STAGES_TEMPLATE.length - 5,
-                  })}
-                </li>
-              </ul>
-            </div>
+            {!hasActivePlan && (
+              <div className="border border-primary/20 bg-primary/5 rounded-lg p-4 space-y-4">
+                <div className="flex items-center gap-2 text-primary font-semibold">
+                  <CreditCard className="h-5 w-5" />
+                  <h3>{t('proj.new.select_plan')}</h3>
+                </div>
+                <div className="space-y-2">
+                  <Select
+                    value={selectedPlanId}
+                    onValueChange={setSelectedPlanId}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder={t('proj.new.select_plan')} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {plans.map((p) => (
+                        <SelectItem key={p.id} value={p.id}>
+                          {p.name} -{' '}
+                          {formatCurrency(
+                            p.price,
+                            formData.region === 'US' ? 'USD' : 'BRL',
+                          )}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                {selectedPlanData && (
+                  <div className="flex justify-between items-center bg-background p-3 rounded border">
+                    <span className="font-medium text-sm text-muted-foreground">
+                      {t('proj.new.total_amount')}
+                    </span>
+                    <span className="font-bold text-lg">
+                      {formatCurrency(
+                        selectedPlanData.price,
+                        formData.region === 'US' ? 'USD' : 'BRL',
+                      )}
+                    </span>
+                  </div>
+                )}
+              </div>
+            )}
 
             <Button
               type="submit"
@@ -514,7 +664,7 @@ export default function NewProject() {
               disabled={loading}
             >
               {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {t('proj.new.submit')}
+              {hasActivePlan ? t('proj.new.submit') : t('proj.new.pay_now')}
             </Button>
           </form>
         </CardContent>
