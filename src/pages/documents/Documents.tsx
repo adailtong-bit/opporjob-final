@@ -1,5 +1,6 @@
 import { useState, useRef, useCallback } from 'react'
 import { useDocumentStore, Document } from '@/stores/useDocumentStore'
+import { useLanguageStore } from '@/stores/useLanguageStore'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -52,6 +53,7 @@ import { DocumentPreviewModal } from '@/components/DocumentPreviewModal'
 
 export default function Documents() {
   const { documents, addDocument, deleteDocument } = useDocumentStore()
+  const { t } = useLanguageStore()
   const [isDragging, setIsDragging] = useState(false)
   const [isUploading, setIsUploading] = useState(false)
   const [uploadProgress, setUploadProgress] = useState(0)
@@ -111,8 +113,8 @@ export default function Documents() {
     setUploadProgress(0)
 
     toast({
-      title: 'Upload concluído',
-      description: `O arquivo ${file.name} foi adicionado com sucesso.`,
+      title: t('docs.toast.upload_title'),
+      description: t('docs.toast.upload_desc').replace('{name}', file.name),
     })
   }
 
@@ -122,8 +124,8 @@ export default function Documents() {
     if (file.size > 10 * 1024 * 1024) {
       toast({
         variant: 'destructive',
-        title: 'Arquivo muito grande',
-        description: 'O tamanho máximo permitido é 10MB.',
+        title: t('docs.toast.large_title'),
+        description: t('docs.toast.large_desc'),
       })
       return
     }
@@ -152,19 +154,17 @@ export default function Documents() {
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-2">
-        <h1 className="text-3xl font-bold tracking-tight">Documentos</h1>
-        <p className="text-muted-foreground">
-          Gerencie e compartilhe arquivos do projeto com sua equipe.
-        </p>
+        <h1 className="text-3xl font-bold tracking-tight">
+          {t('docs.page_title')}
+        </h1>
+        <p className="text-muted-foreground">{t('docs.page_desc')}</p>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Upload de Arquivos</CardTitle>
-          <CardDescription>
-            Arraste e solte arquivos aqui ou clique para selecionar.
-          </CardDescription>
-        </CardHeader>
+          <CardTitle>{t('docs.upload_card_title')}</CardTitle>
+          <CardDescription>{t('docs.upload_card_desc')}</CardDescription>
+        </CardHeader>{' '}
         <CardContent>
           <div
             onDragOver={onDragOver}
@@ -193,11 +193,10 @@ export default function Documents() {
 
             <div className="space-y-1">
               <p className="text-sm font-medium">
-                <span className="text-primary">Clique para upload</span> ou
-                arraste e solte
+                {t('docs.upload_interaction')}
               </p>
               <p className="text-xs text-muted-foreground">
-                PDF, PNG, JPG ou XLSX até 10MB
+                {t('docs.upload_format')}
               </p>
             </div>
           </div>
@@ -219,7 +218,7 @@ export default function Documents() {
 
       <div className="space-y-4">
         <h2 className="text-xl font-semibold tracking-tight">
-          Arquivos Recentes
+          {t('docs.recent')}
         </h2>
 
         {documents.length === 0 ? (
@@ -228,12 +227,9 @@ export default function Documents() {
               <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center mb-4">
                 <File className="h-8 w-8 text-muted-foreground/50" />
               </div>
-              <h3 className="text-lg font-semibold">
-                Nenhum documento encontrado
-              </h3>
+              <h3 className="text-lg font-semibold">{t('docs.empty_title')}</h3>
               <p className="text-muted-foreground max-w-sm mt-2">
-                Comece fazendo upload de arquivos para compartilhar com sua
-                equipe e manter o projeto organizado.
+                {t('docs.empty_desc')}
               </p>
               <Button
                 className="mt-6"
@@ -241,7 +237,7 @@ export default function Documents() {
                 onClick={() => fileInputRef.current?.click()}
               >
                 <Upload className="mr-2 h-4 w-4" />
-                Fazer Upload
+                {t('docs.upload_btn')}
               </Button>
             </CardContent>
           </Card>
@@ -250,9 +246,9 @@ export default function Documents() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Nome</TableHead>
-                  <TableHead>Tamanho</TableHead>
-                  <TableHead>Data de Envio</TableHead>
+                  <TableHead>{t('docs.table.name')}</TableHead>
+                  <TableHead>{t('docs.size')}</TableHead>
+                  <TableHead>{t('docs.upload_date')}</TableHead>
                   <TableHead className="w-[100px]"></TableHead>
                 </TableRow>
               </TableHeader>
@@ -282,7 +278,7 @@ export default function Documents() {
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem onClick={() => setPreviewDoc(doc)}>
                             <Eye className="mr-2 h-4 w-4" />
-                            Visualizar
+                            {t('view')}
                           </DropdownMenuItem>
 
                           <AlertDialog>
@@ -292,32 +288,35 @@ export default function Documents() {
                                 className="text-destructive focus:text-destructive"
                               >
                                 <Trash2 className="mr-2 h-4 w-4" />
-                                Excluir
+                                {t('delete')}
                               </DropdownMenuItem>
                             </AlertDialogTrigger>
                             <AlertDialogContent>
                               <AlertDialogHeader>
                                 <AlertDialogTitle>
-                                  Você tem certeza?
+                                  {t('sched.delete_confirm_title')}
                                 </AlertDialogTitle>
                                 <AlertDialogDescription>
-                                  Esta ação não pode ser desfeita.
+                                  {t('sched.delete_confirm_desc')}
                                 </AlertDialogDescription>
                               </AlertDialogHeader>
                               <AlertDialogFooter>
-                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                <AlertDialogCancel>
+                                  {t('cancel')}
+                                </AlertDialogCancel>
                                 <AlertDialogAction
                                   onClick={() => {
                                     deleteDocument(doc.id)
                                     toast({
-                                      title: 'Arquivo excluído',
-                                      description:
-                                        'O documento foi removido com sucesso.',
+                                      title: t('docs.delete_success'),
+                                      description: t(
+                                        'docs.delete_success_desc',
+                                      ),
                                     })
                                   }}
                                   className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                                 >
-                                  Excluir
+                                  {t('delete')}
                                 </AlertDialogAction>
                               </AlertDialogFooter>
                             </AlertDialogContent>

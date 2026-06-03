@@ -45,7 +45,7 @@ import { format } from 'date-fns'
 
 export function PayablesManager() {
   const { user } = useAuthStore()
-  const { formatCurrency, formatDate } = useLanguageStore()
+  const { formatCurrency, formatDate, t } = useLanguageStore()
   const { toast } = useToast()
   const { updateStageActuals, projects, updateAllocatedCost } =
     useProjectStore()
@@ -121,7 +121,7 @@ export function PayablesManager() {
       .eq('id', editingInvoice.id)
 
     if (!error) {
-      toast({ title: 'Fatura atualizada com sucesso!' })
+      toast({ title: t('finance.payables.toast.success') })
 
       if (isNowPaid && editingInvoice.project_id) {
         if (editingInvoice.task_id) {
@@ -151,7 +151,10 @@ export function PayablesManager() {
       fetchPayables()
       setEditingInvoice(null)
     } else {
-      toast({ title: 'Erro ao atualizar', variant: 'destructive' })
+      toast({
+        title: t('finance.payables.toast.error'),
+        variant: 'destructive',
+      })
     }
   }
 
@@ -160,25 +163,25 @@ export function PayablesManager() {
       case 'paid':
         return (
           <Badge className="bg-emerald-100 text-emerald-800 hover:bg-emerald-100 border-emerald-200">
-            Pago
+            {t('finance.payables.status_paid')}
           </Badge>
         )
       case 'processing':
         return (
           <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-100 border-blue-200">
-            Em Processamento
+            {t('finance.payables.status_processing')}
           </Badge>
         )
       case 'pending':
         return (
           <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-100 border-yellow-200">
-            Pendente
+            {t('finance.payables.status_pending')}
           </Badge>
         )
       case 'awaiting_confirmation':
         return (
           <Badge className="bg-orange-100 text-orange-800 hover:bg-orange-100 border-orange-200">
-            Aguardando Confirmação
+            {t('finance.payables.status_awaiting')}
           </Badge>
         )
       default:
@@ -202,12 +205,11 @@ export function PayablesManager() {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-card p-6 rounded-xl border shadow-sm">
         <div>
           <h2 className="text-xl font-bold flex items-center gap-2">
-            <Receipt className="h-5 w-5 text-primary" /> Gestão de Contas a
-            Pagar
+            <Receipt className="h-5 w-5 text-primary" />{' '}
+            {t('finance.payables.title')}
           </h2>
           <p className="text-muted-foreground text-sm mt-1">
-            Acompanhe as faturas geradas nas compras, atualize status de
-            pagamento e anexe comprovantes.
+            {t('finance.payables.subtitle')}
           </p>
         </div>
       </div>
@@ -220,7 +222,7 @@ export function PayablesManager() {
             </div>
             <div>
               <p className="text-sm font-medium text-muted-foreground">
-                Total Pendente a Pagar
+                {t('finance.payables.total_pending')}
               </p>
               <h3 className="text-2xl font-bold text-foreground">
                 {formatCurrency(totalPending)}
@@ -235,7 +237,7 @@ export function PayablesManager() {
             </div>
             <div>
               <p className="text-sm font-medium text-muted-foreground">
-                Total Pago
+                {t('finance.payables.total_paid')}
               </p>
               <h3 className="text-2xl font-bold text-foreground">
                 {formatCurrency(totalPaid)}
@@ -249,12 +251,14 @@ export function PayablesManager() {
         <Table className="min-w-[800px]">
           <TableHeader className="bg-muted/50">
             <TableRow>
-              <TableHead>Vencimento</TableHead>
-              <TableHead>Descrição / Fornecedor</TableHead>
-              <TableHead>Valor</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Confirmação</TableHead>
-              <TableHead className="text-right">Ações</TableHead>
+              <TableHead>{t('finance.payables.due_date')}</TableHead>
+              <TableHead>{t('finance.payables.desc_vendor')}</TableHead>
+              <TableHead>{t('finance.table.value')}</TableHead>
+              <TableHead>{t('finance.table.status')}</TableHead>
+              <TableHead>{t('finance.payables.confirmation')}</TableHead>
+              <TableHead className="text-right">
+                {t('finance.table.actions')}
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -264,8 +268,8 @@ export function PayablesManager() {
                   colSpan={6}
                   className="text-center py-12 text-muted-foreground"
                 >
-                  Carregando contas a pagar...
-                </TableCell>
+                  {t('finance.payables.loading')}
+                </TableCell>{' '}
               </TableRow>
             ) : payables.length === 0 ? (
               <TableRow>
@@ -274,11 +278,11 @@ export function PayablesManager() {
                   className="text-center py-12 text-muted-foreground"
                 >
                   <Receipt className="w-10 h-10 mx-auto opacity-30 mb-3" />
-                  <p>Nenhuma conta a pagar encontrada.</p>
+                  <p>{t('finance.payables.empty')}</p>
                   <p className="text-xs mt-1">
-                    As faturas vinculadas aos seus fornecedores aparecerão aqui.
+                    {t('finance.payables.empty_desc')}
                   </p>
-                </TableCell>
+                </TableCell>{' '}
               </TableRow>
             ) : (
               payables.map((inv) => (
@@ -290,10 +294,11 @@ export function PayablesManager() {
                   </TableCell>
                   <TableCell>
                     <div className="font-semibold">
-                      {inv.description || 'Fatura de Compra'}
+                      {inv.description ||
+                        t('finance.payables.purchase_invoice')}
                     </div>
                     <div className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
-                      {inv.vendor?.name || 'Fornecedor Avulso'}
+                      {inv.vendor?.name || t('finance.payables.single_vendor')}
                     </div>
                   </TableCell>
                   <TableCell className="font-bold text-base whitespace-nowrap">
@@ -303,12 +308,14 @@ export function PayablesManager() {
                   <TableCell className="text-sm whitespace-nowrap">
                     {inv.payment_date ? (
                       <span className="text-emerald-600 font-medium flex items-center gap-1">
-                        <Check className="h-4 w-4" /> Pago em{' '}
+                        <Check className="h-4 w-4" />{' '}
+                        {t('finance.payables.paid_on')}{' '}
                         {formatDate(inv.payment_date, 'dd/MM')}
                       </span>
                     ) : (
                       <span className="text-muted-foreground flex items-center gap-1">
-                        <Clock className="h-4 w-4" /> Aguardando
+                        <Clock className="h-4 w-4" />{' '}
+                        {t('finance.payables.waiting')}
                       </span>
                     )}
                   </TableCell>
@@ -319,7 +326,8 @@ export function PayablesManager() {
                       onClick={() => handleEdit(inv)}
                       className="shadow-sm"
                     >
-                      <DollarSign className="w-4 h-4 mr-2" /> Gerenciar
+                      <DollarSign className="w-4 h-4 mr-2" />{' '}
+                      {t('finance.payables.manage')}
                     </Button>
                   </TableCell>
                 </TableRow>
@@ -336,30 +344,35 @@ export function PayablesManager() {
         <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              Gerenciar Pagamento
+              {t('finance.payables.manage_payment')}
               {editingInvoice?.status === 'paid' && (
                 <Badge
                   variant="outline"
                   className="ml-2 bg-emerald-50 text-emerald-600 border-emerald-200"
                 >
-                  <Lock className="w-3 h-3 mr-1" /> Fatura Fechada
+                  <Lock className="w-3 h-3 mr-1" />{' '}
+                  {t('finance.payables.closed_invoice')}
                 </Badge>
               )}
             </DialogTitle>
             <DialogDescription>
-              Atualize o status desta fatura e anexe comprovantes.
+              {t('finance.payables.manage_desc')}
             </DialogDescription>
           </DialogHeader>
 
           <div className="bg-muted/30 p-3 rounded-lg border text-sm mb-2 mt-2">
             <div className="flex justify-between mb-1">
-              <span className="text-muted-foreground">Fornecedor:</span>
+              <span className="text-muted-foreground">
+                {t('finance.payables.vendor_label')}
+              </span>
               <span className="font-semibold">
                 {editingInvoice?.vendor?.name}
               </span>
             </div>
             <div className="flex justify-between">
-              <span className="text-muted-foreground">Valor:</span>
+              <span className="text-muted-foreground">
+                {t('finance.payables.value_label')}
+              </span>
               <span className="font-bold text-primary">
                 {editingInvoice ? formatCurrency(editingInvoice.amount) : ''}
               </span>
@@ -368,7 +381,7 @@ export function PayablesManager() {
 
           <div className="grid gap-4 py-2">
             <div className="space-y-2">
-              <Label>Status do Pagamento</Label>
+              <Label>{t('finance.payables.payment_status')}</Label>
               <Select
                 value={status}
                 onValueChange={setStatus}
@@ -378,24 +391,28 @@ export function PayablesManager() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="pending">Pendente (No Prazo)</SelectItem>
+                  <SelectItem value="pending">
+                    {t('finance.payables.status_pending')}
+                  </SelectItem>
                   <SelectItem value="processing">
-                    Em Processamento Bancário
+                    {t('finance.payables.status_processing')}
                   </SelectItem>
                   <SelectItem value="awaiting_confirmation">
-                    Aguardando Confirmação do Fornecedor
+                    {t('finance.payables.status_awaiting')}
                   </SelectItem>
-                  <SelectItem value="paid">Pago / Liquidado</SelectItem>
+                  <SelectItem value="paid">
+                    {t('finance.payables.status_paid')}
+                  </SelectItem>
                 </SelectContent>
               </Select>
               {editingInvoice?.status === 'paid' && (
                 <p className="text-[10px] text-emerald-600 font-medium">
-                  Esta fatura já foi liquidada e o status não pode ser alterado.
+                  {t('finance.payables.paid_warning')}
                 </p>
               )}
             </div>
             <div className="space-y-2">
-              <Label>Data de Pagamento Efetivado</Label>
+              <Label>{t('finance.payables.paid_date')}</Label>
               <Input
                 type="date"
                 value={paymentDate}
@@ -403,14 +420,14 @@ export function PayablesManager() {
                 disabled={editingInvoice?.status === 'paid'}
               />
               <p className="text-[10px] text-muted-foreground">
-                Preencha apenas se o pagamento já foi realizado.
+                {t('finance.payables.paid_date_desc')}
               </p>
             </div>
             <div className="space-y-2">
-              <Label>Comprovante (URL ou Referência)</Label>
+              <Label>{t('finance.payables.receipt')}</Label>
               <div className="flex gap-2">
                 <Input
-                  placeholder="Link do comprovante, ID da transação..."
+                  placeholder={t('finance.payables.receipt_placeholder')}
                   value={receiptUrl}
                   onChange={(e) => setReceiptUrl(e.target.value)}
                 />
@@ -423,7 +440,8 @@ export function PayablesManager() {
             {auditLogs.length > 0 && (
               <div className="space-y-2 border-t pt-4 mt-2">
                 <Label className="flex items-center gap-2">
-                  <Activity className="w-4 h-4" /> Histórico de Auditoria
+                  <Activity className="w-4 h-4" />{' '}
+                  {t('finance.payables.audit_history')}
                 </Label>
                 <div className="space-y-2 mt-2">
                   {auditLogs.map((log) => (
@@ -438,8 +456,10 @@ export function PayablesManager() {
                         </span>
                       </div>
                       <p className="text-muted-foreground">
-                        Por:{' '}
-                        {log.profiles?.name || log.profiles?.email || 'Sistema'}
+                        {t('finance.payables.by')}{' '}
+                        {log.profiles?.name ||
+                          log.profiles?.email ||
+                          t('finance.payables.system')}
                       </p>
                     </div>
                   ))}
@@ -449,9 +469,9 @@ export function PayablesManager() {
           </div>
           <DialogFooter className="mt-4 border-t pt-4">
             <Button variant="ghost" onClick={() => setEditingInvoice(null)}>
-              Cancelar
+              {t('cancel')}
             </Button>
-            <Button onClick={handleSave}>Salvar Alterações</Button>
+            <Button onClick={handleSave}>{t('save')}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

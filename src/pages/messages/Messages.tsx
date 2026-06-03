@@ -252,8 +252,8 @@ export default function Messages() {
       return (
         <div className="text-center py-10 text-muted-foreground text-sm">
           {activeTab === 'interests'
-            ? 'Nenhum interesse recebido.'
-            : 'Nenhuma conversa em andamento.'}
+            ? t('messages.empty_interests')
+            : t('messages.empty_ongoing')}
         </div>
       )
     }
@@ -409,7 +409,9 @@ export default function Messages() {
                         ) : (
                           <Star className="h-3 w-3" />
                         )}
-                        {u.openChat ? 'Chat Aberto' : 'Acesso Premium'}
+                        {u.openChat
+                          ? t('messages.open_chat')
+                          : t('messages.premium_access')}
                       </span>
                     ) : (
                       <span className="text-[10px] text-destructive flex items-center gap-1">
@@ -454,7 +456,7 @@ export default function Messages() {
         <div className="relative shrink-0">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Buscar mensagens ou pessoas"
+            placeholder={t('messages.search')}
             className="pl-9 bg-background"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -469,10 +471,10 @@ export default function Messages() {
           >
             <TabsList className="grid grid-cols-2 mb-4 shrink-0 h-9">
               <TabsTrigger value="interests" className="text-[11px] px-1">
-                Interesses
+                {t('messages.interests')}
               </TabsTrigger>
               <TabsTrigger value="ongoing" className="text-[11px] px-1">
-                Conversas Ativas
+                {t('messages.active')}
               </TabsTrigger>
             </TabsList>
             <TabsContent value="interests" className="m-0 flex flex-col gap-2">
@@ -489,7 +491,7 @@ export default function Messages() {
           {!searchQuery.trim() && (
             <div className="xl:hidden border-t pt-4 shrink-0">
               <h3 className="font-semibold text-sm mb-3">
-                Sugestões de Conexão
+                {t('messages.suggestions')}
               </h3>
               <div className="flex gap-3 overflow-x-auto pb-4">
                 {MOCK_SUGGESTIONS.map((sug) => (
@@ -509,12 +511,13 @@ export default function Messages() {
                           </span>
                           {sug.openChat ? (
                             <span className="text-[10px] text-green-600 flex items-center gap-1 font-medium">
-                              <Unlock className="h-3 w-3" /> Chat Aberto
+                              <Unlock className="h-3 w-3" />{' '}
+                              {t('messages.open_chat')}
                             </span>
                           ) : (
                             <span className="text-[10px] text-amber-500 flex items-center gap-1 font-medium">
                               <Star className="h-3 w-3 fill-amber-500" />{' '}
-                              Premium
+                              {t('messages.premium_access')}
                             </span>
                           )}
                         </div>
@@ -723,7 +726,7 @@ export default function Messages() {
       <div className="hidden xl:flex w-[260px] 2xl:w-[300px] flex-col gap-4 bg-card rounded-lg border shadow-sm p-4 h-full overflow-hidden shrink-0">
         <div className="flex flex-col gap-1 shrink-0">
           <h3 className="font-semibold text-base tracking-tight">
-            Sugestões de Conexão
+            {t('messages.suggestions')}
           </h3>
           <p className="text-xs text-muted-foreground">
             Profissionais recomendados baseados no seu perfil
@@ -747,11 +750,12 @@ export default function Messages() {
                     </span>
                     {sug.openChat ? (
                       <span className="text-[10px] text-green-600 flex items-center gap-1 font-medium">
-                        <Unlock className="h-3 w-3" /> Chat Aberto
+                        <Unlock className="h-3 w-3" /> {t('messages.open_chat')}
                       </span>
                     ) : (
                       <span className="text-[10px] text-amber-500 flex items-center gap-1 font-medium">
-                        <Star className="h-3 w-3 fill-amber-500" /> Premium
+                        <Star className="h-3 w-3 fill-amber-500" />{' '}
+                        {t('messages.premium_access')}
                       </span>
                     )}
                   </div>

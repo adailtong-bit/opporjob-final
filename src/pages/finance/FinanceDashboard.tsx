@@ -68,10 +68,13 @@ export default function FinanceDashboard() {
         body: { invoiceId: invoice.id, action: 'request' },
       })
       if (error) throw error
-      toast({ title: 'Reembolso solicitado com sucesso!' })
+      toast({ title: t('finance.toast.refund_req_success') })
       setTimeout(() => window.location.reload(), 1500)
     } catch (err) {
-      toast({ title: 'Erro ao solicitar reembolso', variant: 'destructive' })
+      toast({
+        title: t('finance.toast.refund_req_error'),
+        variant: 'destructive',
+      })
     }
   }
 
@@ -81,13 +84,16 @@ export default function FinanceDashboard() {
         body: { invoiceId: invoice.id, action: 'approve' },
       })
       if (error) throw error
-      toast({ title: 'Reembolso aprovado!' })
+      toast({ title: t('finance.toast.refund_app_success') })
       setTimeout(() => window.location.reload(), 1500)
     } catch (err) {
-      toast({ title: 'Erro ao aprovar reembolso', variant: 'destructive' })
+      toast({
+        title: t('finance.toast.refund_app_error'),
+        variant: 'destructive',
+      })
     }
   }
-  const { formatCurrency, formatDate } = useLanguageStore()
+  const { formatCurrency, formatDate, t } = useLanguageStore()
 
   const [isScheduleOpen, setIsScheduleOpen] = useState(false)
   const [scheduleData, setScheduleData] = useState({
@@ -109,12 +115,12 @@ export default function FinanceDashboard() {
         <div className="bg-destructive/10 p-4 rounded-full">
           <Lock className="h-12 w-12 text-destructive" />
         </div>
-        <h1 className="text-2xl font-bold">Restricted Access</h1>
+        <h1 className="text-2xl font-bold">{t('access.restricted.title')}</h1>
         <p className="text-muted-foreground text-center max-w-md">
-          You don't have permission to view the financial dashboard.
+          {t('access.restricted.desc')}
         </p>
         <Button asChild>
-          <Link to="/dashboard">Back to Home</Link>
+          <Link to="/dashboard">{t('back')}</Link>
         </Button>
       </div>
     )
@@ -154,8 +160,14 @@ export default function FinanceDashboard() {
   ]
 
   const chartConfig = {
-    entrada: { label: 'Income', color: 'hsl(var(--primary))' },
-    saida: { label: 'Expenses', color: 'hsl(var(--destructive))' },
+    entrada: {
+      label: t('finance.chart.income') || 'Income',
+      color: 'hsl(var(--primary))',
+    },
+    saida: {
+      label: t('finance.chart.expenses') || 'Expenses',
+      color: 'hsl(var(--destructive))',
+    },
   }
 
   const handleSchedule = async () => {
@@ -168,7 +180,7 @@ export default function FinanceDashboard() {
     })
 
     setIsScheduleOpen(false)
-    toast({ title: 'Payment Scheduled!' })
+    toast({ title: t('finance.toast.payment_scheduled') })
   }
 
   return (
@@ -176,17 +188,16 @@ export default function FinanceDashboard() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">
-            Financial Dashboard
+            {t('finance.page_title')}
           </h1>
-          <p className="text-muted-foreground">
-            Track your cash flow, payments and receipts.
-          </p>
+          <p className="text-muted-foreground">{t('finance.page_desc')}</p>
         </div>
         <div className="flex gap-2">
           {isPJ && (
             <Button variant="outline" asChild>
               <Link to="/finance/accounting">
-                <Download className="mr-2 h-4 w-4" /> Accounting Export
+                <Download className="mr-2 h-4 w-4" />{' '}
+                {t('finance.export.title')}
               </Link>
             </Button>
           )}
@@ -197,7 +208,9 @@ export default function FinanceDashboard() {
       <div className="grid gap-4 md:grid-cols-3">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Balance</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              {t('finance.total_balance')}
+            </CardTitle>
             <Wallet className="h-4 w-4 text-emerald-500" />
           </CardHeader>
           <CardContent>
@@ -205,13 +218,15 @@ export default function FinanceDashboard() {
               {formatCurrency(totalBalance)}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
-              Available in account
+              {t('finance.balance_desc')}
             </p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Spent</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              {t('finance.total_spent')}
+            </CardTitle>
             <TrendingDown className="h-4 w-4 text-destructive" />
           </CardHeader>
           <CardContent>
@@ -219,14 +234,14 @@ export default function FinanceDashboard() {
               {formatCurrency(totalSpent)}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
-              Expenses and payments made
+              {t('finance.spent_desc')}
             </p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
-              Pending Invoices
+              {t('finance.pending_invoices')}
             </CardTitle>
             <Clock className="h-4 w-4 text-yellow-500" />
           </CardHeader>
@@ -235,7 +250,7 @@ export default function FinanceDashboard() {
               {formatCurrency(pendingAmount)}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
-              Values under review or on hold
+              {t('finance.pending_desc')}
             </p>
           </CardContent>
         </Card>
@@ -243,18 +258,28 @@ export default function FinanceDashboard() {
 
       <Tabs defaultValue="overview" className="space-y-4">
         <TabsList className="overflow-x-auto flex-nowrap w-full justify-start h-auto p-1 scrollbar-none">
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          {isPJ && <TabsTrigger value="cashflow">Cash Flow</TabsTrigger>}
-          <TabsTrigger value="scheduled">Scheduled</TabsTrigger>
-          <TabsTrigger value="earnings">Recebimentos</TabsTrigger>
-          <TabsTrigger value="payables">Contas a Pagar</TabsTrigger>
+          <TabsTrigger value="overview">
+            {t('finance.tab_overview')}
+          </TabsTrigger>
+          {isPJ && (
+            <TabsTrigger value="cashflow">{t('finance.cashflow')}</TabsTrigger>
+          )}
+          <TabsTrigger value="scheduled">
+            {t('finance.tab_scheduled')}
+          </TabsTrigger>
+          <TabsTrigger value="earnings">
+            {t('finance.tab_receipts')}
+          </TabsTrigger>
+          <TabsTrigger value="payables">
+            {t('finance.tab_payables')}
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-4">
           <div className="grid gap-6 md:grid-cols-3">
             <Card className="md:col-span-1">
               <CardHeader>
-                <CardTitle>Balance</CardTitle>
+                <CardTitle>{t('finance.balance')}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="h-[300px]">
@@ -296,18 +321,20 @@ export default function FinanceDashboard() {
 
             <Card className="md:col-span-2">
               <CardHeader>
-                <CardTitle>Transaction History</CardTitle>
+                <CardTitle>{t('finance.transaction_history')}</CardTitle>
               </CardHeader>
               <CardContent>
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Date</TableHead>
-                      <TableHead>Description</TableHead>
-                      <TableHead>Value</TableHead>
-                      <TableHead>Type</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead className="text-right">Ações</TableHead>
+                      <TableHead>{t('finance.table.date')}</TableHead>
+                      <TableHead>{t('finance.table.description')}</TableHead>
+                      <TableHead>{t('finance.table.value')}</TableHead>
+                      <TableHead>{t('finance.table.type')}</TableHead>
+                      <TableHead>{t('finance.table.status')}</TableHead>
+                      <TableHead className="text-right">
+                        {t('finance.table.actions')}
+                      </TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -326,48 +353,48 @@ export default function FinanceDashboard() {
                           <TableCell>
                             {tx.payer_id === user.id ? (
                               <span className="text-red-500 font-medium">
-                                Expense
+                                {t('finance.type.expense')}
                               </span>
                             ) : (
                               <span className="text-green-500 font-medium">
-                                Income
+                                {t('finance.type.income')}
                               </span>
                             )}
                           </TableCell>
                           <TableCell>
                             {tx.status === 'completed' && (
                               <Badge className="bg-emerald-100 text-emerald-800 hover:bg-emerald-100">
-                                Paid
+                                {t('finance.status.paid')}
                               </Badge>
                             )}
                             {tx.status === 'pending' && (
                               <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-100">
-                                Pending
+                                {t('finance.status.pending')}
                               </Badge>
                             )}
                             {tx.status === 'escrow' && (
                               <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-100">
-                                Escrow
+                                {t('finance.status.escrow')}
                               </Badge>
                             )}
                             {tx.status === 'scheduled' && (
                               <Badge className="bg-purple-100 text-purple-800 hover:bg-purple-100">
-                                Scheduled
+                                {t('finance.status.scheduled')}
                               </Badge>
                             )}
                             {tx.status === 'failed' && (
                               <Badge className="bg-red-100 text-red-800 hover:bg-red-100">
-                                Cancelled
+                                {t('finance.status.cancelled')}
                               </Badge>
                             )}
                             {tx.status === 'refund_requested' && (
                               <Badge className="bg-orange-100 text-orange-800 hover:bg-orange-100">
-                                Reembolso Solicitado
+                                {t('finance.status.refund_requested')}
                               </Badge>
                             )}
                             {tx.status === 'refunded' && (
                               <Badge className="bg-gray-100 text-gray-800 hover:bg-gray-100">
-                                Reembolsado
+                                {t('finance.status.refunded')}
                               </Badge>
                             )}
                           </TableCell>
@@ -380,7 +407,7 @@ export default function FinanceDashboard() {
                                   size="sm"
                                   onClick={() => handleRequestRefund(tx)}
                                 >
-                                  Solicitar Reembolso
+                                  {t('finance.btn.request_refund')}
                                 </Button>
                               )}
                             {tx.receiver_id === user.id &&
@@ -390,7 +417,7 @@ export default function FinanceDashboard() {
                                   size="sm"
                                   onClick={() => handleApproveRefund(tx)}
                                 >
-                                  Aprovar Reembolso
+                                  {t('finance.btn.approve_refund')}
                                 </Button>
                               )}
                           </TableCell>
@@ -399,10 +426,10 @@ export default function FinanceDashboard() {
                     ) : (
                       <TableRow>
                         <TableCell
-                          colSpan={5}
+                          colSpan={6}
                           className="text-center text-muted-foreground py-8"
                         >
-                          No transactions found.
+                          {t('finance.table.empty')}
                         </TableCell>
                       </TableRow>
                     )}
@@ -416,10 +443,8 @@ export default function FinanceDashboard() {
         <TabsContent value="cashflow" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Projected Flow</CardTitle>
-              <CardDescription>
-                Comparison of income and expenses over the months.
-              </CardDescription>
+              <CardTitle>{t('finance.projected_flow')}</CardTitle>
+              <CardDescription>{t('finance.comparative_desc')}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="h-[400px]">
@@ -471,21 +496,21 @@ export default function FinanceDashboard() {
         <TabsContent value="earnings" className="space-y-4 mt-4">
           <Card>
             <CardHeader>
-              <CardTitle>Histórico de Recebimentos e Reservas</CardTitle>
-              <CardDescription>
-                Acompanhe o status dos pagamentos referentes aos seus serviços.
-              </CardDescription>
+              <CardTitle>{t('finance.receipts.title')}</CardTitle>
+              <CardDescription>{t('finance.receipts.desc')}</CardDescription>
             </CardHeader>
             <CardContent>
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Data</TableHead>
-                    <TableHead>Descrição</TableHead>
-                    <TableHead>Cliente (Pagador)</TableHead>
-                    <TableHead>Valor</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead className="text-right">Ações</TableHead>
+                    <TableHead>{t('finance.table.date')}</TableHead>
+                    <TableHead>{t('finance.table.description')}</TableHead>
+                    <TableHead>{t('finance.receipts.client')}</TableHead>
+                    <TableHead>{t('finance.table.value')}</TableHead>
+                    <TableHead>{t('finance.table.status')}</TableHead>
+                    <TableHead className="text-right">
+                      {t('finance.table.actions')}
+                    </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -499,34 +524,34 @@ export default function FinanceDashboard() {
                         <TableCell className="font-medium">
                           {tx.description}
                         </TableCell>
-                        <TableCell>External Client</TableCell>
+                        <TableCell>{t('finance.external_client')}</TableCell>
                         <TableCell className="font-semibold text-green-600">
                           {formatCurrency(tx.amount)}
                         </TableCell>
                         <TableCell>
                           {tx.status === 'completed' && (
                             <Badge className="bg-emerald-100 text-emerald-800 hover:bg-emerald-100">
-                              Recebido
+                              {t('finance.status.paid')}
                             </Badge>
                           )}
                           {tx.status === 'pending' && (
                             <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-100">
-                              Pendente
+                              {t('finance.status.pending')}
                             </Badge>
                           )}
                           {tx.status === 'escrow' && (
                             <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-100">
-                              Reserva (Escrow)
+                              {t('finance.status.escrow')}
                             </Badge>
                           )}
                           {tx.status === 'refund_requested' && (
                             <Badge className="bg-orange-100 text-orange-800 hover:bg-orange-100">
-                              Reembolso Solicitado
+                              {t('finance.status.refund_requested')}
                             </Badge>
                           )}
                           {tx.status === 'refunded' && (
                             <Badge className="bg-gray-100 text-gray-800 hover:bg-gray-100">
-                              Reembolsado
+                              {t('finance.status.refunded')}
                             </Badge>
                           )}
                         </TableCell>
@@ -537,7 +562,7 @@ export default function FinanceDashboard() {
                               size="sm"
                               onClick={() => handleApproveRefund(tx)}
                             >
-                              Aprovar Reembolso
+                              {t('finance.btn.approve_refund')}
                             </Button>
                           )}
                         </TableCell>
@@ -547,11 +572,11 @@ export default function FinanceDashboard() {
                     .length === 0 && (
                     <TableRow>
                       <TableCell
-                        colSpan={5}
+                        colSpan={6}
                         className="text-center py-8 text-muted-foreground"
                       >
-                        Nenhum recebimento encontrado.
-                      </TableCell>
+                        {t('finance.receipts.empty')}
+                      </TableCell>{' '}
                     </TableRow>
                   )}
                 </TableBody>
@@ -569,16 +594,17 @@ export default function FinanceDashboard() {
             <Dialog open={isScheduleOpen} onOpenChange={setIsScheduleOpen}>
               <DialogTrigger asChild>
                 <Button>
-                  <Plus className="mr-2 h-4 w-4" /> Schedule Payment
+                  <Plus className="mr-2 h-4 w-4" />{' '}
+                  {t('finance.schedule_payment')}
                 </Button>
               </DialogTrigger>
               <DialogContent>
                 <DialogHeader>
-                  <DialogTitle>New Schedule</DialogTitle>
+                  <DialogTitle>{t('finance.new_schedule')}</DialogTitle>
                 </DialogHeader>
                 <div className="grid gap-4 py-4">
                   <div className="grid gap-2">
-                    <Label>Description</Label>
+                    <Label>{t('finance.description')}</Label>
                     <Input
                       value={scheduleData.title}
                       onChange={(e) =>
@@ -587,11 +613,11 @@ export default function FinanceDashboard() {
                           title: e.target.value,
                         })
                       }
-                      placeholder="Ex: Cement Supplier"
+                      placeholder={t('finance.placeholder.description')}
                     />
                   </div>
                   <div className="grid gap-2">
-                    <Label>Amount</Label>
+                    <Label>{t('finance.value')}</Label>
                     <CurrencyInput
                       value={scheduleData.amount}
                       onChange={(val) =>
@@ -601,7 +627,7 @@ export default function FinanceDashboard() {
                     />
                   </div>
                   <div className="grid gap-2">
-                    <Label>Scheduled Date</Label>
+                    <Label>{t('finance.date')}</Label>
                     <Input
                       value={scheduleData.date}
                       onChange={(e) =>
@@ -615,7 +641,9 @@ export default function FinanceDashboard() {
                   </div>
                 </div>
                 <DialogFooter>
-                  <Button onClick={handleSchedule}>Confirm</Button>
+                  <Button onClick={handleSchedule}>
+                    {t('finance.confirm_schedule')}
+                  </Button>
                 </DialogFooter>
               </DialogContent>
             </Dialog>
@@ -623,17 +651,17 @@ export default function FinanceDashboard() {
 
           <Card>
             <CardHeader>
-              <CardTitle>Future Payments</CardTitle>
+              <CardTitle>{t('finance.future_payments')}</CardTitle>
             </CardHeader>
             <CardContent>
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Scheduled Date</TableHead>
-                    <TableHead>Description</TableHead>
-                    <TableHead>Beneficiary</TableHead>
-                    <TableHead>Amount</TableHead>
-                    <TableHead>Status</TableHead>
+                    <TableHead>{t('finance.date_scheduled')}</TableHead>
+                    <TableHead>{t('finance.description')}</TableHead>
+                    <TableHead>{t('finance.beneficiary')}</TableHead>
+                    <TableHead>{t('finance.value')}</TableHead>
+                    <TableHead>{t('finance.table.status')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -649,7 +677,9 @@ export default function FinanceDashboard() {
                       </TableCell>
                       <TableCell>{tx.description}</TableCell>
                       <TableCell>
-                        {tx.receiver_id === user.id ? 'You' : 'External'}
+                        {tx.receiver_id === user.id
+                          ? t('finance.you')
+                          : t('finance.external')}
                       </TableCell>
                       <TableCell>{formatCurrency(tx.amount)}</TableCell>
                       <TableCell>
@@ -657,7 +687,7 @@ export default function FinanceDashboard() {
                           variant="outline"
                           className="border-purple-200 bg-purple-50 text-purple-700"
                         >
-                          Scheduled
+                          {t('finance.status.scheduled')}
                         </Badge>
                       </TableCell>
                     </TableRow>
@@ -668,7 +698,7 @@ export default function FinanceDashboard() {
                         colSpan={5}
                         className="text-center py-8 text-muted-foreground"
                       >
-                        No future payments scheduled.
+                        {t('finance.empty_scheduled')}
                       </TableCell>
                     </TableRow>
                   )}
