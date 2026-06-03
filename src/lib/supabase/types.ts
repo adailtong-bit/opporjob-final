@@ -11,7 +11,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: '14.5'
+    PostgrestVersion: "14.5"
   }
   public: {
     Tables: {
@@ -48,11 +48,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'audit_logs_user_id_fkey'
-            columns: ['user_id']
+            foreignKeyName: "audit_logs_user_id_fkey"
+            columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: 'profiles'
-            referencedColumns: ['id']
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -89,11 +89,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'bids_job_id_fkey'
-            columns: ['job_id']
+            foreignKeyName: "bids_job_id_fkey"
+            columns: ["job_id"]
             isOneToOne: false
-            referencedRelation: 'jobs'
-            referencedColumns: ['id']
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -235,11 +235,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'equipment_project_id_fkey'
-            columns: ['project_id']
+            foreignKeyName: "equipment_project_id_fkey"
+            columns: ["project_id"]
             isOneToOne: false
-            referencedRelation: 'projects'
-            referencedColumns: ['id']
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -258,6 +258,8 @@ export type Database = {
           receipt_url: string | null
           receiver_id: string | null
           status: string | null
+          stripe_payment_intent_id: string | null
+          stripe_session_id: string | null
           task_id: string | null
           type: string | null
           updated_at: string
@@ -277,6 +279,8 @@ export type Database = {
           receipt_url?: string | null
           receiver_id?: string | null
           status?: string | null
+          stripe_payment_intent_id?: string | null
+          stripe_session_id?: string | null
           task_id?: string | null
           type?: string | null
           updated_at?: string
@@ -296,6 +300,8 @@ export type Database = {
           receipt_url?: string | null
           receiver_id?: string | null
           status?: string | null
+          stripe_payment_intent_id?: string | null
+          stripe_session_id?: string | null
           task_id?: string | null
           type?: string | null
           updated_at?: string
@@ -303,25 +309,25 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'invoices_payer_id_fkey'
-            columns: ['payer_id']
+            foreignKeyName: "invoices_payer_id_fkey"
+            columns: ["payer_id"]
             isOneToOne: false
-            referencedRelation: 'profiles'
-            referencedColumns: ['id']
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'invoices_receiver_id_fkey'
-            columns: ['receiver_id']
+            foreignKeyName: "invoices_receiver_id_fkey"
+            columns: ["receiver_id"]
             isOneToOne: false
-            referencedRelation: 'profiles'
-            referencedColumns: ['id']
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'invoices_vendor_id_fkey'
-            columns: ['vendor_id']
+            foreignKeyName: "invoices_vendor_id_fkey"
+            columns: ["vendor_id"]
             isOneToOne: false
-            referencedRelation: 'vendors'
-            referencedColumns: ['id']
+            referencedRelation: "vendors"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -391,11 +397,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'jobs_accepted_bid_id_fkey'
-            columns: ['accepted_bid_id']
+            foreignKeyName: "jobs_accepted_bid_id_fkey"
+            columns: ["accepted_bid_id"]
             isOneToOne: false
-            referencedRelation: 'bids'
-            referencedColumns: ['id']
+            referencedRelation: "bids"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -642,18 +648,18 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'reviews_reviewer_id_fkey'
-            columns: ['reviewer_id']
+            foreignKeyName: "reviews_reviewer_id_fkey"
+            columns: ["reviewer_id"]
             isOneToOne: false
-            referencedRelation: 'profiles'
-            referencedColumns: ['id']
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'reviews_target_id_fkey'
-            columns: ['target_id']
+            foreignKeyName: "reviews_target_id_fkey"
+            columns: ["target_id"]
             isOneToOne: false
-            referencedRelation: 'profiles'
-            referencedColumns: ['id']
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -708,11 +714,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'subcategories_category_id_fkey'
-            columns: ['category_id']
+            foreignKeyName: "subcategories_category_id_fkey"
+            columns: ["category_id"]
             isOneToOne: false
-            referencedRelation: 'categories'
-            referencedColumns: ['id']
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -802,33 +808,33 @@ export type Database = {
   }
 }
 
-type DatabaseWithoutInternals = Omit<Database, '__InternalSupabase'>
+type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
 
-type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, 'public'>]
+type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
 
 export type Tables<
   DefaultSchemaTableNameOrOptions extends
-    | keyof (DefaultSchema['Tables'] & DefaultSchema['Views'])
+    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
     | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables'] &
-        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Views'])
+    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
     : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
-  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables'] &
-      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Views'])[TableName] extends {
+  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
       Row: infer R
     }
     ? R
     : never
-  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema['Tables'] &
-        DefaultSchema['Views'])
-    ? (DefaultSchema['Tables'] &
-        DefaultSchema['Views'])[DefaultSchemaTableNameOrOptions] extends {
+  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])
+    ? (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
         Row: infer R
       }
       ? R
@@ -837,23 +843,23 @@ export type Tables<
 
 export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema['Tables']
+    | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables']
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
     : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
-  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables'][TableName] extends {
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
       Insert: infer I
     }
     ? I
     : never
-  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema['Tables']
-    ? DefaultSchema['Tables'][DefaultSchemaTableNameOrOptions] extends {
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
         Insert: infer I
       }
       ? I
@@ -862,23 +868,23 @@ export type TablesInsert<
 
 export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema['Tables']
+    | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables']
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
     : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
-  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables'][TableName] extends {
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
       Update: infer U
     }
     ? U
     : never
-  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema['Tables']
-    ? DefaultSchema['Tables'][DefaultSchemaTableNameOrOptions] extends {
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
         Update: infer U
       }
       ? U
@@ -887,36 +893,36 @@ export type TablesUpdate<
 
 export type Enums<
   DefaultSchemaEnumNameOrOptions extends
-    | keyof DefaultSchema['Enums']
+    | keyof DefaultSchema["Enums"]
     | { schema: keyof DatabaseWithoutInternals },
   EnumName extends DefaultSchemaEnumNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions['schema']]['Enums']
+    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
     : never = never,
 > = DefaultSchemaEnumNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
-  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions['schema']]['Enums'][EnumName]
-  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema['Enums']
-    ? DefaultSchema['Enums'][DefaultSchemaEnumNameOrOptions]
+  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
+  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
+    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
     : never
 
 export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
-    | keyof DefaultSchema['CompositeTypes']
+    | keyof DefaultSchema["CompositeTypes"]
     | { schema: keyof DatabaseWithoutInternals },
   CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions['schema']]['CompositeTypes']
+    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
     : never = never,
 > = PublicCompositeTypeNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
-  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions['schema']]['CompositeTypes'][CompositeTypeName]
-  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema['CompositeTypes']
-    ? DefaultSchema['CompositeTypes'][PublicCompositeTypeNameOrOptions]
+  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
+    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
     : never
 
 export const Constants = {
@@ -924,6 +930,7 @@ export const Constants = {
     Enums: {},
   },
 } as const
+
 
 // ====== DATABASE EXTENDED CONTEXT (auto-generated) ======
 // This section contains actual PostgreSQL column types, constraints, RLS policies,
@@ -1011,6 +1018,8 @@ export const Constants = {
 //   vendor_id: uuid (nullable)
 //   payment_date: timestamp with time zone (nullable)
 //   receipt_url: text (nullable)
+//   stripe_session_id: text (nullable)
+//   stripe_payment_intent_id: text (nullable)
 // Table: jobs
 //   id: uuid (not null, default: gen_random_uuid())
 //   title: text (not null)
@@ -1221,9 +1230,9 @@ export const Constants = {
 //   Policy "equipment_select" (SELECT, PERMISSIVE) roles={public}
 //     USING: true
 // Table: invoices
-//   Policy "invoices_insert" (INSERT, PERMISSIVE) roles={public}
+//   Policy "invoices_insert" (INSERT, PERMISSIVE) roles={authenticated}
 //     WITH CHECK: ((auth.uid() = payer_id) OR (auth.uid() = receiver_id) OR (is_admin() = true))
-//   Policy "invoices_select" (SELECT, PERMISSIVE) roles={public}
+//   Policy "invoices_select" (SELECT, PERMISSIVE) roles={authenticated}
 //     USING: ((auth.uid() = payer_id) OR (auth.uid() = receiver_id) OR (is_admin() = true))
 //   Policy "invoices_update" (UPDATE, PERMISSIVE) roles={public}
 //     USING: ((auth.uid() = payer_id) OR (auth.uid() = receiver_id) OR (is_admin() = true))
@@ -1258,9 +1267,9 @@ export const Constants = {
 // Table: projects
 //   Policy "projects_delete" (DELETE, PERMISSIVE) roles={public}
 //     USING: (auth.uid() = owner_id)
-//   Policy "projects_insert" (INSERT, PERMISSIVE) roles={public}
+//   Policy "projects_insert" (INSERT, PERMISSIVE) roles={authenticated}
 //     WITH CHECK: (auth.uid() = owner_id)
-//   Policy "projects_select" (SELECT, PERMISSIVE) roles={public}
+//   Policy "projects_select" (SELECT, PERMISSIVE) roles={authenticated}
 //     USING: ((auth.uid() = owner_id) OR is_admin())
 //   Policy "projects_update" (UPDATE, PERMISSIVE) roles={public}
 //     USING: (auth.uid() = owner_id)
@@ -1313,34 +1322,34 @@ export const Constants = {
 //     FROM public.jobs
 //     WHERE id = job_id_param
 //     FOR UPDATE;
-//
+//   
 //     IF NOT FOUND THEN
 //       RAISE EXCEPTION 'Job not found';
 //     END IF;
-//
+//   
 //     IF v_job_owner != auth.uid() AND NOT public.is_admin() THEN
 //       RAISE EXCEPTION 'Not authorized';
 //     END IF;
-//
+//   
 //     IF v_job_status != 'open' THEN
 //       RAISE EXCEPTION 'Job is not open';
 //     END IF;
-//
+//   
 //     -- Atomically reject others and accept the selected bid
 //     UPDATE public.bids
 //     SET status = CASE WHEN id = bid_id_param THEN 'accepted' ELSE 'rejected' END
 //     WHERE job_id = job_id_param;
-//
+//   
 //     -- Update job status and link accepted bid
 //     UPDATE public.jobs
 //     SET status = 'in_progress',
 //         accepted_bid_id = bid_id_param
 //     WHERE id = job_id_param;
-//
+//   
 //     RETURN true;
 //   END;
 //   $function$
-//
+//   
 // FUNCTION handle_new_user()
 //   CREATE OR REPLACE FUNCTION public.handle_new_user()
 //    RETURNS trigger
@@ -1374,7 +1383,7 @@ export const Constants = {
 //     RETURN NEW;
 //   END;
 //   $function$
-//
+//   
 // FUNCTION is_admin()
 //   CREATE OR REPLACE FUNCTION public.is_admin()
 //    RETURNS boolean
@@ -1389,7 +1398,7 @@ export const Constants = {
 //     );
 //   END;
 //   $function$
-//
+//   
 // FUNCTION lock_paid_invoices()
 //   CREATE OR REPLACE FUNCTION public.lock_paid_invoices()
 //    RETURNS trigger
@@ -1407,7 +1416,7 @@ export const Constants = {
 //     RETURN NEW;
 //   END;
 //   $function$
-//
+//   
 // FUNCTION log_audit_event()
 //   CREATE OR REPLACE FUNCTION public.log_audit_event()
 //    RETURNS trigger
@@ -1427,7 +1436,7 @@ export const Constants = {
 //     ELSIF TG_OP = 'INSERT' THEN
 //       new_data := to_jsonb(NEW);
 //     END IF;
-//
+//   
 //     INSERT INTO public.audit_logs (user_id, action, entity_type, entity_id, old_data, new_data)
 //     VALUES (
 //       user_id,
@@ -1437,14 +1446,14 @@ export const Constants = {
 //       old_data,
 //       new_data
 //     );
-//
+//     
 //     IF TG_OP = 'DELETE' THEN
 //       RETURN OLD;
 //     END IF;
 //     RETURN NEW;
 //   END;
 //   $function$
-//
+//   
 
 // --- TRIGGERS ---
 // Table: bids
@@ -1471,3 +1480,4 @@ export const Constants = {
 //   CREATE INDEX idx_reviews_target_id ON public.reviews USING btree (target_id)
 // Table: site_settings
 //   CREATE UNIQUE INDEX site_settings_key_key ON public.site_settings USING btree (key)
+
