@@ -46,6 +46,7 @@ import { ProjectReports } from '@/components/construction/ProjectReports'
 import { ProjectApprovalWorkflow } from '@/components/construction/ProjectApprovalWorkflow'
 import { ExternalIntegrationDialog } from '@/components/construction/ExternalIntegrationDialog'
 import { useLanguageStore } from '@/stores/useLanguageStore'
+import { supabase } from '@/lib/supabase/client'
 import { Progress } from '@/components/ui/progress'
 import {
   Dialog,
@@ -96,7 +97,42 @@ export default function ProjectDetail() {
   const currentTab = searchParams.get('tab') || 'financial'
 
   const csvInputRef = useRef<HTMLInputElement>(null)
-  const project = getProject(id!)
+  const [dbProject, setDbProject] = useState<any>(null)
+
+  useEffect(() => {
+    const fetchDbProject = async () => {
+      const { data } = await supabase
+        .from('projects')
+        .select('*')
+        .eq('id', id)
+        .single()
+      if (data && data.is_demo) {
+        setDbProject({
+          id: data.id,
+          name: data.name,
+          description: data.description,
+          status: data.status,
+          totalBudget: data.total_budget || 0,
+          totalSpent: 0,
+          progress: data.progress || 0,
+          is_demo: data.is_demo,
+          startDate: new Date(),
+          endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+          location: 'Virtual Site',
+          stages: [],
+          partners: [],
+          complianceDocuments: [],
+          ledgerEntries: [],
+          updates: [],
+        })
+      }
+    }
+    if (id && !getProject(id)) {
+      fetchDbProject()
+    }
+  }, [id, getProject])
+
+  const project = getProject(id!) || dbProject
 
   const [isImportOpen, setIsImportOpen] = useState(false)
   const [editingPartner, setEditingPartner] = useState<ProjectPartner | null>(

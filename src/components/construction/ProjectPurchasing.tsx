@@ -11,14 +11,30 @@ import {
 } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
 import { Link } from 'react-router-dom'
-import { ShoppingCart, Store, PackageOpen } from 'lucide-react'
+import { ShoppingCart, Store, PackageOpen, FileText } from 'lucide-react'
 import { useLanguageStore } from '@/stores/useLanguageStore'
+import { useState, useEffect } from 'react'
+import { supabase } from '@/lib/supabase/client'
 
 export function ProjectPurchasing({ projectId }: { projectId: string }) {
   const { getOrdersByProject } = useMaterialStore()
   const { formatCurrency, formatDate } = useLanguageStore()
 
   const orders = getOrdersByProject(projectId)
+  const [dbInvoices, setDbInvoices] = useState<any[]>([])
+
+  useEffect(() => {
+    supabase.from('invoices').select('*, vendors(name)').eq('project_id', projectId).then(({ data }) => {
+      if (data) setDbInvoices(data)
+    })
+  }, [projectId])
+
+  const formatInvoiceCurrency = (amount: number, currency: string) => {
+    return new Intl.NumberFormat(undefined, {
+      style: 'currency',
+      currency: currency || 'USD',
+    }).format(amount)
+  }
 
   return (
     <div className="space-y-6 min-w-0 animate-fade-in">
@@ -140,7 +156,52 @@ export function ProjectPurchasing({ projectId }: { projectId: string }) {
                       </TableCell>
                     </TableRow>
                   ))
-              ) : (
+              ) : null}
+
+              {dbInvoices.length > 0 && dbInvoices.map((inv) => (
+                <TableRow key={inv.id} className="group bg-blue-50/30">
+                  <TableCell className="text-sm text-muted-foreground align-top pt-4">
+                    {formatDate(inv.created_at, 'dd/MM/yyyy')}
+                    <div className="text-[10px] mt-1">
+                      Inv: #{inv.id.substring(0, 5).toUpperCase()}
+                    </div>
+                  </TableCell>
+                  <TableCell className="align-top pt-4">
+                    <div className="font-medium flex items-center gap-1.5">
+                      <Store className="h-4 w-4 text-blue-500" />
+                      {inv.vendors?.name || 'Fornecedor'}
+                    </div>
+                  </TableCell>
+                  <TableCell className="align-top pt-4">
+                    <ul className="space-y-1.5">
+                      <li className="text-sm flex items-start gap-2 bg-muted/20 p-1.5 rounded">
+                        <FileText className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
+                        <div className="flex-1">
+                          <span className="font-medium">{inv.description}</span>
+                          <div className="text-xs text-muted-foreground mt-0.5">
+                            Fatura importada (DB)
+                          </div>
+                        </div>
+                      </li>
+                    </ul>
+                  </TableCell>
+                  <TableCell className="font-bold text-primary text-right align-top pt-4 text-base whitespace-nowrap">
+                    {formatInvoiceCurrency(inv.amount, inv.currency)}
+                  </TableCell>
+                  <TableCell className="text-center align-top pt-4">
+                    <div className="flex flex-col items-center gap-2">
+                      <Badge
+                        variant="secondary"
+                        className={inv.status === 'paid' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}
+                      >
+                        {inv.status === 'paid' ? 'Pago' : 'Pendente'}
+                      </Badge>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+
+              {orders.length === 0 && dbInvoices.length === 0 ? (
                 <TableRow>
                   <TableCell
                     colSpan={5}

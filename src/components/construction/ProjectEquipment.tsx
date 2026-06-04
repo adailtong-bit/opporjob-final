@@ -15,12 +15,42 @@ import { Plus, Wrench, DollarSign, Truck } from 'lucide-react'
 import { useLanguageStore } from '@/stores/useLanguageStore'
 import { useToast } from '@/hooks/use-toast'
 
+import { useEffect, useState } from 'react'
+import { supabase } from '@/lib/supabase/client'
+
 export function ProjectEquipment({ projectId }: { projectId: string }) {
   const { equipment, returnEquipment } = useEquipmentStore()
   const { formatCurrency, formatDate } = useLanguageStore()
   const { toast } = useToast()
 
-  const projectEquipment = equipment.filter((eq) => eq.projectId === projectId)
+  const [dbEquipment, setDbEquipment] = useState<any[]>([])
+
+  useEffect(() => {
+    supabase
+      .from('equipment')
+      .select('*')
+      .eq('project_id', projectId)
+      .then(({ data }) => {
+        if (data) {
+          setDbEquipment(
+            data.map((e) => ({
+              id: e.id,
+              name: e.name,
+              type: e.type,
+              status: e.status,
+              projectId: e.project_id,
+              rentalValue: 0,
+              nextMaintenance: new Date(),
+            })),
+          )
+        }
+      })
+  }, [projectId])
+
+  const projectEquipment = [
+    ...equipment.filter((eq) => eq.projectId === projectId),
+    ...dbEquipment,
+  ]
 
   return (
     <div className="space-y-6 min-w-0 animate-fade-in">

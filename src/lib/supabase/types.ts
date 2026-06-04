@@ -60,6 +60,7 @@ export type Database = {
         Row: {
           amount: number | null
           created_at: string | null
+          currency: string | null
           description: string | null
           executor_id: string | null
           executor_name: string | null
@@ -70,6 +71,7 @@ export type Database = {
         Insert: {
           amount?: number | null
           created_at?: string | null
+          currency?: string | null
           description?: string | null
           executor_id?: string | null
           executor_name?: string | null
@@ -80,6 +82,7 @@ export type Database = {
         Update: {
           amount?: number | null
           created_at?: string | null
+          currency?: string | null
           description?: string | null
           executor_id?: string | null
           executor_name?: string | null
@@ -407,6 +410,7 @@ export type Database = {
           completion_comments: string | null
           completion_photos: Json | null
           created_at: string | null
+          currency: string | null
           description: string | null
           external_id: string | null
           id: string
@@ -431,6 +435,7 @@ export type Database = {
           completion_comments?: string | null
           completion_photos?: Json | null
           created_at?: string | null
+          currency?: string | null
           description?: string | null
           external_id?: string | null
           id?: string
@@ -455,6 +460,7 @@ export type Database = {
           completion_comments?: string | null
           completion_photos?: Json | null
           created_at?: string | null
+          currency?: string | null
           description?: string | null
           external_id?: string | null
           id?: string
@@ -1087,6 +1093,7 @@ export const Constants = {
 //   description: text (nullable)
 //   created_at: timestamp with time zone (nullable, default: now())
 //   status: text (nullable, default: 'pending'::text)
+//   currency: text (nullable, default: 'USD'::text)
 // Table: categories
 //   id: text (not null)
 //   name: text (not null)
@@ -1181,6 +1188,7 @@ export const Constants = {
 //   completion_photos: jsonb (nullable, default: '[]'::jsonb)
 //   completion_comments: text (nullable)
 //   is_demo: boolean (not null, default: false)
+//   currency: text (nullable, default: 'USD'::text)
 // Table: marketing_content
 //   id: uuid (not null, default: gen_random_uuid())
 //   key: text (not null)

@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useProjectStore } from '@/stores/useProjectStore'
+import { supabase } from '@/lib/supabase/client'
 import { Link, useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import {
@@ -48,12 +49,44 @@ export default function ConstructionDashboard() {
   const navigate = useNavigate()
 
   const [showPremiumModal, setShowPremiumModal] = useState(false)
+  const [dbProjects, setDbProjects] = useState<any[]>([])
 
-  const activeProjects = projects.filter((p) => p.status === 'in_progress')
-  const completedProjects = projects.filter((p) => p.status === 'completed')
+  useEffect(() => {
+    const fetchDbProjects = async () => {
+      const { data } = await supabase
+        .from('projects')
+        .select('*')
+        .eq('is_demo', true)
+      if (data) {
+        const mapped = data.map((p: any) => ({
+          id: p.id,
+          name: p.name,
+          description: p.description,
+          status: p.status,
+          totalBudget: p.total_budget || 0,
+          totalSpent: 0,
+          progress: p.progress || 0,
+          is_demo: p.is_demo,
+          startDate: new Date(),
+          endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+          location: 'Virtual Site',
+          stages: [],
+        }))
+        setDbProjects(mapped)
+      }
+    }
+    fetchDbProjects()
+  }, [])
 
-  const totalBudget = projects.reduce((acc, p) => acc + p.totalBudget, 0)
-  const totalSpent = projects.reduce((acc, p) => acc + p.totalSpent, 0)
+  const allProjects = [
+    ...projects,
+    ...dbProjects.filter((dp) => !projects.some((p) => p.id === dp.id)),
+  ]
+  const activeProjects = allProjects.filter((p) => p.status === 'in_progress')
+  const completedProjects = allProjects.filter((p) => p.status === 'completed')
+
+  const totalBudget = allProjects.reduce((acc, p) => acc + p.totalBudget, 0)
+  const totalSpent = allProjects.reduce((acc, p) => acc + p.totalSpent, 0)
 
   // Subscription Check
   const isAdmin = user?.role === 'admin' || user?.isPremium
@@ -349,15 +382,20 @@ export default function ConstructionDashboard() {
           {t('construction.my_projects')}
         </h2>
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {projects.map((project) => (
+          {allProjects.map((project) => (
             <Card
               key={project.id}
               className="flex flex-col hover:border-primary/50 transition-colors"
             >
               <CardHeader>
                 <div className="flex justify-between items-start">
-                  <CardTitle className="text-lg line-clamp-1">
+                  <CardTitle className="text-lg line-clamp-1 flex items-center gap-2">
                     {project.name}
+                    {(project as any).is_demo && (
+                      <Badge className="bg-amber-500 hover:bg-amber-600 text-white font-bold tracking-wider text-[10px] uppercase">
+                        {t('demo.badge') || 'DEMO'}
+                      </Badge>
+                    )}
                   </CardTitle>
                   <span
                     className={`px-2 py-0.5 rounded-full text-xs font-medium border ${

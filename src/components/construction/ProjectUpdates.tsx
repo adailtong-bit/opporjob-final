@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useProjectStore } from '@/stores/useProjectStore'
 import { useLanguageStore } from '@/stores/useLanguageStore'
 import { supabase } from '@/lib/supabase/client'
@@ -98,9 +98,38 @@ export function ProjectUpdates({ projectId }: { projectId: string }) {
     toast({ title: t('success') })
   }
 
+  const [dbUpdates, setDbUpdates] = useState<any[]>([])
+
+  useEffect(() => {
+    if (project?.is_demo) {
+      supabase
+        .from('project_updates')
+        .select('*')
+        .eq('project_id', projectId)
+        .then(({ data }) => {
+          if (data) {
+            setDbUpdates(
+              data.map((u) => ({
+                id: u.id,
+                title: u.title,
+                description: u.description,
+                photos: u.photos || [],
+                createdAt: u.created_at,
+              })),
+            )
+          }
+        })
+    }
+  }, [project, projectId])
+
   if (!project) return null
 
-  const allUpdates = project.updates || []
+  const allUpdates = [
+    ...(project.updates || []),
+    ...dbUpdates.filter(
+      (du) => !(project.updates || []).some((pu: any) => pu.id === du.id),
+    ),
+  ]
 
   return (
     <div className="space-y-6">
