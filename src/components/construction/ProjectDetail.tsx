@@ -340,7 +340,9 @@ export default function ProjectDetail() {
                 <SelectItem value="execution">
                   {t('proj.detail.financial_execution') || 'Execution'}
                 </SelectItem>
-                <SelectItem value="compliance">Compliance</SelectItem>
+                <SelectItem value="compliance">
+                  {t('nav.compliance', undefined) || 'Compliance'}
+                </SelectItem>
                 <SelectItem value="partners">
                   {t('proj.detail.partners')}
                 </SelectItem>
@@ -404,7 +406,7 @@ export default function ProjectDetail() {
               value="compliance"
               className="whitespace-nowrap px-4 py-2.5 text-sm"
             >
-              Compliance
+              {t('nav.compliance', undefined) || 'Compliance'}
             </TabsTrigger>
             <TabsTrigger
               value="partners"

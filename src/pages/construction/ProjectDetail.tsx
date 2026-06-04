@@ -554,7 +554,9 @@ export default function ProjectDetail() {
                 />
               </SelectTrigger>
               <SelectContent className="max-h-[60vh] overflow-y-auto">
-                <SelectItem value="overview">Overview</SelectItem>
+                <SelectItem value="overview">
+                  {t('nav.overview', undefined) || 'Overview'}
+                </SelectItem>
                 <SelectItem value="financial">
                   {t('nav.financial_dashboard', undefined) ||
                     'Financial Dashboard'}
@@ -570,7 +572,9 @@ export default function ProjectDetail() {
                 </SelectItem>
                 <SelectItem value="budget">{t('proj.budget.title')}</SelectItem>
                 <SelectItem value="estimation">{t('est.tab.title')}</SelectItem>
-                <SelectItem value="compliance">Compliance</SelectItem>
+                <SelectItem value="compliance">
+                  {t('nav.compliance', undefined) || 'Compliance'}
+                </SelectItem>
                 <SelectItem value="partners">
                   {t('proj.detail.partners')}
                 </SelectItem>
@@ -598,7 +602,7 @@ export default function ProjectDetail() {
               value="overview"
               className="whitespace-nowrap px-4 py-2.5 text-sm"
             >
-              Overview
+              {t('nav.overview', undefined) || 'Overview'}
             </TabsTrigger>
             <TabsTrigger
               value="financial"
@@ -640,7 +644,7 @@ export default function ProjectDetail() {
               value="compliance"
               className="whitespace-nowrap px-4 py-2.5 text-sm"
             >
-              Compliance
+              {t('nav.compliance', undefined) || 'Compliance'}
             </TabsTrigger>
             <TabsTrigger
               value="partners"
