@@ -53,7 +53,12 @@ export function ProjectQuotes({ projectId }: { projectId: string }) {
   const { getProject, addQuote, updateQuoteStatus, updateQuoteContract } =
     useProjectStore()
   const { toast } = useToast()
-  const { t, formatCurrency, formatDate } = useLanguageStore()
+  const { t, formatDate } = useLanguageStore()
+  const formatCurrency = (val: number) =>
+    new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL',
+    }).format(val)
   const project = getProject(projectId)
 
   // Add Quote State

@@ -46,7 +46,12 @@ import { PremiumConstructionModal } from '@/components/PremiumConstructionModal'
 export default function ConstructionDashboard() {
   const { projects } = useProjectStore()
   const { user } = useAuthStore()
-  const { t, formatCurrency, formatDate, currentLanguage } = useLanguageStore()
+  const { t, formatDate, currentLanguage } = useLanguageStore()
+  const formatCurrency = (val: number) =>
+    new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL',
+    }).format(val)
   const navigate = useNavigate()
 
   const [showPremiumModal, setShowPremiumModal] = useState(false)

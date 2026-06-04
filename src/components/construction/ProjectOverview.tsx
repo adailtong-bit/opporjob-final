@@ -22,7 +22,11 @@ export function ProjectOverview({
     invoicePaid: 0,
     invoicePending: 0,
   })
-  const { formatCurrency } = useLanguageStore()
+  const formatCurrency = (val: number) =>
+    new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL',
+    }).format(val)
 
   useEffect(() => {
     const fetchStats = async () => {

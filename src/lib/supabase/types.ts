@@ -1614,10 +1614,8 @@ export const Constants = {
 //     USING: ((EXISTS ( SELECT 1    FROM projects   WHERE ((projects.id = project_updates.project_id) AND (projects.owner_id = auth.uid())))) OR is_admin())
 //   Policy "auth_insert_project_updates" (INSERT, PERMISSIVE) roles={authenticated}
 //     WITH CHECK: ((EXISTS ( SELECT 1    FROM projects   WHERE ((projects.id = project_updates.project_id) AND (projects.owner_id = auth.uid())))) OR is_admin())
-//   Policy "auth_read_project_updates" (SELECT, PERMISSIVE) roles={authenticated}
-//     USING: true
 //   Policy "auth_select_project_updates" (SELECT, PERMISSIVE) roles={authenticated}
-//     USING: ((EXISTS ( SELECT 1    FROM projects   WHERE ((projects.id = project_updates.project_id) AND (projects.owner_id = auth.uid())))) OR is_admin())
+//     USING: ((EXISTS ( SELECT 1    FROM projects p   WHERE ((p.id = project_updates.project_id) AND ((p.owner_id = auth.uid()) OR (EXISTS ( SELECT 1            FROM (project_partners pp              JOIN vendors v ON ((pp.vendor_id = v.id)))           WHERE ((pp.project_id = p.id) AND (v.owner_id = auth.uid())))))))) OR is_admin())
 //   Policy "auth_update_project_updates" (UPDATE, PERMISSIVE) roles={authenticated}
 //     USING: ((EXISTS ( SELECT 1    FROM projects   WHERE ((projects.id = project_updates.project_id) AND (projects.owner_id = auth.uid())))) OR is_admin())
 // Table: projects
@@ -1626,7 +1624,7 @@ export const Constants = {
 //   Policy "projects_insert" (INSERT, PERMISSIVE) roles={authenticated}
 //     WITH CHECK: (auth.uid() = owner_id)
 //   Policy "projects_select" (SELECT, PERMISSIVE) roles={authenticated}
-//     USING: ((auth.uid() = owner_id) OR is_admin())
+//     USING: ((auth.uid() = owner_id) OR is_admin() OR (EXISTS ( SELECT 1    FROM (project_partners pp      JOIN vendors v ON ((pp.vendor_id = v.id)))   WHERE ((pp.project_id = projects.id) AND (v.owner_id = auth.uid())))))
 //   Policy "projects_update" (UPDATE, PERMISSIVE) roles={public}
 //     USING: (auth.uid() = owner_id)
 // Table: push_subscriptions

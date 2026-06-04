@@ -220,9 +220,8 @@ const AuthSync = () => {
               planName: isAdmin ? 'Enterprise' : 'Basic',
             })
 
-            if (data?.country) {
-              setCurrency(data.country === 'BR' ? 'BRL' : 'USD')
-            }
+            // Enforce BRL (R$) currency format across all dashboard cards as requested
+            setCurrency('BRL')
 
             if (window.Notification && Notification.permission === 'granted') {
               subscribeToPushNotifications(user.id)

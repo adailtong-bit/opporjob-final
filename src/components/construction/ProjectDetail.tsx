@@ -216,7 +216,13 @@ export default function ProjectDetail() {
               asChild
               className="shrink-0 h-8 w-8 sm:h-10 sm:w-10 bg-background hover:bg-muted"
             >
-              <Link to="/construction/dashboard">
+              <Link
+                to={
+                  window.location.search.includes('from=partner')
+                    ? '/partner/dashboard'
+                    : '/construction/dashboard'
+                }
+              >
                 <ArrowLeft className="h-4 w-4" />
               </Link>
             </Button>
