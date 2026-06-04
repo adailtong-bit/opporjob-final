@@ -83,6 +83,9 @@ import {
 } from '@/components/ui/popover'
 import { ShoppingCart } from 'lucide-react'
 import { ProjectUpdates } from '@/components/construction/ProjectUpdates'
+import { ProjectOverview } from '@/components/construction/ProjectOverview'
+import { ProjectPartners } from '@/components/construction/ProjectPartners'
+import { ProjectInvoices } from '@/components/construction/ProjectInvoices'
 
 export default function ProjectDetail() {
   const { id } = useParams<{ id: string }>()
@@ -94,7 +97,7 @@ export default function ProjectDetail() {
   const { toast } = useToast()
   const { t, formatDate, currentLanguage, formatCurrency } = useLanguageStore()
 
-  const currentTab = searchParams.get('tab') || 'financial'
+  const currentTab = searchParams.get('tab') || 'overview'
 
   const csvInputRef = useRef<HTMLInputElement>(null)
   const [dbProject, setDbProject] = useState<any>(null)
@@ -551,6 +554,7 @@ export default function ProjectDetail() {
                 />
               </SelectTrigger>
               <SelectContent className="max-h-[60vh] overflow-y-auto">
+                <SelectItem value="overview">Overview</SelectItem>
                 <SelectItem value="financial">
                   {t('nav.financial_dashboard', undefined) ||
                     'Financial Dashboard'}
@@ -590,6 +594,12 @@ export default function ProjectDetail() {
         {/* Desktop Responsive Horizontal Scroll Tabs */}
         <div className="hidden md:block w-full overflow-x-auto pb-4 -mb-4 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
           <TabsList className="flex w-max min-w-full lg:w-auto lg:min-w-0 flex-nowrap justify-start lg:justify-center mx-auto mb-8 h-auto p-1.5 bg-muted/50 rounded-xl">
+            <TabsTrigger
+              value="overview"
+              className="whitespace-nowrap px-4 py-2.5 text-sm"
+            >
+              Overview
+            </TabsTrigger>
             <TabsTrigger
               value="financial"
               className="whitespace-nowrap px-4 py-2.5 text-sm"
@@ -664,6 +674,17 @@ export default function ProjectDetail() {
             </TabsTrigger>
           </TabsList>
         </div>
+
+        {/* Overview Tab */}
+        <TabsContent
+          value="overview"
+          className="w-full min-w-0 animate-fade-in overflow-x-auto"
+        >
+          <ProjectOverview
+            projectId={project.id}
+            progress={project.progress || 0}
+          />
+        </TabsContent>
 
         {/* Financial Tab (Integrated View) */}
         <TabsContent
@@ -894,149 +915,7 @@ export default function ProjectDetail() {
           value="partners"
           className="w-full min-w-0 animate-fade-in overflow-x-auto"
         >
-          <Card className="max-w-4xl mx-auto">
-            <CardHeader>
-              <div className="flex justify-between items-center">
-                <div>
-                  <CardTitle>{t('proj.detail.partners')}</CardTitle>
-                  <CardDescription>
-                    {t('proj.partners.desc') ||
-                      'Gestão de parceiros, equipes e contratos associados.'}
-                  </CardDescription>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              {project.partners && project.partners.length > 0 ? (
-                <div className="grid gap-6">
-                  {project.partners.map((partner) => (
-                    <div
-                      key={partner.id}
-                      className="border rounded-xl bg-card p-6 shadow-sm hover:shadow-md transition-shadow"
-                    >
-                      <div className="flex flex-col md:flex-row justify-between items-start mb-6 gap-4">
-                        <div>
-                          <h3 className="font-bold text-xl text-primary">
-                            {partner.companyName}
-                          </h3>
-                          <div className="text-sm font-medium mt-1">
-                            {partner.email ||
-                              t('general.no_email', undefined) ||
-                              'Email not registered'}{' '}
-                            •{' '}
-                            {partner.phone ||
-                              t('general.no_phone', undefined) ||
-                              'Phone not registered'}
-                          </div>
-                          <p className="text-sm text-muted-foreground mt-1">
-                            {partner.address
-                              ? `${partner.address.street}, ${partner.address.city} - ${partner.address.state}`
-                              : t('general.no_address', undefined) ||
-                                'No address registered'}
-                          </p>
-                          <div className="flex items-center gap-2 mt-3">
-                            <Badge
-                              variant="secondary"
-                              className="bg-primary/10 text-primary hover:bg-primary/20"
-                            >
-                              {partner.specialty ||
-                                t('general.general_specialty', undefined) ||
-                                'General Specialty'}
-                            </Badge>
-                            <Badge variant="outline">
-                              {t('proj.partner.stage')}:{' '}
-                              {t(
-                                project.stages.find(
-                                  (s) => s.id === partner.stageId,
-                                )?.name || 'general.general',
-                              )}
-                            </Badge>
-                            <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-100 border-yellow-200">
-                              {t('proj.partner.score')}:{' '}
-                              {partner.performanceScore}
-                            </Badge>
-                          </div>
-                        </div>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => setEditingPartner(partner)}
-                        >
-                          <Edit2 className="h-4 w-4 mr-2" /> {t('edit')}
-                        </Button>
-                      </div>
-
-                      <div className="grid md:grid-cols-2 gap-8 border-t pt-6">
-                        <div>
-                          <h4 className="text-sm font-bold uppercase tracking-wider text-muted-foreground mb-3 flex items-center gap-2">
-                            <Phone className="h-3 w-3" />{' '}
-                            {t('proj.partner.contacts')}
-                          </h4>
-                          {partner.contacts.length > 0 ? (
-                            <ul className="space-y-2">
-                              {partner.contacts.map((c) => (
-                                <li
-                                  key={c.id}
-                                  className="text-sm flex justify-between items-center bg-muted/30 p-2 rounded"
-                                >
-                                  <span className="font-medium">{c.name}</span>
-                                  <div className="text-right">
-                                    <span className="text-xs text-muted-foreground block">
-                                      {c.email}
-                                    </span>
-                                    <span className="text-xs text-muted-foreground block">
-                                      {c.phone}
-                                    </span>
-                                  </div>
-                                </li>
-                              ))}
-                            </ul>
-                          ) : (
-                            <p className="text-xs text-muted-foreground italic">
-                              {t('proj.partner.no_contacts')}
-                            </p>
-                          )}
-                        </div>
-                        <div>
-                          <h4 className="text-sm font-bold uppercase tracking-wider text-muted-foreground mb-3 flex items-center gap-2">
-                            <Users className="h-3 w-3" /> {t('proj.team.btn')}
-                          </h4>
-                          {partner.team.length > 0 ? (
-                            <ul className="space-y-2">
-                              {partner.team.map((m) => (
-                                <li
-                                  key={m.id}
-                                  className="text-sm flex justify-between items-center bg-muted/30 p-2 rounded"
-                                >
-                                  <span className="font-medium">{m.name}</span>
-                                  <Badge
-                                    variant="secondary"
-                                    className="text-[10px]"
-                                  >
-                                    {t(
-                                      `role.${m.role.toLowerCase().replace(' ', '_')}`,
-                                    ) || m.role}
-                                  </Badge>
-                                </li>
-                              ))}
-                            </ul>
-                          ) : (
-                            <p className="text-xs text-muted-foreground italic">
-                              {t('proj.partner.no_team')}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-12 text-muted-foreground bg-muted/10 rounded-lg border-2 border-dashed">
-                  {t('proj.partners.empty') || 'Nenhum parceiro adicionado'}
-                </div>
-              )}
-            </CardContent>
-          </Card>
+          <ProjectPartners projectId={project.id} />
         </TabsContent>
 
         {/* Quotes & Invoices Tab */}
@@ -1044,7 +923,7 @@ export default function ProjectDetail() {
           value="quotes"
           className="w-full min-w-0 animate-fade-in overflow-x-auto"
         >
-          <ProjectQuotes projectId={project.id} />
+          <ProjectInvoices projectId={project.id} />
         </TabsContent>
 
         {/* Reports Tab */}
