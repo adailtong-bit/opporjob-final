@@ -293,7 +293,7 @@ export function ProjectUpdates({ projectId }: { projectId: string }) {
                           {update.title}
                         </CardTitle>
                         <span className="text-xs font-medium text-muted-foreground bg-muted px-2 py-1 rounded-md shrink-0">
-                          {formatDate(update.createdAt, 'PPP')}
+                          {formatDate(update.createdAt, 'dd/MM/yyyy')}
                         </span>
                       </div>
                       {update.description && (

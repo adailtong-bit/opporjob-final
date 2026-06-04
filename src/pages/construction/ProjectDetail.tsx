@@ -846,10 +846,7 @@ export default function ProjectDetail() {
                           {t(`status.${stage.status}`)}
                         </Badge>
                         <span className="text-xs text-muted-foreground">
-                          {formatDate(
-                            stage.startDate,
-                            currentLanguage === 'en' ? 'MM/dd' : 'dd/MM',
-                          )}
+                          {formatDate(stage.startDate, 'dd/MM/yyyy')}
                         </span>
                       </div>
                       <CardTitle className="text-lg leading-tight mt-2">

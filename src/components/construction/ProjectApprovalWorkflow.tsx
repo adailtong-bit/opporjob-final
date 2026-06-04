@@ -80,7 +80,7 @@ export function ProjectApprovalWorkflow({ projectId }: { projectId: string }) {
                       </p>
                     </div>
                     <Badge variant="outline" className="shrink-0 text-[10px]">
-                      {formatDate(log.created_at, 'PPP p')}
+                      {formatDate(log.created_at, 'dd/MM/yyyy HH:mm')}
                     </Badge>
                   </div>
                 </div>

@@ -100,9 +100,15 @@ export function ProjectBudget({ projectId }: { projectId: string }) {
                           variant={
                             b.status === 'over_budget'
                               ? 'destructive'
-                              : 'default'
+                              : b.status === 'on_track'
+                                ? 'default'
+                                : 'secondary'
                           }
-                          className="uppercase text-[10px]"
+                          className={cn(
+                            'uppercase text-[10px]',
+                            b.status === 'on_track' &&
+                              'bg-green-500 hover:bg-green-600',
+                          )}
                         >
                           {b.status.replace('_', ' ')}
                         </Badge>
