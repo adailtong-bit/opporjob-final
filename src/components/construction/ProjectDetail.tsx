@@ -126,11 +126,11 @@ export default function ProjectDetail() {
       )}
 
       {(project as any).is_demo && (
-        <div className="bg-purple-100 border border-purple-200 text-purple-800 px-4 py-3 rounded-md flex items-center gap-3 shadow-sm mb-4">
-          <Star className="h-5 w-5 text-purple-600" />
+        <div className="bg-amber-100 border border-amber-300 text-amber-900 px-4 py-3 rounded-md flex items-center gap-3 shadow-sm mb-4">
+          <Star className="h-5 w-5 text-amber-600" />
           <p className="text-sm font-medium">
             {t('demo.notification') ||
-              'This is a demonstration project to showcase platform features.'}
+              'This is a demonstration listing to showcase platform features.'}
           </p>
         </div>
       )}
@@ -209,8 +209,13 @@ export default function ProjectDetail() {
 
         {/* Title & Info */}
         <div className="flex flex-col items-start gap-2.5 w-full mt-1 sm:mt-2">
-          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight text-foreground text-left w-full break-words">
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight text-foreground text-left w-full break-words flex flex-wrap items-center gap-2 sm:gap-3">
             {project.name}
+            {(project as any).is_demo && (
+              <Badge className="bg-amber-500 hover:bg-amber-600 text-white font-bold tracking-wider text-[10px] uppercase">
+                {t('demo.badge') || 'DEMO'}
+              </Badge>
+            )}
           </h1>
 
           <div className="flex flex-wrap items-center justify-start gap-1.5 sm:gap-2 text-sm text-muted-foreground w-full">

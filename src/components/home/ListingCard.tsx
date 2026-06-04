@@ -42,9 +42,9 @@ export function ListingCard({
           {showDemo && (
             <Badge
               variant="default"
-              className="absolute top-2 right-2 bg-purple-600 hover:bg-purple-700 shadow-sm font-semibold z-10"
+              className="absolute top-2 right-2 bg-amber-500 hover:bg-amber-600 text-white shadow-sm font-bold tracking-wider uppercase text-[10px] z-10"
             >
-              {t('demo.badge') || 'Example / Exemplo'}
+              {t('demo.badge') || 'DEMO'}
             </Badge>
           )}
           {status && (
