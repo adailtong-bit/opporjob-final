@@ -82,25 +82,60 @@ export default function ProjectDetail() {
         .select('*')
         .eq('id', id)
         .single()
-      if (data && data.is_demo) {
-        setDbProject({
-          id: data.id,
-          name: data.name,
-          description: data.description,
-          status: data.status,
-          totalBudget: data.total_budget || 0,
-          totalSpent: 0,
-          progress: data.progress || 0,
-          is_demo: data.is_demo,
-          startDate: new Date(),
-          endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-          location: 'Virtual Site',
-          stages: [],
-          partners: [],
-          complianceDocuments: [],
-          ledgerEntries: [],
-          updates: [],
-        })
+
+      if (data) {
+        if (data.is_demo) {
+          setDbProject({
+            id: data.id,
+            name: data.name,
+            description: data.description,
+            status: data.status,
+            totalBudget: data.total_budget || 0,
+            totalSpent: 0,
+            progress: data.progress || 0,
+            is_demo: data.is_demo,
+            startDate: new Date(),
+            endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+            location: 'Virtual Site',
+            stages: [],
+            partners: [],
+            complianceDocuments: [],
+            ledgerEntries: [],
+            updates: [],
+          })
+        } else {
+          const { data: partnersData } = await supabase
+            .from('project_partners')
+            .select('*, vendors(*)')
+            .eq('project_id', id)
+
+          setDbProject({
+            id: data.id,
+            name: data.name,
+            description: data.description,
+            status: data.status,
+            totalBudget: data.total_budget || 0,
+            totalSpent: 0,
+            progress: data.progress || 0,
+            is_demo: data.is_demo,
+            startDate: data.created_at ? new Date(data.created_at) : new Date(),
+            endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+            location: 'Site',
+            stages: [],
+            partners:
+              partnersData?.map((p: any) => ({
+                id: p.vendor_id,
+                companyName: p.vendors?.name || 'Unknown',
+                role: p.role,
+                team: [],
+                contacts: [],
+              })) || [],
+            complianceDocuments: [],
+            ledgerEntries: [],
+            updates: [],
+            photos: data.photos || [],
+          })
+        }
       }
     }
     if (id && !getProject(id)) {

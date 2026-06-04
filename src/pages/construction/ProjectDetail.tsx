@@ -109,63 +109,98 @@ export default function ProjectDetail() {
         .select('*')
         .eq('id', id)
         .single()
-      if (data && data.is_demo) {
-        setDbProject({
-          id: data.id,
-          name: data.name,
-          description: data.description,
-          status: data.status,
-          totalBudget: data.total_budget || 0,
-          totalSpent: 0,
-          progress: data.progress || 0,
-          is_demo: data.is_demo,
-          startDate: new Date(),
-          endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-          location: 'Virtual Site',
-          stages: [
-            {
-              id: '1',
-              name: 'Foundation',
-              status: 'completed',
-              progress: 100,
-              startDate: new Date(),
-              endDate: new Date(),
-              budgetMaterial: 10000,
-              budgetLabor: 5000,
-              actualMaterial: 10000,
-              actualLabor: 5000,
-              subStages: [],
-            },
-            {
-              id: '2',
-              name: 'Structure',
-              status: 'in_progress',
-              progress: 50,
-              startDate: new Date(),
-              endDate: new Date(),
-              budgetMaterial: 20000,
-              budgetLabor: 10000,
-              actualMaterial: 15000,
-              actualLabor: 8000,
-              subStages: [],
-            },
-          ],
-          partners: [],
-          complianceDocuments: [],
-          ledgerEntries: [
-            {
-              id: '1',
-              description: 'Permits',
-              estimatedCost: 5000,
-              finalCost: 5000,
-              status: 'paid',
-              date: new Date().toISOString(),
-              category: 'Soft Costs',
-            },
-          ],
-          updates: [],
-          photos: data.photos || [],
-        })
+
+      if (data) {
+        if (data.is_demo) {
+          setDbProject({
+            id: data.id,
+            name: data.name,
+            description: data.description,
+            status: data.status,
+            totalBudget: data.total_budget || 0,
+            totalSpent: 0,
+            progress: data.progress || 0,
+            is_demo: data.is_demo,
+            startDate: new Date(),
+            endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+            location: 'Virtual Site',
+            stages: [
+              {
+                id: '1',
+                name: 'Foundation',
+                status: 'completed',
+                progress: 100,
+                startDate: new Date(),
+                endDate: new Date(),
+                budgetMaterial: 10000,
+                budgetLabor: 5000,
+                actualMaterial: 10000,
+                actualLabor: 5000,
+                subStages: [],
+              },
+              {
+                id: '2',
+                name: 'Structure',
+                status: 'in_progress',
+                progress: 50,
+                startDate: new Date(),
+                endDate: new Date(),
+                budgetMaterial: 20000,
+                budgetLabor: 10000,
+                actualMaterial: 15000,
+                actualLabor: 8000,
+                subStages: [],
+              },
+            ],
+            partners: [],
+            complianceDocuments: [],
+            ledgerEntries: [
+              {
+                id: '1',
+                description: 'Permits',
+                estimatedCost: 5000,
+                finalCost: 5000,
+                status: 'paid',
+                date: new Date().toISOString(),
+                category: 'Soft Costs',
+              },
+            ],
+            updates: [],
+            photos: data.photos || [],
+          })
+        } else {
+          const { data: partnersData } = await supabase
+            .from('project_partners')
+            .select('*, vendors(*)')
+            .eq('project_id', id)
+
+          setDbProject({
+            id: data.id,
+            name: data.name,
+            description: data.description,
+            status: data.status,
+            totalBudget: data.total_budget || 0,
+            totalSpent: 0,
+            progress: data.progress || 0,
+            is_demo: data.is_demo,
+            startDate: data.created_at ? new Date(data.created_at) : new Date(),
+            endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+            location: 'Site',
+            stages: [],
+            partners:
+              partnersData?.map((p: any) => ({
+                id: p.vendor_id,
+                companyName: p.vendors?.name || 'Unknown',
+                role: p.role,
+                team: [],
+                contacts: [],
+              })) || [],
+            complianceDocuments: [],
+            ledgerEntries: [],
+            updates: [],
+            photos: data.photos || [],
+          })
+        }
       }
     }
     if (id && !getProject(id)) {
@@ -346,6 +381,13 @@ export default function ProjectDetail() {
                   }
                 >
                   {t('status.in_progress', undefined) || 'In Progress'}
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() =>
+                    updateProject(project.id, { status: 'finalizing' })
+                  }
+                >
+                  {t('status.finalizing', undefined) || 'Finalizing'}
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={() =>
