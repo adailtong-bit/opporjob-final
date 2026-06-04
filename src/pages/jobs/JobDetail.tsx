@@ -35,6 +35,7 @@ import {
   Upload,
   X,
   Loader2,
+  Star,
 } from 'lucide-react'
 import { useLanguageStore } from '@/stores/useLanguageStore'
 
@@ -64,12 +65,7 @@ export default function JobDetail() {
   const [bidAmount, setBidAmount] = useState('')
   const [bidDescription, setBidDescription] = useState('')
   const [chatMessage, setChatMessage] = useState('')
-  const [messages, setMessages] = useState<{ user: string; text: string }[]>([
-    {
-      user: 'Sistema',
-      text: 'Chat seguro iniciado. O pagamento está protegido em Escrow.',
-    },
-  ])
+  const [dbMessages, setDbMessages] = useState<any[]>([])
 
   const [executionPhotos, setExecutionPhotos] = useState<string[]>([])
   const [executionComments, setExecutionComments] = useState('')
@@ -120,7 +116,7 @@ export default function JobDetail() {
     setSubmittingRating(false)
     if (!error) {
       setHasRated(true)
-      toast({ title: t('job.action.already_rated') })
+      toast({ title: t('job.rating.thank_you') })
     } else {
       toast({ variant: 'destructive', title: 'Error' })
     }
@@ -265,10 +261,17 @@ export default function JobDetail() {
     navigate(`/disputes/new/${job.id}`)
   }
 
-  const handleSendMessage = () => {
-    if (!user || !chatMessage) return
-    setMessages([...messages, { user: user.name, text: chatMessage }])
+  const handleSendMessage = async () => {
+    if (!user || !chatMessage.trim()) return
+
+    const msg = chatMessage.trim()
     setChatMessage('')
+
+    await supabase.from('job_messages' as any).insert({
+      job_id: job.id,
+      sender_id: user.id,
+      content: msg,
+    })
   }
 
   const getStatusLabel = (status: string) => {
@@ -338,7 +341,7 @@ export default function JobDetail() {
             </span>
             <span className="flex items-center gap-1">
               <Calendar className="h-4 w-4" /> Publicado:{' '}
-              {formatDate(job.publicationDate, 'dd/MM/yyyy')}
+              {formatDate(job.publicationDate, 'MM/dd/yyyy')}
             </span>
           </div>
         </div>
@@ -520,8 +523,8 @@ export default function JobDetail() {
                   ) : jobInvoice &&
                     jobInvoice.status === 'paid' &&
                     !hasRated ? (
-                    <div className="bg-white p-5 rounded-lg border border-emerald-100 shadow-sm space-y-3">
-                      <h4 className="font-semibold text-emerald-900">
+                    <div className="bg-white p-5 rounded-lg border border-emerald-100 shadow-sm space-y-4 animate-fade-in-up">
+                      <h4 className="font-semibold text-emerald-900 text-lg">
                         {t('job.rating.title')}
                       </h4>
                       <div className="flex gap-2">
@@ -530,9 +533,15 @@ export default function JobDetail() {
                             key={star}
                             type="button"
                             onClick={() => setRating(star)}
-                            className={`text-3xl ${rating >= star ? 'text-yellow-400' : 'text-gray-200'} hover:scale-110 transition-transform`}
+                            className={`hover:scale-110 transition-transform focus:outline-none`}
                           >
-                            ★
+                            <Star
+                              className={`h-8 w-8 ${
+                                rating >= star
+                                  ? 'fill-yellow-400 text-yellow-400'
+                                  : 'text-gray-300'
+                              }`}
+                            />
                           </button>
                         ))}
                       </div>
@@ -540,20 +549,21 @@ export default function JobDetail() {
                         placeholder={t('job.rating.comment')}
                         value={ratingComment}
                         onChange={(e) => setRatingComment(e.target.value)}
-                        className="bg-white"
-                        rows={2}
+                        className="bg-white resize-none"
+                        rows={3}
                       />
                       <Button
                         onClick={handleSubmitRating}
                         disabled={submittingRating || rating === 0}
+                        className="w-full sm:w-auto"
                       >
                         {t('job.rating.submit')}
                       </Button>
                     </div>
                   ) : hasRated ? (
-                    <div className="bg-white p-3 rounded-lg border border-emerald-100 flex items-center gap-2 text-emerald-700 shadow-sm w-fit font-medium">
-                      <CheckCircle className="h-5 w-5" />{' '}
-                      {t('job.action.already_rated')}
+                    <div className="bg-white p-4 rounded-lg border border-emerald-100 flex items-center gap-3 text-emerald-700 shadow-sm font-medium animate-fade-in">
+                      <CheckCircle className="h-6 w-6 text-emerald-500" />
+                      {t('job.rating.thank_you')}
                     </div>
                   ) : null}
                 </div>
@@ -759,7 +769,7 @@ export default function JobDetail() {
                             {bid.description}
                           </p>
                           <div className="text-xs text-muted-foreground">
-                            {formatDate(bid.createdAt, 'dd/MM/yyyy HH:mm')}
+                            {formatDate(bid.createdAt, 'MM/dd/yyyy hh:mm a')}
                           </div>
                         </div>
                         <div className="flex flex-col items-end gap-2 min-w-[120px]">
@@ -800,22 +810,39 @@ export default function JobDetail() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="p-0">
-                  <div className="h-[300px] overflow-y-auto p-4 space-y-4 bg-background">
-                    {messages.map((msg, idx) => (
-                      <div
-                        key={idx}
-                        className={`flex ${msg.user === user?.name ? 'items-end' : 'items-start'}`}
-                      >
-                        <div
-                          className={`max-w-[80%] rounded-lg p-3 ${msg.user === user?.name ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}
-                        >
-                          <p className="text-sm">{msg.text}</p>
-                        </div>
-                        <span className="text-xs text-muted-foreground mt-1">
-                          {msg.user}
-                        </span>
+                  <div className="h-[300px] overflow-y-auto p-4 space-y-4 bg-background flex flex-col">
+                    <div className="flex items-start">
+                      <div className="max-w-[80%] rounded-lg p-3 bg-muted">
+                        <p className="text-sm">
+                          Chat seguro iniciado. O pagamento está protegido em
+                          Escrow.
+                        </p>
                       </div>
-                    ))}
+                    </div>
+                    {dbMessages.map((msg) => {
+                      const isMe = msg.sender_id === user?.id
+                      return (
+                        <div
+                          key={msg.id}
+                          className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}
+                        >
+                          <div
+                            className={`max-w-[80%] rounded-lg p-3 ${isMe ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}
+                          >
+                            <p className="text-sm whitespace-pre-wrap">
+                              {msg.content}
+                            </p>
+                          </div>
+                          <span className="text-xs text-muted-foreground mt-1">
+                            {isMe ? 'Você' : msg.sender?.name || 'Usuário'} •{' '}
+                            {new Date(msg.created_at).toLocaleTimeString(
+                              'en-US',
+                              { hour: '2-digit', minute: '2-digit' },
+                            )}
+                          </span>
+                        </div>
+                      )
+                    })}
                   </div>
                   <div className="p-4 border-t flex gap-2">
                     <Input

@@ -58,6 +58,11 @@ export default function FindJobs() {
   const [typeFilter, setTypeFilter] = useState(initialType)
   const [dateFilter, setDateFilter] = useState('all')
   const [regionFilter, setRegionFilter] = useState('all')
+  const [minBudget, setMinBudget] = useState('')
+  const [maxBudget, setMaxBudget] = useState('')
+  const [dateFrom, setDateFrom] = useState('')
+  const [dateTo, setDateTo] = useState('')
+  const [showAdvanced, setShowAdvanced] = useState(false)
   const [isSmartSort, setIsSmartSort] = useState(false)
   const [sortBy, setSortBy] = useState('recent')
 
@@ -120,6 +125,20 @@ export default function FindJobs() {
           matchesDate = isAfter(new Date(job.createdAt), cutoffDate)
         }
 
+        if (dateFrom) {
+          if (new Date(job.createdAt) < new Date(dateFrom)) matchesDate = false
+        }
+        if (dateTo) {
+          const toDate = new Date(dateTo)
+          toDate.setHours(23, 59, 59, 999)
+          if (new Date(job.createdAt) > toDate) matchesDate = false
+        }
+
+        let matchesBudget = true
+        const jobPrice = job.budget || job.salePrice || job.rentalRate || 0
+        if (minBudget && jobPrice < Number(minBudget)) matchesBudget = false
+        if (maxBudget && jobPrice > Number(maxBudget)) matchesBudget = false
+
         if (isBasicUser) {
           const isNewListing = isAfter(
             new Date(job.createdAt),
@@ -139,7 +158,8 @@ export default function FindJobs() {
           matchesCategory &&
           matchesType &&
           matchesRegion &&
-          matchesDate
+          matchesDate &&
+          matchesBudget
         )
       })
       .sort((a, b) => {
@@ -197,6 +217,10 @@ export default function FindJobs() {
     regionFilter,
     isBasicUser,
     isSmartSort,
+    minBudget,
+    maxBudget,
+    dateFrom,
+    dateTo,
   ])
 
   return (
@@ -237,6 +261,15 @@ export default function FindJobs() {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
+
+          <Button
+            variant="outline"
+            onClick={() => setShowAdvanced(!showAdvanced)}
+            className="shrink-0"
+          >
+            <Filter className="mr-2 h-4 w-4" />
+            {showAdvanced ? 'Ocultar Filtros' : 'Filtros Avançados'}
+          </Button>
 
           <div className="flex items-center space-x-2 bg-background p-2 rounded-md border shadow-sm shrink-0">
             <Switch
@@ -331,6 +364,57 @@ export default function FindJobs() {
             </SelectContent>
           </Select>
         </div>
+
+        {showAdvanced && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mt-2 animate-fade-in border-t pt-4">
+            <div className="space-y-1.5">
+              <Label className="text-xs text-muted-foreground">
+                {t('find.filter.budget_min')}
+              </Label>
+              <Input
+                type="number"
+                placeholder="0"
+                value={minBudget}
+                onChange={(e) => setMinBudget(e.target.value)}
+                className="bg-background"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs text-muted-foreground">
+                {t('find.filter.budget_max')}
+              </Label>
+              <Input
+                type="number"
+                placeholder="9999"
+                value={maxBudget}
+                onChange={(e) => setMaxBudget(e.target.value)}
+                className="bg-background"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs text-muted-foreground">
+                {t('find.filter.date_from')}
+              </Label>
+              <Input
+                type="date"
+                value={dateFrom}
+                onChange={(e) => setDateFrom(e.target.value)}
+                className="bg-background"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs text-muted-foreground">
+                {t('find.filter.date_to')}
+              </Label>
+              <Input
+                type="date"
+                value={dateTo}
+                onChange={(e) => setDateTo(e.target.value)}
+                className="bg-background"
+              />
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

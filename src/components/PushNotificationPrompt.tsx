@@ -35,11 +35,11 @@ export function PushNotificationPrompt() {
       if (permission === 'granted' && user) {
         const result = await subscribeToPushNotifications(user.id)
         if (result?.success) {
-          toast.success('Notificações ativadas com sucesso!')
+          toast.success('Notifications successfully activated!')
         } else if (result?.mocked) {
-          toast.success('Notificações ativadas no modo simulado.')
+          toast.success('Notifications activated in mock mode.')
         } else {
-          toast.error('Erro ao configurar notificações.')
+          toast.error('Error setting up notifications.')
         }
       }
     } catch (err) {
@@ -68,10 +68,10 @@ export function PushNotificationPrompt() {
             <BellRing className="h-5 w-5 text-primary-foreground" />
           </div>
           <div>
-            <h4 className="font-semibold mb-1">Ativar Notificações</h4>
+            <h4 className="font-semibold mb-1">Enable Notifications</h4>
             <p className="text-sm text-primary-foreground/90 leading-snug">
-              Receba alertas em tempo real sobre novas vagas e atualizações do
-              seu perfil diretamente na tela do celular.
+              Receive real-time alerts about new jobs and profile updates
+              directly on your device.
             </p>
           </div>
         </div>
@@ -81,7 +81,7 @@ export function PushNotificationPrompt() {
             className="flex-1 font-semibold text-primary"
             onClick={handleSubscribe}
           >
-            Ativar Agora
+            Enable Now
           </Button>
         </div>
       </div>

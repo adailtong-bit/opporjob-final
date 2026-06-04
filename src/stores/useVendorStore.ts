@@ -23,15 +23,19 @@ export interface Vendor {
 
 interface VendorState {
   vendors: Vendor[]
+  favorites: string[]
   loading: boolean
   fetchVendors: () => Promise<void>
+  fetchFavorites: () => Promise<void>
   addVendor: (vendor: Partial<Vendor>) => Promise<Vendor | null>
   updateVendor: (id: string, vendor: Partial<Vendor>) => Promise<void>
   deleteVendor: (id: string) => Promise<void>
+  toggleFavorite: (vendorId: string) => Promise<void>
 }
 
 export const useVendorStore = create<VendorState>((set, get) => ({
   vendors: [],
+  favorites: [],
   loading: false,
   fetchVendors: async () => {
     set({ loading: true })
@@ -43,6 +47,19 @@ export const useVendorStore = create<VendorState>((set, get) => ({
       set({ vendors: data as Vendor[], loading: false })
     } else {
       set({ loading: false })
+    }
+  },
+  fetchFavorites: async () => {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+    if (!user) return
+    const { data, error } = await supabase
+      .from('favorites')
+      .select('vendor_id')
+      .eq('user_id', user.id)
+    if (!error && data) {
+      set({ favorites: data.map((f: any) => f.vendor_id) })
     }
   },
   addVendor: async (vendor) => {
@@ -77,6 +94,29 @@ export const useVendorStore = create<VendorState>((set, get) => ({
     const { error } = await supabase.from('vendors').delete().eq('id', id)
     if (!error) {
       set({ vendors: get().vendors.filter((v) => v.id !== id) })
+    }
+  },
+  toggleFavorite: async (vendorId) => {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+    if (!user) return
+
+    const { favorites } = get()
+    const isFavorite = favorites.includes(vendorId)
+
+    if (isFavorite) {
+      await supabase
+        .from('favorites')
+        .delete()
+        .eq('user_id', user.id)
+        .eq('vendor_id', vendorId)
+      set({ favorites: favorites.filter((id) => id !== vendorId) })
+    } else {
+      await supabase
+        .from('favorites')
+        .insert([{ user_id: user.id, vendor_id: vendorId }])
+      set({ favorites: [...favorites, vendorId] })
     }
   },
 }))

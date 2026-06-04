@@ -54,7 +54,7 @@ self.addEventListener('push', function (event) {
     try {
       const data = event.data.json()
       const options = {
-        body: data.body || 'Você tem uma nova notificação.',
+        body: data.body || 'You have a new notification.',
         icon: '/og-image.png',
         badge: '/og-image.png',
         data: {

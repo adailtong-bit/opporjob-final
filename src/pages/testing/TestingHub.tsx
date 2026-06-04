@@ -72,12 +72,20 @@ export default function TestingHub() {
   }, [navigate])
 
   const handleTestLogin = async (email: string) => {
-    if (isAuthenticated) logout()
-    await login(email, 'password123')
-    toast({
-      title: 'Ambiente de Teste',
-      description: `Logado como ${email}. Dados populados.`,
-    })
+    try {
+      if (isAuthenticated) logout()
+      await login(email, 'password123')
+      toast({
+        title: 'Ambiente de Teste',
+        description: `Logado como ${email}. Dados populados.`,
+      })
+    } catch (err: any) {
+      toast({
+        variant: 'destructive',
+        title: 'Erro de Login',
+        description: err.message || 'Falha ao logar no ambiente de teste.',
+      })
+    }
   }
 
   const testUsers = [

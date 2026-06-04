@@ -27,6 +27,7 @@ import {
   LayoutTemplate,
   PanelBottom,
   Database,
+  DollarSign,
 } from 'lucide-react'
 import {
   Sidebar,
@@ -170,6 +171,9 @@ export function MainSidebar() {
       label: t('nav.finance_utils'),
       items: [
         { title: t('nav.finance_panel'), url: '/finance', icon: Wallet },
+        ...(user.role === 'executor' || user.role === 'partner' || isAdmin
+          ? [{ title: t('nav.earnings'), url: '/earnings', icon: DollarSign }]
+          : []),
         { title: t('nav.sub_plans'), url: '/subscription', icon: Crown },
         { title: t('nav.ranking'), url: '/leaderboard', icon: Trophy },
         { title: t('nav.documents'), url: '/documents', icon: FolderOpen },

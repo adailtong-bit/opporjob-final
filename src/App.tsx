@@ -39,6 +39,7 @@ import CreditsStore from '@/pages/billing/CreditsStore'
 import LoyaltyProgram from '@/pages/loyalty/LoyaltyProgram'
 import TestingHub from '@/pages/testing/TestingHub'
 import FinanceDashboard from '@/pages/finance/FinanceDashboard'
+import Earnings from '@/pages/finance/Earnings'
 import AccountingExport from '@/pages/finance/AccountingExport'
 import ManageCategories from '@/pages/admin/ManageCategories'
 import ManageCategoryDetail from '@/pages/admin/ManageCategoryDetail'
@@ -119,10 +120,49 @@ const CategorySync = () => {
 }
 
 import { useJobStore } from '@/stores/useJobStore'
+import { useToast } from '@/hooks/use-toast'
+
 const JobSync = () => {
+  const { user } = useAuth()
+  const { toast } = useToast()
+
   useEffect(() => {
     useJobStore.getState().fetchJobs()
   }, [])
+
+  useEffect(() => {
+    if (!user) return
+
+    const channel = supabase
+      .channel('public:jobs')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'jobs',
+          filter: `owner_id=eq.${user.id}`,
+        },
+        (payload) => {
+          if (
+            payload.old.status !== 'completed' &&
+            payload.new.status === 'completed'
+          ) {
+            toast({
+              title: 'Job Completed',
+              description: `Job '${payload.new.title}' has been marked as completed. Please review the work.`,
+            })
+            useJobStore.getState().fetchJobs()
+          }
+        },
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [user, toast])
+
   return null
 }
 
@@ -752,6 +792,7 @@ const App = () => {
                 <Route path="/credits" element={<CreditsStore />} />
                 <Route path="/loyalty" element={<LoyaltyProgram />} />
                 <Route path="/finance" element={<FinanceDashboard />} />
+                <Route path="/earnings" element={<Earnings />} />
                 <Route
                   path="/finance/accounting"
                   element={<AccountingExport />}

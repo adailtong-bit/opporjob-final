@@ -13,9 +13,7 @@ Deno.serve(async (req: Request) => {
     // Agora utilizamos a chave segura armazenada nas variáveis de ambiente do Supabase
     const APIFY_KEY = Deno.env.get('APIFY_KEY')
     if (!APIFY_KEY) {
-      throw new Error(
-        'Chave APIFY_KEY não configurada nas variáveis de ambiente.',
-      )
+      throw new Error('APIFY_KEY not configured in environment variables.')
     }
 
     const supabaseClient = createClient(
@@ -32,22 +30,22 @@ Deno.serve(async (req: Request) => {
       if (apifyRes.ok) {
         items = await apifyRes.json()
       } else {
-        console.error('Falha ao buscar dados no Apify', await apifyRes.text())
+        console.error('Failed to fetch data from Apify', await apifyRes.text())
         throw new Error(
-          'Erro na integração com Apify. Verifique se o Dataset ID é válido.',
+          'Error integrating with Apify. Verify if the Dataset ID is valid.',
         )
       }
     }
 
-    // Se for apenas um teste da função, inserimos um dado mock para validar o fluxo
+    // If it's a test mode execution, insert mock data
     if (items.length === 0 && payload.testMode) {
       items = [
         {
           id: crypto.randomUUID(),
-          title: 'Especialista em Importação de Dados',
-          description: 'Teste de integração Apify via Edge Function.',
+          title: 'Data Import Specialist',
+          description: 'Apify integration test via Edge Function.',
           price: 500,
-          location: 'Remoto',
+          location: 'Remote',
           category: 'Technology',
           photos: ['https://img.usecurling.com/p/600/600?q=data'],
         },
@@ -56,10 +54,10 @@ Deno.serve(async (req: Request) => {
 
     if (items.length > 0) {
       const jobsToInsert = items.map((item: any) => ({
-        title: item.title || item.name || 'Vaga Importada Apify',
-        description: item.description || item.text || 'Detalhes da vaga...',
+        title: item.title || item.name || 'Apify Imported Job',
+        description: item.description || item.text || 'Job details...',
         budget: item.price || item.budget || item.salary || 0,
-        location: item.location || 'Remoto',
+        location: item.location || 'Remote',
         category: item.category || 'Technology',
         photos: item.photos || [],
         source: 'apify',
@@ -95,7 +93,7 @@ Deno.serve(async (req: Request) => {
           success: true,
           count: totalInserted,
           message:
-            'Integração Apify executada com sucesso usando variáveis de ambiente seguras.',
+            'Apify integration executed successfully using secure environment variables.',
         }),
         {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -107,7 +105,7 @@ Deno.serve(async (req: Request) => {
       JSON.stringify({
         success: true,
         count: 0,
-        message: 'Nenhum dado retornado da Apify para importar.',
+        message: 'No data returned from Apify to import.',
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

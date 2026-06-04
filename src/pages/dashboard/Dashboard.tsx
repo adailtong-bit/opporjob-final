@@ -31,10 +31,12 @@ import {
   Sparkles,
 } from 'lucide-react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { useState, useEffect } from 'react'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, LineChart, Line } from 'recharts'
 import { ChartContainer, ChartTooltipContent } from '@/components/ui/chart'
 import { AINotifications } from '@/components/AINotifications'
 import { AdSection } from '@/components/AdSection'
+import { useVendorStore } from '@/stores/useVendorStore'
 import { useLanguageStore } from '@/stores/useLanguageStore'
 import { differenceInDays } from 'date-fns'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -48,12 +50,29 @@ export default function Dashboard() {
   const { documents } = useConstructionDocumentStore()
   const { interests, acceptInterest, declineInterest, sendInterest } =
     useMessageStore()
-  const { t, formatCurrency, formatDate } = useLanguageStore()
+  const { vendors, favorites, fetchVendors, fetchFavorites, toggleFavorite } =
+    useVendorStore()
+  const { t, formatDate } = useLanguageStore()
+  const formatUSD = (amount: number) =>
+    new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+    }).format(amount)
   const { toast } = useToast()
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
 
   const activeTab = searchParams.get('tab') || 'overview'
+
+  useEffect(() => {
+    fetchVendors()
+    if (user) fetchFavorites()
+  }, [user])
+
+  const [showOnlyFavorites, setShowOnlyFavorites] = useState(false)
+  const displayedVendors = showOnlyFavorites
+    ? vendors.filter((v) => favorites.includes(v.id))
+    : vendors
 
   const handleTabChange = (val: string) => {
     setSearchParams(
@@ -118,9 +137,7 @@ export default function Dashboard() {
               <Wallet className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">
-                {formatCurrency(4500000)}
-              </div>
+              <div className="text-2xl font-bold">{formatUSD(4500000)}</div>
               <p className="text-xs text-muted-foreground">
                 {t('dashboard.admin.volume_desc')}
               </p>
@@ -302,6 +319,14 @@ export default function Dashboard() {
               </span>
             )}
           </TabsTrigger>
+          {isContractor && (
+            <TabsTrigger
+              value="vendors"
+              className="relative data-[state=active]:bg-primary data-[state=active]:text-primary-foreground border"
+            >
+              Vendors
+            </TabsTrigger>
+          )}
         </TabsList>
       </div>
 
@@ -485,7 +510,7 @@ export default function Dashboard() {
               <Wallet className="h-4 w-4 text-indigo-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{formatCurrency(9600)}</div>
+              <div className="text-2xl font-bold">{formatUSD(9600)}</div>
               <p className="text-xs text-muted-foreground flex items-center gap-1">
                 <ShieldCheck className="h-3 w-3" />{' '}
                 {t('dashboard.escrow_protected')}
@@ -541,12 +566,12 @@ export default function Dashboard() {
                       fontSize={12}
                       tickLine={false}
                       axisLine={false}
-                      tickFormatter={(value) => formatCurrency(value)}
+                      tickFormatter={(value) => formatUSD(value)}
                     />
                     <Tooltip
                       content={
                         <ChartTooltipContent
-                          formatter={(value) => formatCurrency(Number(value))}
+                          formatter={(value) => formatUSD(Number(value))}
                         />
                       }
                     />
@@ -585,7 +610,7 @@ export default function Dashboard() {
                     <Tooltip
                       content={
                         <ChartTooltipContent
-                          formatter={(value) => formatCurrency(Number(value))}
+                          formatter={(value) => formatUSD(Number(value))}
                         />
                       }
                     />
@@ -676,7 +701,7 @@ export default function Dashboard() {
                         )}
                         <p className="text-xs text-muted-foreground mt-1">
                           {t('dashboard.interests.received_at')}{' '}
-                          {formatDate(interest.createdAt, 'dd/MM/yyyy HH:mm')}
+                          {formatDate(interest.createdAt, 'MM/dd/yyyy hh:mm a')}
                         </p>
                       </div>
                     </div>
@@ -705,6 +730,75 @@ export default function Dashboard() {
                       </Button>
                     </div>
                   </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </TabsContent>
+
+      <TabsContent value="vendors" className="space-y-6 mt-0">
+        <Card>
+          <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <CardTitle>Vendors Directory</CardTitle>
+              <CardDescription>
+                Manage your favorite service providers.
+              </CardDescription>
+            </div>
+            <Button
+              variant={showOnlyFavorites ? 'default' : 'outline'}
+              onClick={() => setShowOnlyFavorites(!showOnlyFavorites)}
+              className="gap-2"
+            >
+              <Star
+                className={`h-4 w-4 ${showOnlyFavorites ? 'fill-current' : ''}`}
+              />
+              {showOnlyFavorites ? 'Showing Favorites' : 'Show Favorites Only'}
+            </Button>
+          </CardHeader>
+          <CardContent>
+            {displayedVendors.length === 0 ? (
+              <div className="text-center py-10 border-2 border-dashed rounded-lg bg-muted/20 text-muted-foreground">
+                No vendors found.
+              </div>
+            ) : (
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {displayedVendors.map((vendor) => (
+                  <Card key={vendor.id} className="relative group">
+                    <CardContent className="p-4">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <h4 className="font-semibold text-lg">
+                            {vendor.name}
+                          </h4>
+                          <Badge variant="secondary" className="mt-1 mb-2">
+                            {vendor.category || 'General'}
+                          </Badge>
+                          {vendor.email && (
+                            <p className="text-sm text-muted-foreground">
+                              {vendor.email}
+                            </p>
+                          )}
+                          {vendor.phone && (
+                            <p className="text-sm text-muted-foreground">
+                              {vendor.phone}
+                            </p>
+                          )}
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => toggleFavorite(vendor.id)}
+                          className="shrink-0"
+                        >
+                          <Star
+                            className={`h-5 w-5 ${favorites.includes(vendor.id) ? 'fill-yellow-500 text-yellow-500' : 'text-muted-foreground hover:text-yellow-500'}`}
+                          />
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
                 ))}
               </div>
             )}

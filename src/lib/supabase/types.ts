@@ -331,6 +331,45 @@ export type Database = {
           },
         ]
       }
+      job_messages: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          job_id: string
+          sender_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          job_id: string
+          sender_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          job_id?: string
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'job_messages_job_id_fkey'
+            columns: ['job_id']
+            isOneToOne: false
+            referencedRelation: 'jobs'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'job_messages_sender_id_fkey'
+            columns: ['sender_id']
+            isOneToOne: false
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
+          },
+        ]
+      }
       jobs: {
         Row: {
           accepted_bid_id: string | null
@@ -670,6 +709,7 @@ export type Database = {
           comment: string | null
           created_at: string
           id: string
+          job_id: string | null
           rating: number
           reviewer_id: string
           target_id: string
@@ -678,6 +718,7 @@ export type Database = {
           comment?: string | null
           created_at?: string
           id?: string
+          job_id?: string | null
           rating: number
           reviewer_id: string
           target_id: string
@@ -686,11 +727,19 @@ export type Database = {
           comment?: string | null
           created_at?: string
           id?: string
+          job_id?: string | null
           rating?: number
           reviewer_id?: string
           target_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: 'reviews_job_id_fkey'
+            columns: ['job_id']
+            isOneToOne: false
+            referencedRelation: 'jobs'
+            referencedColumns: ['id']
+          },
           {
             foreignKeyName: 'reviews_reviewer_id_fkey'
             columns: ['reviewer_id']
@@ -1063,6 +1112,12 @@ export const Constants = {
 //   receipt_url: text (nullable)
 //   stripe_session_id: text (nullable)
 //   stripe_payment_intent_id: text (nullable)
+// Table: job_messages
+//   id: uuid (not null, default: gen_random_uuid())
+//   job_id: uuid (not null)
+//   sender_id: uuid (not null)
+//   content: text (not null)
+//   created_at: timestamp with time zone (not null, default: now())
 // Table: jobs
 //   id: uuid (not null, default: gen_random_uuid())
 //   title: text (not null)
@@ -1162,6 +1217,7 @@ export const Constants = {
 //   rating: numeric (not null)
 //   comment: text (nullable)
 //   created_at: timestamp with time zone (not null, default: now())
+//   job_id: uuid (nullable)
 // Table: site_settings
 //   id: uuid (not null, default: gen_random_uuid())
 //   key: text (not null)
@@ -1217,6 +1273,10 @@ export const Constants = {
 //   PRIMARY KEY invoices_pkey: PRIMARY KEY (id)
 //   FOREIGN KEY invoices_receiver_id_fkey: FOREIGN KEY (receiver_id) REFERENCES profiles(id) ON DELETE CASCADE
 //   FOREIGN KEY invoices_vendor_id_fkey: FOREIGN KEY (vendor_id) REFERENCES vendors(id) ON DELETE SET NULL
+// Table: job_messages
+//   FOREIGN KEY job_messages_job_id_fkey: FOREIGN KEY (job_id) REFERENCES jobs(id) ON DELETE CASCADE
+//   PRIMARY KEY job_messages_pkey: PRIMARY KEY (id)
+//   FOREIGN KEY job_messages_sender_id_fkey: FOREIGN KEY (sender_id) REFERENCES profiles(id) ON DELETE CASCADE
 // Table: jobs
 //   FOREIGN KEY jobs_accepted_bid_id_fkey: FOREIGN KEY (accepted_bid_id) REFERENCES bids(id) ON DELETE SET NULL
 //   UNIQUE jobs_external_id_key: UNIQUE (external_id)
@@ -1246,10 +1306,12 @@ export const Constants = {
 //   PRIMARY KEY push_subscriptions_pkey: PRIMARY KEY (id)
 //   FOREIGN KEY push_subscriptions_user_id_fkey: FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE
 // Table: reviews
+//   FOREIGN KEY reviews_job_id_fkey: FOREIGN KEY (job_id) REFERENCES jobs(id) ON DELETE CASCADE
 //   PRIMARY KEY reviews_pkey: PRIMARY KEY (id)
 //   CHECK reviews_rating_check: CHECK (((rating >= (1)::numeric) AND (rating <= (5)::numeric)))
 //   FOREIGN KEY reviews_reviewer_id_fkey: FOREIGN KEY (reviewer_id) REFERENCES profiles(id) ON DELETE CASCADE
 //   FOREIGN KEY reviews_target_id_fkey: FOREIGN KEY (target_id) REFERENCES profiles(id) ON DELETE CASCADE
+//   UNIQUE unique_review_per_job: UNIQUE (job_id, reviewer_id, target_id)
 // Table: site_settings
 //   UNIQUE site_settings_key_key: UNIQUE (key)
 //   PRIMARY KEY site_settings_pkey: PRIMARY KEY (id)
@@ -1292,6 +1354,11 @@ export const Constants = {
 //     USING: ((auth.uid() = payer_id) OR (auth.uid() = receiver_id) OR (is_admin() = true))
 //   Policy "invoices_update" (UPDATE, PERMISSIVE) roles={public}
 //     USING: ((auth.uid() = payer_id) OR (auth.uid() = receiver_id) OR (is_admin() = true))
+// Table: job_messages
+//   Policy "job_messages_insert" (INSERT, PERMISSIVE) roles={authenticated}
+//     WITH CHECK: ((sender_id = auth.uid()) AND (EXISTS ( SELECT 1    FROM jobs j   WHERE ((j.id = job_messages.job_id) AND ((j.owner_id = auth.uid()) OR (j.accepted_bid_id IN ( SELECT bids.id            FROM bids           WHERE (bids.executor_id = auth.uid()))))))))
+//   Policy "job_messages_select" (SELECT, PERMISSIVE) roles={authenticated}
+//     USING: (EXISTS ( SELECT 1    FROM jobs j   WHERE ((j.id = job_messages.job_id) AND ((j.owner_id = auth.uid()) OR (j.accepted_bid_id IN ( SELECT bids.id            FROM bids           WHERE (bids.executor_id = auth.uid())))))))
 // Table: jobs
 //   Policy "auth_delete_jobs" (DELETE, PERMISSIVE) roles={public}
 //     USING: ((auth.uid() = owner_id) OR is_admin())
@@ -1587,5 +1654,6 @@ export const Constants = {
 // Table: reviews
 //   CREATE INDEX idx_reviews_reviewer_id ON public.reviews USING btree (reviewer_id)
 //   CREATE INDEX idx_reviews_target_id ON public.reviews USING btree (target_id)
+//   CREATE UNIQUE INDEX unique_review_per_job ON public.reviews USING btree (job_id, reviewer_id, target_id)
 // Table: site_settings
 //   CREATE UNIQUE INDEX site_settings_key_key ON public.site_settings USING btree (key)

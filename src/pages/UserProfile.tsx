@@ -309,13 +309,13 @@ export default function UserProfile() {
                 navigator
                   .share({
                     title: targetUser.name,
-                    text: `Confira o perfil de ${targetUser.name} no OPPORJOB!`,
+                    text: `Check out ${targetUser.name}'s profile on OPPORJOB!`,
                     url: window.location.href,
                   })
                   .catch(console.error)
               } else {
                 navigator.clipboard.writeText(window.location.href)
-                toast({ title: 'Link copiado!' })
+                toast({ title: 'Link copied!' })
               }
             }}
           >
@@ -328,8 +328,8 @@ export default function UserProfile() {
               setIsSaved(!isSaved)
               toast({
                 title: isSaved
-                  ? 'Removido dos favoritos'
-                  : 'Salvo nos favoritos!',
+                  ? 'Removed from favorites'
+                  : 'Saved to favorites!',
               })
             }}
           >
@@ -581,7 +581,10 @@ export default function UserProfile() {
                             </span>
                           </div>
                           <span className="font-bold text-primary">
-                            {formatCurrency(svc.price)}
+                            {new Intl.NumberFormat('en-US', {
+                              style: 'currency',
+                              currency: 'USD',
+                            }).format(svc.price)}
                           </span>
                         </div>
                         {user && user.id !== id && (

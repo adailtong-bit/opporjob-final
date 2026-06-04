@@ -47,8 +47,8 @@ Deno.serve(async (req: Request) => {
 
       newStatus = 'refund_requested'
       notifyUserId = invoice.receiver_id
-      pushTitle = 'Solicitação de Reembolso'
-      pushBody = `O cliente solicitou reembolso referente a: ${invoice.description || 'um serviço'}`
+      pushTitle = 'Refund Request'
+      pushBody = `The client requested a refund for: ${invoice.description || 'a service'}`
     } else if (action === 'approve') {
       if (invoice.receiver_id !== user.id) throw new Error('Not the receiver')
       if (invoice.status !== 'refund_requested')
@@ -56,8 +56,8 @@ Deno.serve(async (req: Request) => {
 
       newStatus = 'refunded'
       notifyUserId = invoice.payer_id
-      pushTitle = 'Reembolso Aprovado'
-      pushBody = `Seu reembolso para "${invoice.description || 'um serviço'}" foi aprovado.`
+      pushTitle = 'Refund Approved'
+      pushBody = `Your refund for "${invoice.description || 'a service'}" was approved.`
     } else {
       throw new Error('Invalid action')
     }

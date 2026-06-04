@@ -66,7 +66,7 @@ Deno.serve(async (req: Request) => {
 
     const pushPayload = JSON.stringify({
       title: payload.title || 'OPPORJOB',
-      body: payload.body || 'Nova notificação na plataforma.',
+      body: payload.body || 'New notification on the platform.',
       url: payload.url || '/',
     })
 

@@ -46,84 +46,102 @@ export default function Login() {
 
   async function onSubmit(data: any) {
     setIsLoading(true)
-    const { error } = await supabase.auth.signInWithPassword({
-      email: data.email,
-      password: data.password,
-    })
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email: data.email.trim(),
+        password: data.password,
+      })
 
-    if (error) {
+      if (error) {
+        setIsLoading(false)
+        toast({
+          variant: 'destructive',
+          title: t('error') || 'Error',
+          description: error.message || 'Invalid credentials.',
+        })
+        return
+      }
+
+      // Check if MFA is required
+      const { data: aalData } =
+        await supabase.auth.mfa.getAuthenticatorAssuranceLevel()
+      if (
+        aalData &&
+        aalData.currentLevel === 'aal1' &&
+        aalData.nextLevel === 'aal2'
+      ) {
+        const { data: factors } = await supabase.auth.mfa.listFactors()
+        const totpFactor = factors?.totp[0]
+        if (totpFactor) {
+          setFactorId(totpFactor.id)
+          setShowMfa(true)
+          setIsLoading(false)
+          return
+        }
+      }
+
+      setIsLoading(false)
+      toast({
+        title: t('success') || 'Success',
+        description: 'Login successful.',
+      })
+      navigate('/dashboard')
+    } catch (err: any) {
       setIsLoading(false)
       toast({
         variant: 'destructive',
         title: t('error') || 'Error',
-        description: error.message || 'Invalid credentials.',
+        description: err.message || 'An unexpected error occurred.',
       })
-      return
     }
-
-    // Check if MFA is required
-    const { data: aalData } =
-      await supabase.auth.mfa.getAuthenticatorAssuranceLevel()
-    if (
-      aalData &&
-      aalData.currentLevel === 'aal1' &&
-      aalData.nextLevel === 'aal2'
-    ) {
-      const { data: factors } = await supabase.auth.mfa.listFactors()
-      const totpFactor = factors?.totp[0]
-      if (totpFactor) {
-        setFactorId(totpFactor.id)
-        setShowMfa(true)
-        setIsLoading(false)
-        return
-      }
-    }
-
-    setIsLoading(false)
-    toast({
-      title: t('success') || 'Success',
-      description: 'Login successful.',
-    })
-    navigate('/dashboard')
   }
 
   async function handleMfaSubmit(e: React.FormEvent) {
     e.preventDefault()
     setIsLoading(true)
 
-    const challenge = await supabase.auth.mfa.challenge({ factorId })
-    if (challenge.error) {
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: challenge.error.message,
+    try {
+      const challenge = await supabase.auth.mfa.challenge({ factorId })
+      if (challenge.error) {
+        toast({
+          variant: 'destructive',
+          title: 'Error',
+          description: challenge.error.message,
+        })
+        setIsLoading(false)
+        return
+      }
+
+      const verify = await supabase.auth.mfa.verify({
+        factorId,
+        challengeId: challenge.data.id,
+        code: mfaCode,
       })
+
       setIsLoading(false)
-      return
-    }
 
-    const verify = await supabase.auth.mfa.verify({
-      factorId,
-      challengeId: challenge.data.id,
-      code: mfaCode,
-    })
+      if (verify.error) {
+        toast({
+          variant: 'destructive',
+          title: 'Error',
+          description: verify.error.message,
+        })
+        return
+      }
 
-    setIsLoading(false)
-
-    if (verify.error) {
+      toast({
+        title: 'Success',
+        description: 'Multifactor authentication confirmed.',
+      })
+      navigate('/dashboard')
+    } catch (err: any) {
+      setIsLoading(false)
       toast({
         variant: 'destructive',
         title: 'Error',
-        description: verify.error.message,
+        description: err.message || 'An unexpected error occurred.',
       })
-      return
     }
-
-    toast({
-      title: 'Success',
-      description: 'Multifactor authentication confirmed.',
-    })
-    navigate('/dashboard')
   }
 
   return (
