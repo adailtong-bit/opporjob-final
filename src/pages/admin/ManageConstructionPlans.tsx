@@ -130,7 +130,7 @@ export default function ManageConstructionPlans() {
                   </TableCell>
                   <TableCell>
                     <div className="font-semibold text-[15px]">
-                      {formatCurrencyValue(plan.price, 'BRL')}
+                      {formatCurrencyValue(plan.price, 'USD')}
                     </div>
                     <div className="text-xs text-muted-foreground capitalize">
                       {getCycleLabel(plan.billingCycle)}

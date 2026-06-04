@@ -81,10 +81,10 @@ export function ProjectBudget({ projectId }: { projectId: string }) {
                         {b.category}
                       </TableCell>
                       <TableCell className="text-right">
-                        {formatCurrencyValue(b.estimated_amount, 'BRL')}
+                        {formatCurrencyValue(b.estimated_amount, 'USD')}
                       </TableCell>
                       <TableCell className="text-right">
-                        {formatCurrencyValue(b.actual_amount, 'BRL')}
+                        {formatCurrencyValue(b.actual_amount, 'USD')}
                       </TableCell>
                       <TableCell
                         className={cn('text-right font-bold', {
@@ -92,7 +92,7 @@ export function ProjectBudget({ projectId }: { projectId: string }) {
                           'text-green-500': variance >= 0,
                         })}
                       >
-                        {formatCurrencyValue(variance, 'BRL')}
+                        {formatCurrencyValue(variance, 'USD')}
                       </TableCell>
                       <TableCell>
                         <Badge
@@ -140,13 +140,13 @@ export function ProjectBudget({ projectId }: { projectId: string }) {
             <div className="text-right">
               <p className="text-sm text-muted-foreground">Total Estimated</p>
               <p className="text-xl font-bold">
-                {formatCurrencyValue(totalEstimated, 'BRL')}
+                {formatCurrencyValue(totalEstimated, 'USD')}
               </p>
             </div>
             <div className="text-right">
               <p className="text-sm text-muted-foreground">Total Actual</p>
               <p className="text-xl font-bold text-primary">
-                {formatCurrencyValue(totalActual, 'BRL')}
+                {formatCurrencyValue(totalActual, 'USD')}
               </p>
             </div>
             <div className="text-right border-t md:border-t-0 md:border-l pt-2 md:pt-0 md:pl-8">
@@ -157,7 +157,7 @@ export function ProjectBudget({ projectId }: { projectId: string }) {
                   'text-green-500': totalVariance >= 0,
                 })}
               >
-                {formatCurrencyValue(totalVariance, 'BRL')}
+                {formatCurrencyValue(totalVariance, 'USD')}
               </p>
             </div>
           </div>

@@ -91,7 +91,7 @@ export default function ConstructionPlans() {
               <CardContent className="flex-1 space-y-6">
                 <div className="flex items-baseline gap-1">
                   <span className="text-4xl font-extrabold tracking-tight text-foreground">
-                    {formatCurrencyValue(plan.price, 'BRL')}
+                    {formatCurrencyValue(plan.price, 'USD')}
                   </span>
                   <span className="text-muted-foreground font-medium">
                     /{getCycleLabel(plan.billingCycle)}

@@ -59,7 +59,7 @@ export default function Earnings() {
     const rows = invoices.map((inv) => [
       format(new Date(inv.created_at), 'MM/dd/yyyy'),
       `"${(inv.description || '').replace(/"/g, '""')}"`,
-      `"${formatCurrencyValue(Number(inv.amount), inv.currency || 'BRL')}"`,
+      `"${formatCurrencyValue(Number(inv.amount), inv.currency || 'USD')}"`,
       inv.status,
       inv.type || 'service',
     ])
@@ -98,7 +98,7 @@ export default function Earnings() {
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-emerald-700">
-              {formatCurrencyValue(totalEarned, 'BRL')}
+              {formatCurrencyValue(totalEarned, 'USD')}
             </div>
           </CardContent>
         </Card>
@@ -111,7 +111,7 @@ export default function Earnings() {
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-amber-700">
-              {formatCurrencyValue(pendingPayouts, 'BRL')}
+              {formatCurrencyValue(pendingPayouts, 'USD')}
             </div>
           </CardContent>
         </Card>
@@ -147,7 +147,7 @@ export default function Earnings() {
                       <TableCell className="font-medium">
                         {formatCurrencyValue(
                           Number(inv.amount),
-                          inv.currency || 'BRL',
+                          inv.currency || 'USD',
                         )}
                       </TableCell>
                       <TableCell>

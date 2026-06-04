@@ -173,7 +173,7 @@ export default function JobDetail() {
         toast({
           variant: 'destructive',
           title: 'Lance inválido',
-          description: `${t('job.auction_warning')} ${formatCurrencyValue(lowestBid, (job as any).currency || 'BRL')}`,
+          description: `${t('job.auction_warning')} ${formatCurrencyValue(lowestBid, (job as any).currency || 'USD')}`,
         })
         return
       }
@@ -184,7 +184,7 @@ export default function JobDetail() {
       executorId: user.id,
       executorName: user.name,
       amount: amount,
-      currency: (job as any).currency || 'BRL',
+      currency: (job as any).currency || 'USD',
       description: bidDescription,
       executorReputation: user.reputation,
     })
@@ -192,7 +192,7 @@ export default function JobDetail() {
     addNotification({
       userId: job.ownerId,
       title: 'Novo Lance Recebido!',
-      message: `Você recebeu um lance de ${formatCurrencyValue(amount, (job as any).currency || 'BRL')} no anúncio "${job.title}".`,
+      message: `Você recebeu um lance de ${formatCurrencyValue(amount, (job as any).currency || 'USD')} no anúncio "${job.title}".`,
       type: 'info',
       link: `/jobs/${job.id}`,
     })
@@ -209,7 +209,7 @@ export default function JobDetail() {
     sendChatMessage(
       convId,
       user.id,
-      `Enviei uma proposta de ${formatCurrencyValue(amount, (job as any).currency || 'BRL')}:\n${bidDescription}`,
+      `Enviei uma proposta de ${formatCurrencyValue(amount, (job as any).currency || 'USD')}:\n${bidDescription}`,
     )
 
     toast({
@@ -377,13 +377,13 @@ export default function JobDetail() {
                 ? 'Grátis'
                 : formatCurrencyValue(
                     displayPrice,
-                    (job as any).currency || 'BRL',
+                    (job as any).currency || 'USD',
                   )}
             </div>
             {job.type === 'auction' && job.bids.length > 0 && (
               <div className="text-xs font-semibold text-emerald-600">
                 Melhor Oferta:{' '}
-                {formatCurrencyValue(lowestBid, (job as any).currency || 'BRL')}
+                {formatCurrencyValue(lowestBid, (job as any).currency || 'USD')}
               </div>
             )}
             {job.listingType === 'rental' && job.rentalRateType && (
@@ -800,7 +800,7 @@ export default function JobDetail() {
                           <span className="text-xl font-bold text-primary">
                             {formatCurrencyValue(
                               bid.amount,
-                              bid.currency || (job as any).currency || 'BRL',
+                              bid.currency || (job as any).currency || 'USD',
                             )}
                           </span>
                           <Button
@@ -836,7 +836,7 @@ export default function JobDetail() {
                             acceptedBid?.amount || 0,
                             acceptedBid?.currency ||
                               (job as any).currency ||
-                              'BRL',
+                              'USD',
                           )}
                         </Badge>
                       )}
@@ -943,7 +943,7 @@ export default function JobDetail() {
                       Aviso: A oferta deve ser menor que{' '}
                       {formatCurrencyValue(
                         lowestBid,
-                        (job as any).currency || 'BRL',
+                        (job as any).currency || 'USD',
                       )}
                     </CardDescription>
                   )}
@@ -1078,7 +1078,7 @@ export default function JobDetail() {
                 ? 'Grátis'
                 : formatCurrencyValue(
                     displayPrice,
-                    (job as any).currency || 'BRL',
+                    (job as any).currency || 'USD',
                   )}
             </p>
           </div>

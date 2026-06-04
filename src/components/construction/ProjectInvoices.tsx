@@ -94,7 +94,7 @@ export function ProjectInvoices({ projectId }: { projectId: string }) {
                           : 'N/A'}
                       </TableCell>
                       <TableCell className="text-right font-bold">
-                        {formatCurrencyValue(inv.amount, inv.currency || 'BRL')}
+                        {formatCurrencyValue(inv.amount, inv.currency || 'USD')}
                       </TableCell>
                       <TableCell>
                         <Badge

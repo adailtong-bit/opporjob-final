@@ -21,7 +21,7 @@ export function CurrencyInput({
   const { currentLanguage, currentCurrency } = useLanguageStore()
 
   React.useEffect(() => {
-    const resolvedCurrency = currentCurrency || 'BRL'
+    const resolvedCurrency = currentCurrency || 'USD'
     setDisplayValue(formatCurrencyValue(value, resolvedCurrency))
   }, [value, currentLanguage, currentCurrency])
 

@@ -80,7 +80,7 @@ export default function ConstructionCheckout() {
         .insert({
           payer_id: user?.id,
           amount: plan.price,
-          currency: 'BRL',
+          currency: 'USD',
           type: 'plan_subscription',
           status: 'pending',
           description: `Assinatura do plano: ${plan.name}${billingInfo}`,
@@ -277,7 +277,7 @@ export default function ConstructionCheckout() {
                 <span className="text-xl md:text-2xl font-bold text-primary break-all">
                   {isAdmin
                     ? t('checkout.free_admin')
-                    : formatCurrencyValue(plan.price, 'BRL')}
+                    : formatCurrencyValue(plan.price, 'USD')}
                 </span>
               </div>
             </CardContent>

@@ -524,7 +524,7 @@ export default function FindJobs() {
                       ? 'Grátis'
                       : formatCurrencyValue(
                           displayPrice,
-                          (job as any).currency || 'BRL',
+                          (job as any).currency || 'USD',
                         )}
                   </span>
                 </div>

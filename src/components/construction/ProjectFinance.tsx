@@ -152,7 +152,7 @@ export function ProjectFinance({ projectId }: { projectId: string }) {
               <div className="flex items-center gap-2">
                 <PieChart className="h-5 w-5 text-blue-500" />
                 <span className="text-xl font-bold text-foreground truncate">
-                  {formatCurrencyValue(calculatedTotalBudget, 'BRL')}
+                  {formatCurrencyValue(calculatedTotalBudget, 'USD')}
                 </span>
               </div>
             </div>
@@ -164,7 +164,7 @@ export function ProjectFinance({ projectId }: { projectId: string }) {
               <div className="flex items-center gap-2">
                 <BookOpen className="h-5 w-5 text-purple-500" />
                 <span className="text-xl font-bold text-foreground truncate">
-                  {formatCurrencyValue(totalRealizedCosts, 'BRL')}
+                  {formatCurrencyValue(totalRealizedCosts, 'USD')}
                 </span>
               </div>
             </div>
@@ -177,7 +177,7 @@ export function ProjectFinance({ projectId }: { projectId: string }) {
               <div className="flex items-center gap-2">
                 <WalletCards className="h-5 w-5 text-orange-500" />
                 <span className="text-xl font-bold text-foreground truncate">
-                  {formatCurrencyValue(totalOutflows, 'BRL')}
+                  {formatCurrencyValue(totalOutflows, 'USD')}
                 </span>
               </div>
             </div>
@@ -208,7 +208,7 @@ export function ProjectFinance({ projectId }: { projectId: string }) {
                   )}
                 >
                   {isOverBudget ? '' : '+'}
-                  {formatCurrencyValue(financialVariance, 'BRL')}
+                  {formatCurrencyValue(financialVariance, 'USD')}
                 </span>
               </div>
             </div>
@@ -236,7 +236,7 @@ export function ProjectFinance({ projectId }: { projectId: string }) {
                     fontSize={12}
                     tickLine={false}
                     axisLine={false}
-                    tickFormatter={(value) => `R$${(value / 1000).toFixed(0)}k`}
+                    tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
                   />
                   <ChartTooltip content={<ChartTooltipContent />} />
                   <Legend verticalAlign="top" height={36} />
@@ -299,7 +299,7 @@ export function ProjectFinance({ projectId }: { projectId: string }) {
               <strong>{delayedCount}</strong>{' '}
               {t('alert.delay_impact_desc_2', undefined) ||
                 'delayed milestones/tasks. The estimated impact on indirect costs (Soft Costs) is'}{' '}
-              <strong>{formatCurrencyValue(totalDelayImpact, 'BRL')}</strong>,{' '}
+              <strong>{formatCurrencyValue(totalDelayImpact, 'USD')}</strong>,{' '}
               {t('alert.delay_impact_desc_3', undefined) ||
                 'increasing budget consumption.'}
             </AlertDescription>

@@ -97,7 +97,7 @@ export function ListingCard({
           <p className="font-bold text-lg mt-1 text-primary">
             {price === 0
               ? 'Free'
-              : formatCurrencyValue(price, (job as any)?.currency || 'BRL')}
+              : formatCurrencyValue(price, (job as any)?.currency || 'USD')}
           </p>
           {location && (
             <p className="text-xs text-muted-foreground mt-1 truncate">
