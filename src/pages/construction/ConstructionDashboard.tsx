@@ -59,10 +59,13 @@ export default function ConstructionDashboard() {
 
   useEffect(() => {
     const fetchDbProjects = async () => {
+      if (!user) return
+
       const { data } = await supabase
         .from('projects')
         .select('*')
-        .eq('is_demo', true)
+        .eq('owner_id', user.id)
+
       if (data) {
         const mapped = data.map((p: any) => ({
           id: p.id,
@@ -73,20 +76,22 @@ export default function ConstructionDashboard() {
           totalSpent: 0,
           progress: p.progress || 0,
           is_demo: p.is_demo,
-          startDate: new Date(),
+          startDate: p.created_at ? new Date(p.created_at) : new Date(),
           endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-          location: 'Virtual Site',
+          location: 'Site',
           stages: [],
         }))
         setDbProjects(mapped)
       }
     }
     fetchDbProjects()
-  }, [])
+  }, [user])
 
   const allProjects = [
-    ...projects,
-    ...dbProjects.filter((dp) => !projects.some((p) => p.id === dp.id)),
+    ...projects.filter((p) => !(p as any).is_demo),
+    ...dbProjects.filter(
+      (dp) => !projects.some((p) => p.id === dp.id) && !dp.is_demo,
+    ),
   ]
   const activeProjects = allProjects.filter((p) => p.status === 'in_progress')
   const completedProjects = allProjects.filter((p) => p.status === 'completed')
@@ -125,20 +130,7 @@ export default function ConstructionDashboard() {
     }
   })
 
-  const analyticsData =
-    finishedProjectStats.length > 0
-      ? finishedProjectStats
-      : [
-          {
-            name: 'Beta Residential (Mock)',
-            plannedDays: 120,
-            actualDays: 135,
-            timeVariance: 15,
-            plannedMat: 50000,
-            actualMat: 55000,
-            matVariance: 5000,
-          },
-        ]
+  const analyticsData = finishedProjectStats
 
   return (
     <div className="space-y-8">
@@ -345,39 +337,52 @@ export default function ConstructionDashboard() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {analyticsData.map((d, i) => (
-                <TableRow key={i}>
-                  <TableCell className="font-medium">{d.name}</TableCell>
-                  <TableCell>
-                    {d.plannedDays} {t('construction.days')}
-                  </TableCell>
-                  <TableCell>
-                    {d.actualDays} {t('construction.days')}
-                  </TableCell>
+              {analyticsData.length === 0 ? (
+                <TableRow>
                   <TableCell
-                    className={
-                      d.timeVariance > 0
-                        ? 'text-red-500 font-bold'
-                        : 'text-green-600'
-                    }
+                    colSpan={7}
+                    className="text-center text-muted-foreground py-6"
                   >
-                    {d.timeVariance > 0 ? `+${d.timeVariance}` : d.timeVariance}
-                  </TableCell>
-                  <TableCell>{formatCurrency(d.plannedMat)}</TableCell>
-                  <TableCell>{formatCurrency(d.actualMat)}</TableCell>
-                  <TableCell
-                    className={
-                      d.matVariance > 0
-                        ? 'text-red-500 font-bold'
-                        : 'text-green-600'
-                    }
-                  >
-                    {d.matVariance > 0
-                      ? `+${formatCurrency(d.matVariance)}`
-                      : d.matVariance}
+                    {t('construction.no_data') || 'Nenhum dado disponível'}
                   </TableCell>
                 </TableRow>
-              ))}
+              ) : (
+                analyticsData.map((d, i) => (
+                  <TableRow key={i}>
+                    <TableCell className="font-medium">{d.name}</TableCell>
+                    <TableCell>
+                      {d.plannedDays} {t('construction.days')}
+                    </TableCell>
+                    <TableCell>
+                      {d.actualDays} {t('construction.days')}
+                    </TableCell>
+                    <TableCell
+                      className={
+                        d.timeVariance > 0
+                          ? 'text-red-500 font-bold'
+                          : 'text-green-600'
+                      }
+                    >
+                      {d.timeVariance > 0
+                        ? `+${d.timeVariance}`
+                        : d.timeVariance}
+                    </TableCell>
+                    <TableCell>{formatCurrency(d.plannedMat)}</TableCell>
+                    <TableCell>{formatCurrency(d.actualMat)}</TableCell>
+                    <TableCell
+                      className={
+                        d.matVariance > 0
+                          ? 'text-red-500 font-bold'
+                          : 'text-green-600'
+                      }
+                    >
+                      {d.matVariance > 0
+                        ? `+${formatCurrency(d.matVariance)}`
+                        : d.matVariance}
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
             </TableBody>
           </Table>
         </CardContent>
@@ -387,101 +392,109 @@ export default function ConstructionDashboard() {
         <h2 className="text-xl font-bold tracking-tight mb-4">
           {t('construction.my_projects')}
         </h2>
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {allProjects.map((project) => (
-            <Card
-              key={project.id}
-              className="flex flex-col hover:border-primary/50 transition-colors"
-            >
-              <CardHeader>
-                <div className="flex justify-between items-start">
-                  <CardTitle className="text-lg line-clamp-1 flex items-center gap-2">
-                    {project.name}
-                    {(project as any).is_demo && (
-                      <Badge className="bg-amber-500 hover:bg-amber-600 text-white font-bold tracking-wider text-[10px] uppercase">
-                        {t('demo.badge') || 'DEMO'}
-                      </Badge>
-                    )}
-                  </CardTitle>
-                  <span
-                    className={`px-2 py-0.5 rounded-full text-xs font-medium border ${
-                      project.status === 'in_progress'
-                        ? 'bg-blue-50 text-blue-700 border-blue-200'
-                        : project.status === 'completed'
-                          ? 'bg-green-50 text-green-700 border-green-200'
-                          : 'bg-gray-50 text-gray-700 border-gray-200'
-                    }`}
-                  >
-                    {t(`status.${project.status}`)}
-                  </span>
-                </div>
-                <CardDescription className="line-clamp-2 min-h-[40px]">
-                  {project.description}
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="flex-1 space-y-4">
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">
-                      {t('construction.financial_progress')}
-                    </span>
-                    <span className="font-medium">
-                      {project.totalBudget > 0
-                        ? (
-                            (project.totalSpent / project.totalBudget) *
-                            100
-                          ).toFixed(0)
-                        : 0}
-                      %
-                    </span>
-                  </div>
-                  <Progress
-                    value={
-                      project.totalBudget > 0
-                        ? (project.totalSpent / project.totalBudget) * 100
-                        : 0
-                    }
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-2 text-sm">
-                  <div>
-                    <span className="text-muted-foreground block text-xs">
-                      {t('construction.start')}
-                    </span>
-                    <span className="font-medium">
-                      {formatDate(
-                        project.startDate,
-                        currentLanguage === 'en' ? 'MM/dd/yyyy' : 'dd/MM/yyyy',
+        {allProjects.length === 0 ? (
+          <div className="text-center py-10 border-2 border-dashed rounded-lg bg-muted/20 text-muted-foreground">
+            Nenhum projeto encontrado.
+          </div>
+        ) : (
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {allProjects.map((project) => (
+              <Card
+                key={project.id}
+                className="flex flex-col hover:border-primary/50 transition-colors"
+              >
+                <CardHeader>
+                  <div className="flex justify-between items-start">
+                    <CardTitle className="text-lg line-clamp-1 flex items-center gap-2">
+                      {project.name}
+                      {(project as any).is_demo && (
+                        <Badge className="bg-amber-500 hover:bg-amber-600 text-white font-bold tracking-wider text-[10px] uppercase">
+                          {t('demo.badge') || 'DEMO'}
+                        </Badge>
                       )}
+                    </CardTitle>
+                    <span
+                      className={`px-2 py-0.5 rounded-full text-xs font-medium border ${
+                        project.status === 'in_progress'
+                          ? 'bg-blue-50 text-blue-700 border-blue-200'
+                          : project.status === 'completed'
+                            ? 'bg-green-50 text-green-700 border-green-200'
+                            : 'bg-gray-50 text-gray-700 border-gray-200'
+                      }`}
+                    >
+                      {t(`status.${project.status}`)}
                     </span>
                   </div>
-                  <div>
-                    <span className="text-muted-foreground block text-xs">
-                      {t('construction.local')}
-                    </span>
-                    <span className="font-medium truncate block">
-                      {project.location}
-                    </span>
+                  <CardDescription className="line-clamp-2 min-h-[40px]">
+                    {project.description}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="flex-1 space-y-4">
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">
+                        {t('construction.financial_progress')}
+                      </span>
+                      <span className="font-medium">
+                        {project.totalBudget > 0
+                          ? (
+                              (project.totalSpent / project.totalBudget) *
+                              100
+                            ).toFixed(0)
+                          : 0}
+                        %
+                      </span>
+                    </div>
+                    <Progress
+                      value={
+                        project.totalBudget > 0
+                          ? (project.totalSpent / project.totalBudget) * 100
+                          : 0
+                      }
+                    />
                   </div>
-                </div>
-              </CardContent>
-              <CardFooter className="pt-0">
-                <Button
-                  className="w-full"
-                  variant="outline"
-                  onClick={() =>
-                    handleProtectedAction(() =>
-                      navigate(`/construction/projects/${project.id}`),
-                    )
-                  }
-                >
-                  {t('construction.manage')}{' '}
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </CardFooter>
-            </Card>
-          ))}
-        </div>
+                  <div className="grid grid-cols-2 gap-2 text-sm">
+                    <div>
+                      <span className="text-muted-foreground block text-xs">
+                        {t('construction.start')}
+                      </span>
+                      <span className="font-medium">
+                        {formatDate(
+                          project.startDate,
+                          currentLanguage === 'en'
+                            ? 'MM/dd/yyyy'
+                            : 'dd/MM/yyyy',
+                        )}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground block text-xs">
+                        {t('construction.local')}
+                      </span>
+                      <span className="font-medium truncate block">
+                        {project.location}
+                      </span>
+                    </div>
+                  </div>
+                </CardContent>
+                <CardFooter className="pt-0">
+                  <Button
+                    className="w-full"
+                    variant="outline"
+                    onClick={() =>
+                      handleProtectedAction(() =>
+                        navigate(`/construction/projects/${project.id}`),
+                      )
+                    }
+                  >
+                    {t('construction.manage')}{' '}
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </CardFooter>
+              </Card>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   )

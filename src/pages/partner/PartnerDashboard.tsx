@@ -1,147 +1,114 @@
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
   CardDescription,
-  CardFooter,
 } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
-  Building,
+  Building2,
   Users,
   FileText,
-  Calendar,
+  CalendarDays,
   ArrowRight,
-  Star,
 } from 'lucide-react'
-import { useAuth } from '@/hooks/use-auth'
+import { useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase/client'
-import { Link, useNavigate } from 'react-router-dom'
-import { formatCurrencyValue } from '@/lib/utils'
+import { useAuth } from '@/hooks/use-auth'
+import { useLanguageStore } from '@/stores/useLanguageStore'
+import { useProjectStore } from '@/stores/useProjectStore'
 
 export default function PartnerDashboard() {
   const { user } = useAuth()
+  const { formatCurrency } = useLanguageStore()
   const navigate = useNavigate()
+  const { projects: localProjects } = useProjectStore()
 
-  const [activeProjects, setActiveProjects] = useState<any[]>([])
-  const [allocatedTeamCount, setAllocatedTeamCount] = useState(0)
-  const [expectedReceivables, setExpectedReceivables] = useState(0)
+  const [dbProjects, setDbProjects] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchPartnerData = async () => {
       if (!user) return
 
-      try {
-        const { data: vendorData } = await supabase
-          .from('vendors')
-          .select('id')
-          .eq('owner_id', user.id)
-          .single()
+      const { data: ownProjects } = await supabase
+        .from('projects')
+        .select('*')
+        .eq('owner_id', user.id)
 
-        const vendorId = vendorData?.id
+      const { data: partnerLinks } = await supabase
+        .from('project_partners')
+        .select('project_id')
+        .eq('vendor_id', user.id)
 
-        if (vendorId) {
-          const { data: partnerProjects } = await supabase
-            .from('project_partners')
-            .select('project_id, projects(*)')
-            .eq('vendor_id', vendorId)
-
-          const projects =
-            partnerProjects
-              ?.map((pp) => pp.projects)
-              .filter((p) => p && p.status === 'in_progress') || []
-
-          setActiveProjects(projects)
-        } else {
-          setActiveProjects([])
-        }
-
-        const { data: invoices } = await supabase
-          .from('invoices')
-          .select('amount')
-          .eq('receiver_id', user.id)
-          .in('status', ['pending', 'generated', 'approved'])
-
-        const totalReceivables =
-          invoices?.reduce((sum, inv) => sum + Number(inv.amount), 0) || 0
-        setExpectedReceivables(totalReceivables)
-
-        setAllocatedTeamCount(0)
-      } catch (err) {
-        console.error('Error fetching partner data:', err)
-      } finally {
-        setLoading(false)
+      let linkedProjects: any[] = []
+      if (partnerLinks && partnerLinks.length > 0) {
+        const pIds = partnerLinks.map((link) => link.project_id)
+        const { data: lp } = await supabase
+          .from('projects')
+          .select('*')
+          .in('id', pIds)
+        if (lp) linkedProjects = lp
       }
+
+      const allP = [...(ownProjects || []), ...linkedProjects]
+      const uniqueProjects = Array.from(
+        new Map(allP.map((p) => [p.id, p])).values(),
+      )
+
+      setDbProjects(uniqueProjects)
+      setLoading(false)
     }
 
-    fetchData()
+    fetchPartnerData()
   }, [user])
 
-  const formatBRL = (val: number) => {
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL',
-    }).format(val)
-  }
+  const allProjects = [
+    ...localProjects.filter((p) => !(p as any).is_demo),
+    ...dbProjects.filter(
+      (dp) => !localProjects.some((p) => p.id === dp.id) && !dp.is_demo,
+    ),
+  ]
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">
-            Painel do Parceiro
-          </h1>
-          <p className="text-muted-foreground">
-            Gestão de Obras, Orçamentos e Equipes |{' '}
-            {user?.user_metadata?.name || 'Parceiro'}
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Badge
-            variant="outline"
-            className="bg-amber-100 text-amber-800 border-amber-300 py-1.5 px-3 rounded-full text-sm font-semibold flex items-center gap-1.5"
-          >
-            <Star className="h-4 w-4 fill-amber-500 text-amber-500" /> Score: 0
-          </Badge>
-        </div>
+    <div className="space-y-6 pb-10">
+      <div>
+        <h2 className="text-3xl font-bold tracking-tight">
+          Gestão de Obras, Orçamentos e Equipes
+        </h2>
+        <p className="text-muted-foreground">
+          Painel exclusivo para parceiros gerenciarem suas obras e recebíveis.
+        </p>
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium">
               Projetos Ativos
             </CardTitle>
-            <Building className="h-4 w-4 text-blue-500" />
+            <Building2 className="h-4 w-4 text-blue-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {loading ? '...' : activeProjects.length}
-            </div>
+            <div className="text-2xl font-bold">{allProjects.length}</div>
           </CardContent>
         </Card>
-
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium">
               Equipe Alocada
             </CardTitle>
             <Users className="h-4 w-4 text-indigo-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {loading ? '...' : allocatedTeamCount}
-            </div>
+            <div className="text-2xl font-bold">0</div>
           </CardContent>
         </Card>
-
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium">
               Recebíveis Previstos
             </CardTitle>
@@ -149,253 +116,129 @@ export default function PartnerDashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-green-600">
-              {loading ? '...' : formatBRL(expectedReceivables)}
+              {formatCurrency(0, 'BRL')}
             </div>
           </CardContent>
         </Card>
       </div>
 
-      <Tabs defaultValue="projects" className="w-full">
-        <TabsList className="mb-4 flex flex-wrap h-auto w-full justify-start md:w-auto overflow-x-auto bg-transparent border-b rounded-none p-0 space-x-6">
-          <TabsTrigger
-            value="jobs"
-            className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-0 py-2"
-          >
-            Trabalhos
-          </TabsTrigger>
-          <TabsTrigger
-            value="projects"
-            className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-0 py-2"
-          >
-            Meus Projetos & Tarefas
-          </TabsTrigger>
-          <TabsTrigger
-            value="quotes"
-            className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-0 py-2"
-          >
-            Orçamentos (Propostas)
-          </TabsTrigger>
-          <TabsTrigger
-            value="team"
-            className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-0 py-2"
-          >
-            Minha Equipe
-          </TabsTrigger>
-          <TabsTrigger
-            value="vendors"
-            className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-0 py-2"
-          >
-            Fornecedores
-          </TabsTrigger>
-        </TabsList>
+      <Tabs defaultValue="projects" className="space-y-6">
+        <div className="border-b overflow-x-auto">
+          <TabsList className="bg-transparent h-auto p-0 flex gap-6 justify-start w-max min-w-full">
+            <TabsTrigger
+              value="jobs"
+              className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none px-0 pb-2"
+            >
+              Trabalhos
+            </TabsTrigger>
+            <TabsTrigger
+              value="projects"
+              className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none px-0 pb-2"
+            >
+              Meus Projetos & Tarefas
+            </TabsTrigger>
+            <TabsTrigger
+              value="quotes"
+              className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none px-0 pb-2"
+            >
+              Orçamentos (Propostas)
+            </TabsTrigger>
+            <TabsTrigger
+              value="team"
+              className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none px-0 pb-2"
+            >
+              Minha Equipe
+            </TabsTrigger>
+            <TabsTrigger
+              value="vendors"
+              className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none px-0 pb-2"
+            >
+              Fornecedores
+            </TabsTrigger>
+          </TabsList>
+        </div>
 
         <TabsContent value="projects" className="space-y-4">
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {activeProjects.length > 0 ? (
-              activeProjects.map((project) => (
+          {loading ? (
+            <div className="text-center py-10 border-2 border-dashed rounded-lg bg-muted/20 text-muted-foreground">
+              Carregando projetos...
+            </div>
+          ) : allProjects.length === 0 ? (
+            <div className="text-center py-10 border-2 border-dashed rounded-lg bg-muted/20 text-muted-foreground">
+              Nenhum projeto encontrado.
+            </div>
+          ) : (
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {allProjects.map((project) => (
                 <Card
                   key={project.id}
                   className="flex flex-col hover:border-primary/50 transition-colors"
                 >
                   <CardHeader>
-                    <div className="flex justify-between items-start mb-2">
-                      <Badge className="bg-blue-500 hover:bg-blue-600 text-white">
-                        Em Andamento
-                      </Badge>
-                      {project.is_demo && (
-                        <Badge
-                          variant="outline"
-                          className="bg-amber-100 text-amber-800 border-amber-300"
-                        >
-                          DEMO
-                        </Badge>
-                      )}
+                    <div className="flex justify-between items-start">
+                      <div className="space-y-1">
+                        <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200">
+                          {project.status === 'in_progress'
+                            ? 'Em Andamento'
+                            : project.status === 'completed'
+                              ? 'Concluído'
+                              : 'Planejamento'}
+                        </span>
+                      </div>
                     </div>
-                    <CardTitle className="text-lg line-clamp-1">
+                    <CardTitle className="text-lg mt-3">
                       {project.name}
                     </CardTitle>
                     <CardDescription className="line-clamp-2 min-h-[40px]">
-                      {project.description || 'Nenhuma descrição fornecida.'}
+                      {project.description}
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="flex-1">
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
-                      <Calendar className="h-4 w-4" />
-                      <span>
-                        {project.created_at
-                          ? new Date(project.created_at).toLocaleDateString(
-                              'pt-BR',
-                            )
-                          : 'N/A'}
-                      </span>
+                    <div className="flex items-center text-sm text-muted-foreground">
+                      <CalendarDays className="mr-2 h-4 w-4" />
+                      {project.startDate
+                        ? new Date(project.startDate).toLocaleDateString()
+                        : project.created_at
+                          ? new Date(project.created_at).toLocaleDateString()
+                          : ''}
                     </div>
                   </CardContent>
-                  <CardFooter>
+                  <div className="p-6 pt-0 mt-auto">
                     <Button
                       variant="outline"
                       className="w-full"
                       onClick={() =>
-                        navigate(
-                          `/construction/projects/${project.id}?from=partner`,
-                        )
+                        navigate(`/construction/projects/${project.id}`)
                       }
                     >
                       Acessar Projeto <ArrowRight className="ml-2 h-4 w-4" />
                     </Button>
-                  </CardFooter>
+                  </div>
                 </Card>
-              ))
-            ) : (
-              // Empty State Mock cards to match AC requirement
-              <>
-                <Card className="flex flex-col hover:border-primary/50 transition-colors opacity-80">
-                  <CardHeader>
-                    <div className="flex justify-between items-start mb-2">
-                      <Badge className="bg-blue-500 text-white">
-                        Em Andamento
-                      </Badge>
-                      <Badge
-                        variant="outline"
-                        className="bg-amber-100 text-amber-800 border-amber-300"
-                      >
-                        DEMO
-                      </Badge>
-                    </div>
-                    <CardTitle className="text-lg line-clamp-1">
-                      Modern Eco-Villa
-                    </CardTitle>
-                    <CardDescription className="line-clamp-2 min-h-[40px]">
-                      A state-of-the-art sustainable villa featuring solar
-                      integration...
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="flex-1">
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
-                      <Calendar className="h-4 w-4" />
-                      <span>04/06/2026</span>
-                    </div>
-                  </CardContent>
-                  <CardFooter>
-                    <Button
-                      variant="outline"
-                      className="w-full"
-                      onClick={() =>
-                        navigate('/construction/projects/demo-1?from=partner')
-                      }
-                    >
-                      Acessar Projeto <ArrowRight className="ml-2 h-4 w-4" />
-                    </Button>
-                  </CardFooter>
-                </Card>
-                <Card className="flex flex-col hover:border-primary/50 transition-colors opacity-80">
-                  <CardHeader>
-                    <div className="flex justify-between items-start mb-2">
-                      <Badge className="bg-blue-500 text-white">
-                        Em Andamento
-                      </Badge>
-                      <Badge
-                        variant="outline"
-                        className="bg-amber-100 text-amber-800 border-amber-300"
-                      >
-                        DEMO
-                      </Badge>
-                    </div>
-                    <CardTitle className="text-lg line-clamp-1">
-                      Residencial Aurora
-                    </CardTitle>
-                    <CardDescription className="line-clamp-2 min-h-[40px]">
-                      Projeto de construção de edifício residencial.
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="flex-1">
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
-                      <Calendar className="h-4 w-4" />
-                      <span>04/06/2026</span>
-                    </div>
-                  </CardContent>
-                  <CardFooter>
-                    <Button
-                      variant="outline"
-                      className="w-full"
-                      onClick={() =>
-                        navigate('/construction/projects/demo-2?from=partner')
-                      }
-                    >
-                      Acessar Projeto <ArrowRight className="ml-2 h-4 w-4" />
-                    </Button>
-                  </CardFooter>
-                </Card>
-              </>
-            )}
-          </div>
+              ))}
+            </div>
+          )}
         </TabsContent>
 
         <TabsContent value="jobs">
-          <Card>
-            <CardHeader>
-              <CardTitle>Trabalhos Disponíveis</CardTitle>
-              <CardDescription>
-                Busque oportunidades e envie propostas (Bids).
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground py-8 text-center">
-                Nenhum trabalho aberto no momento.
-              </p>
-            </CardContent>
-          </Card>
+          <div className="text-center py-10 border-2 border-dashed rounded-lg bg-muted/20 text-muted-foreground">
+            Nenhum trabalho encontrado.
+          </div>
         </TabsContent>
-
         <TabsContent value="quotes">
-          <Card>
-            <CardHeader>
-              <CardTitle>Orçamentos (Propostas)</CardTitle>
-              <CardDescription>
-                Acompanhe o status das suas cotações enviadas.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground py-8 text-center">
-                Você não possui orçamentos pendentes.
-              </p>
-            </CardContent>
-          </Card>
+          <div className="text-center py-10 border-2 border-dashed rounded-lg bg-muted/20 text-muted-foreground">
+            Nenhum orçamento encontrado.
+          </div>
         </TabsContent>
-
         <TabsContent value="team">
-          <Card>
-            <CardHeader>
-              <CardTitle>Minha Equipe</CardTitle>
-              <CardDescription>
-                Gerencie os membros alocados nas suas obras.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground py-8 text-center">
-                Nenhum membro cadastrado.
-              </p>
-            </CardContent>
-          </Card>
+          <div className="text-center py-10 border-2 border-dashed rounded-lg bg-muted/20 text-muted-foreground">
+            Nenhuma equipe encontrada.
+          </div>
         </TabsContent>
-
         <TabsContent value="vendors">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <div>
-                <CardTitle>Gestão de Fornecedores</CardTitle>
-                <CardDescription>
-                  Cadastre parceiros com dados completos de faturamento,
-                  logística e pagamento.
-                </CardDescription>
-              </div>
-              <Button>+ Novo Fornecedor</Button>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground py-8 text-center">
-                Nenhum fornecedor cadastrado.
-              </p>
-            </CardContent>
-          </Card>
+          <div className="text-center py-10 border-2 border-dashed rounded-lg bg-muted/20 text-muted-foreground">
+            Nenhum fornecedor encontrado.
+          </div>
         </TabsContent>
       </Tabs>
     </div>

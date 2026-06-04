@@ -753,6 +753,44 @@ export type Database = {
           },
         ]
       }
+      project_stages: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          name: string
+          order_index: number | null
+          project_id: string
+          status: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name: string
+          order_index?: number | null
+          project_id: string
+          status?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name?: string
+          order_index?: number | null
+          project_id?: string
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'project_stages_project_id_fkey'
+            columns: ['project_id']
+            isOneToOne: false
+            referencedRelation: 'projects'
+            referencedColumns: ['id']
+          },
+        ]
+      }
       project_updates: {
         Row: {
           created_at: string
@@ -1367,6 +1405,14 @@ export const Constants = {
 //   vendor_id: uuid (not null)
 //   role: text (not null)
 //   created_at: timestamp with time zone (not null, default: now())
+// Table: project_stages
+//   id: uuid (not null, default: gen_random_uuid())
+//   project_id: uuid (not null)
+//   name: text (not null)
+//   description: text (nullable)
+//   status: text (nullable, default: 'pending'::text)
+//   order_index: integer (nullable, default: 0)
+//   created_at: timestamp with time zone (nullable, default: now())
 // Table: project_updates
 //   id: uuid (not null, default: gen_random_uuid())
 //   project_id: uuid (not null)
@@ -1491,6 +1537,9 @@ export const Constants = {
 //   PRIMARY KEY project_partners_pkey: PRIMARY KEY (project_id, vendor_id)
 //   FOREIGN KEY project_partners_project_id_fkey: FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE
 //   FOREIGN KEY project_partners_vendor_id_fkey: FOREIGN KEY (vendor_id) REFERENCES vendors(id) ON DELETE CASCADE
+// Table: project_stages
+//   PRIMARY KEY project_stages_pkey: PRIMARY KEY (id)
+//   FOREIGN KEY project_stages_project_id_fkey: FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE
 // Table: project_updates
 //   PRIMARY KEY project_updates_pkey: PRIMARY KEY (id)
 //   FOREIGN KEY project_updates_project_id_fkey: FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE
@@ -1605,10 +1654,19 @@ export const Constants = {
 //   Policy "project_compliance_all" (ALL, PERMISSIVE) roles={public}
 //     USING: true
 // Table: project_partners
+//   Policy "auth_insert_project_partners" (INSERT, PERMISSIVE) roles={authenticated}
+//     WITH CHECK: (EXISTS ( SELECT 1    FROM projects p   WHERE ((p.id = project_partners.project_id) AND (p.owner_id = auth.uid()))))
 //   Policy "auth_read_project_partners" (SELECT, PERMISSIVE) roles={authenticated}
 //     USING: true
+//   Policy "auth_update_project_partners" (UPDATE, PERMISSIVE) roles={authenticated}
+//     USING: ((EXISTS ( SELECT 1    FROM projects p   WHERE ((p.id = project_partners.project_id) AND (p.owner_id = auth.uid())))) OR (EXISTS ( SELECT 1    FROM vendors v   WHERE ((v.id = project_partners.vendor_id) AND (v.owner_id = auth.uid())))))
 //   Policy "project_partners_all" (ALL, PERMISSIVE) roles={public}
 //     USING: true
+// Table: project_stages
+//   Policy "auth_read_project_stages" (SELECT, PERMISSIVE) roles={authenticated}
+//     USING: true
+//   Policy "auth_write_project_stages" (ALL, PERMISSIVE) roles={authenticated}
+//     USING: ((EXISTS ( SELECT 1    FROM projects p   WHERE ((p.id = project_stages.project_id) AND (p.owner_id = auth.uid())))) OR (EXISTS ( SELECT 1    FROM (project_partners pp      JOIN vendors v ON ((pp.vendor_id = v.id)))   WHERE ((pp.project_id = project_stages.project_id) AND (v.owner_id = auth.uid())))))
 // Table: project_updates
 //   Policy "auth_delete_project_updates" (DELETE, PERMISSIVE) roles={authenticated}
 //     USING: ((EXISTS ( SELECT 1    FROM projects   WHERE ((projects.id = project_updates.project_id) AND (projects.owner_id = auth.uid())))) OR is_admin())
