@@ -315,6 +315,15 @@ export default function JobDetail() {
 
   return (
     <div className="space-y-6 max-w-5xl mx-auto pb-24 lg:pb-10 p-4 md:p-8 pt-6 animate-fade-in w-full">
+      {(job as any).is_demo && (
+        <div className="bg-purple-100 border border-purple-200 text-purple-800 px-4 py-3 rounded-md flex items-center gap-3 shadow-sm mb-4">
+          <Star className="h-5 w-5 text-purple-600" />
+          <p className="text-sm font-medium">
+            {t('demo.notification') ||
+              'This is a demonstration project to showcase platform features.'}
+          </p>
+        </div>
+      )}
       <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
         <div className="space-y-1">
           <div className="flex items-center gap-2 mb-2">

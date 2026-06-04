@@ -243,6 +243,35 @@ export type Database = {
           },
         ]
       }
+      favorites: {
+        Row: {
+          created_at: string
+          id: string
+          user_id: string
+          vendor_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          user_id: string
+          vendor_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          user_id?: string
+          vendor_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'favorites_vendor_id_fkey'
+            columns: ['vendor_id']
+            isOneToOne: false
+            referencedRelation: 'vendors'
+            referencedColumns: ['id']
+          },
+        ]
+      }
       invoices: {
         Row: {
           amount: number
@@ -1092,6 +1121,11 @@ export const Constants = {
 //   project_id: uuid (nullable)
 //   created_at: timestamp with time zone (nullable, default: now())
 //   updated_at: timestamp with time zone (nullable, default: now())
+// Table: favorites
+//   id: uuid (not null, default: gen_random_uuid())
+//   user_id: uuid (not null)
+//   vendor_id: uuid (not null)
+//   created_at: timestamp with time zone (not null, default: now())
 // Table: invoices
 //   id: uuid (not null, default: gen_random_uuid())
 //   job_id: uuid (nullable)
@@ -1267,6 +1301,11 @@ export const Constants = {
 // Table: equipment
 //   PRIMARY KEY equipment_pkey: PRIMARY KEY (id)
 //   FOREIGN KEY equipment_project_id_fkey: FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE SET NULL
+// Table: favorites
+//   PRIMARY KEY favorites_pkey: PRIMARY KEY (id)
+//   FOREIGN KEY favorites_user_id_fkey: FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE
+//   UNIQUE favorites_user_id_vendor_id_key: UNIQUE (user_id, vendor_id)
+//   FOREIGN KEY favorites_vendor_id_fkey: FOREIGN KEY (vendor_id) REFERENCES vendors(id) ON DELETE CASCADE
 // Table: invoices
 //   CHECK check_invoice_amount_positive: CHECK ((amount >= (0)::numeric))
 //   FOREIGN KEY invoices_payer_id_fkey: FOREIGN KEY (payer_id) REFERENCES profiles(id) ON DELETE CASCADE
@@ -1347,6 +1386,13 @@ export const Constants = {
 //     USING: is_admin()
 //   Policy "equipment_select" (SELECT, PERMISSIVE) roles={public}
 //     USING: true
+// Table: favorites
+//   Policy "favorites_delete" (DELETE, PERMISSIVE) roles={authenticated}
+//     USING: (auth.uid() = user_id)
+//   Policy "favorites_insert" (INSERT, PERMISSIVE) roles={authenticated}
+//     WITH CHECK: (auth.uid() = user_id)
+//   Policy "favorites_select" (SELECT, PERMISSIVE) roles={authenticated}
+//     USING: (auth.uid() = user_id)
 // Table: invoices
 //   Policy "invoices_insert" (INSERT, PERMISSIVE) roles={authenticated}
 //     WITH CHECK: ((auth.uid() = payer_id) OR (auth.uid() = receiver_id) OR (is_admin() = true))
@@ -1643,6 +1689,8 @@ export const Constants = {
 //   audit_projects: CREATE TRIGGER audit_projects AFTER INSERT OR DELETE OR UPDATE ON public.projects FOR EACH ROW EXECUTE FUNCTION log_audit_event()
 
 // --- INDEXES ---
+// Table: favorites
+//   CREATE UNIQUE INDEX favorites_user_id_vendor_id_key ON public.favorites USING btree (user_id, vendor_id)
 // Table: invoices
 //   CREATE INDEX idx_invoices_subscription_status ON public.invoices USING btree (payer_id, type, status)
 // Table: jobs

@@ -4,6 +4,7 @@ import { SafeImage } from '@/components/SafeImage'
 import { Badge } from '@/components/ui/badge'
 import { Link } from 'react-router-dom'
 import { cn } from '@/lib/utils'
+import { useJobStore } from '@/stores/useJobStore'
 
 interface ListingProps {
   id: string
@@ -21,8 +22,12 @@ export function ListingCard({
   price,
   location,
   status,
+  isDemo,
 }: ListingProps) {
-  const { formatCurrency } = useLanguageStore()
+  const { formatCurrency, t } = useLanguageStore()
+  const { getJob } = useJobStore()
+  const job = getJob(id)
+  const showDemo = isDemo || (job as any)?.is_demo
 
   return (
     <Card className="overflow-hidden border-none shadow-sm hover:shadow-md transition-shadow cursor-pointer group">
@@ -34,6 +39,14 @@ export function ListingCard({
             fallbackSrc="https://img.usecurling.com/p/400/400?q=package"
             className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300"
           />
+          {showDemo && (
+            <Badge
+              variant="default"
+              className="absolute top-2 right-2 bg-purple-600 hover:bg-purple-700 shadow-sm font-semibold z-10"
+            >
+              {t('demo.badge') || 'Example / Exemplo'}
+            </Badge>
+          )}
           {status && (
             <Badge
               variant={status === 'open' ? 'default' : 'secondary'}
