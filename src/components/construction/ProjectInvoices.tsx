@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import {
   Card,
   CardContent,
@@ -16,12 +17,27 @@ import {
 } from '@/components/ui/table'
 import { Button } from '@/components/ui/button'
 import { Plus, Receipt } from 'lucide-react'
-import { useInvoices } from '@/hooks/use-invoices'
 import { useLanguageStore } from '@/stores/useLanguageStore'
+import { supabase } from '@/lib/supabase/client'
 
 export function ProjectInvoices({ projectId }: { projectId: string }) {
-  const { invoices, loading } = useInvoices(undefined, projectId)
+  const [invoices, setInvoices] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
   const { formatCurrency, formatDate } = useLanguageStore()
+
+  useEffect(() => {
+    const fetchInvoices = async () => {
+      setLoading(true)
+      const { data } = await supabase
+        .from('invoices')
+        .select('*, vendors(name)')
+        .eq('project_id', projectId)
+        .order('created_at', { ascending: false })
+      if (data) setInvoices(data)
+      setLoading(false)
+    }
+    fetchInvoices()
+  }, [projectId])
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -42,9 +58,6 @@ export function ProjectInvoices({ projectId }: { projectId: string }) {
         <div>
           <CardTitle className="flex items-center gap-2">
             <Receipt className="h-5 w-5 text-primary" /> Financial Records
-            <Badge className="bg-amber-500 hover:bg-amber-600 text-white font-bold tracking-wider text-[10px] uppercase ml-2">
-              DEMO
-            </Badge>
           </CardTitle>
           <CardDescription>
             Invoices, receipts and payments strictly related to this project.
@@ -67,39 +80,46 @@ export function ProjectInvoices({ projectId }: { projectId: string }) {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {invoices.map((inv) => (
-                <TableRow key={inv.id}>
-                  <TableCell className="font-medium">
-                    {inv.description || 'Invoice'}
-                  </TableCell>
-                  <TableCell className="capitalize">{inv.type}</TableCell>
-                  <TableCell>
-                    {inv.due_date
-                      ? formatDate(inv.due_date, 'dd/MM/yyyy')
-                      : 'N/A'}
-                  </TableCell>
-                  <TableCell className="text-right font-bold">
-                    {formatCurrency(inv.amount)}
-                  </TableCell>
-                  <TableCell>
-                    <Badge
-                      className={`uppercase text-[10px] ${getStatusColor(inv.status)}`}
-                    >
-                      {inv.status}
-                    </Badge>
-                  </TableCell>
-                </TableRow>
-              ))}
-              {!loading && invoices.length === 0 && (
-                <TableRow>
-                  <TableCell
-                    colSpan={5}
-                    className="text-center py-8 text-muted-foreground"
-                  >
-                    No invoices recorded for this project.
-                  </TableCell>
-                </TableRow>
-              )}
+              {invoices.length > 0
+                ? invoices.map((inv) => (
+                    <TableRow key={inv.id}>
+                      <TableCell className="font-medium">
+                        {inv.description || 'Invoice'}
+                      </TableCell>
+                      <TableCell className="capitalize">{inv.type}</TableCell>
+                      <TableCell>
+                        {inv.due_date
+                          ? formatDate(inv.due_date, 'dd/MM/yyyy')
+                          : 'N/A'}
+                      </TableCell>
+                      <TableCell className="text-right font-bold">
+                        {formatCurrency(inv.amount)}
+                      </TableCell>
+                      <TableCell>
+                        <Badge
+                          className={`uppercase text-[10px] ${getStatusColor(inv.status)}`}
+                        >
+                          {inv.status}
+                        </Badge>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                : !loading && (
+                    <TableRow>
+                      <TableCell
+                        colSpan={5}
+                        className="text-center py-12 text-muted-foreground"
+                      >
+                        <div className="flex flex-col items-center justify-center gap-2">
+                          <Receipt className="h-8 w-8 text-muted-foreground/50 mb-2" />
+                          <p>No invoices recorded for this project.</p>
+                          <Button variant="outline" size="sm" className="mt-2">
+                            Create Invoice
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  )}
             </TableBody>
           </Table>
         </div>

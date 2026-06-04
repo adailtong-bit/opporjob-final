@@ -101,7 +101,7 @@ export function ProjectUpdates({ projectId }: { projectId: string }) {
   const [dbUpdates, setDbUpdates] = useState<any[]>([])
 
   useEffect(() => {
-    if (project?.is_demo) {
+    if (project?.is_demo || true) {
       supabase
         .from('project_updates')
         .select('*')
@@ -330,10 +330,13 @@ export function ProjectUpdates({ projectId }: { projectId: string }) {
             <h3 className="text-lg font-medium">
               {t('proj.updates.title') || 'Project Updates'}
             </h3>
-            <p className="text-sm text-muted-foreground mt-1 max-w-sm mx-auto">
+            <p className="text-sm text-muted-foreground mt-1 max-w-sm mx-auto mb-4">
               {t('proj.updates.desc') ||
                 'Track progress with photos and notes.'}
             </p>
+            <Button size="sm" onClick={() => setIsOpen(true)}>
+              Create First Update
+            </Button>
           </div>
         )}
       </div>

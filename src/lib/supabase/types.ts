@@ -1553,6 +1553,8 @@ export const Constants = {
 //   Policy "favorites_select" (SELECT, PERMISSIVE) roles={authenticated}
 //     USING: (auth.uid() = user_id)
 // Table: invoices
+//   Policy "auth_read_invoices" (SELECT, PERMISSIVE) roles={authenticated}
+//     USING: ((auth.uid() = payer_id) OR (auth.uid() = receiver_id) OR (EXISTS ( SELECT 1    FROM projects   WHERE ((projects.id = invoices.project_id) AND (projects.owner_id = auth.uid())))) OR is_admin())
 //   Policy "invoices_insert" (INSERT, PERMISSIVE) roles={authenticated}
 //     WITH CHECK: ((auth.uid() = payer_id) OR (auth.uid() = receiver_id) OR (is_admin() = true))
 //   Policy "invoices_select" (SELECT, PERMISSIVE) roles={authenticated}
@@ -1593,12 +1595,18 @@ export const Constants = {
 //   Policy "profiles_update" (UPDATE, PERMISSIVE) roles={public}
 //     USING: ((auth.uid() = id) OR is_admin())
 // Table: project_budgets
+//   Policy "auth_read_project_budgets" (SELECT, PERMISSIVE) roles={authenticated}
+//     USING: true
 //   Policy "project_budgets_all" (ALL, PERMISSIVE) roles={public}
 //     USING: true
 // Table: project_compliance
+//   Policy "auth_read_project_compliance" (SELECT, PERMISSIVE) roles={authenticated}
+//     USING: true
 //   Policy "project_compliance_all" (ALL, PERMISSIVE) roles={public}
 //     USING: true
 // Table: project_partners
+//   Policy "auth_read_project_partners" (SELECT, PERMISSIVE) roles={authenticated}
+//     USING: true
 //   Policy "project_partners_all" (ALL, PERMISSIVE) roles={public}
 //     USING: true
 // Table: project_updates
@@ -1606,6 +1614,8 @@ export const Constants = {
 //     USING: ((EXISTS ( SELECT 1    FROM projects   WHERE ((projects.id = project_updates.project_id) AND (projects.owner_id = auth.uid())))) OR is_admin())
 //   Policy "auth_insert_project_updates" (INSERT, PERMISSIVE) roles={authenticated}
 //     WITH CHECK: ((EXISTS ( SELECT 1    FROM projects   WHERE ((projects.id = project_updates.project_id) AND (projects.owner_id = auth.uid())))) OR is_admin())
+//   Policy "auth_read_project_updates" (SELECT, PERMISSIVE) roles={authenticated}
+//     USING: true
 //   Policy "auth_select_project_updates" (SELECT, PERMISSIVE) roles={authenticated}
 //     USING: ((EXISTS ( SELECT 1    FROM projects   WHERE ((projects.id = project_updates.project_id) AND (projects.owner_id = auth.uid())))) OR is_admin())
 //   Policy "auth_update_project_updates" (UPDATE, PERMISSIVE) roles={authenticated}

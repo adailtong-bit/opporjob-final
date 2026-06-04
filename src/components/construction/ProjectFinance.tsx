@@ -1,5 +1,7 @@
+import { useEffect, useState } from 'react'
 import { useProjectStore } from '@/stores/useProjectStore'
 import { useLanguageStore } from '@/stores/useLanguageStore'
+import { supabase } from '@/lib/supabase/client'
 import {
   Card,
   CardContent,
@@ -34,59 +36,65 @@ export function ProjectFinance({ projectId }: { projectId: string }) {
   const { formatCurrency, t } = useLanguageStore()
   const project = getProject(projectId)
 
+  const [dbData, setDbData] = useState({
+    budgets: [] as any[],
+    invoices: [] as any[],
+    compliance: [] as any[],
+  })
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const { data: budgets } = await supabase
+        .from('project_budgets')
+        .select('*')
+        .eq('project_id', projectId)
+      const { data: invoices } = await supabase
+        .from('invoices')
+        .select('*')
+        .eq('project_id', projectId)
+      const { data: compliance } = await supabase
+        .from('project_compliance')
+        .select('*')
+        .eq('project_id', projectId)
+
+      setDbData({
+        budgets: budgets || [],
+        invoices: invoices || [],
+        compliance: compliance || [],
+      })
+    }
+    fetchData()
+  }, [projectId])
+
   if (!project) return null
 
-  const movements = project.financialMovements || []
-  const stages = project.stages || []
-  const budgetItemsList = project.budgetItems || []
-  const ledgerEntries = project.ledgerEntries || []
-
   // Calculated Budget (Planned)
-  const estCapex =
-    budgetItemsList
-      .filter((i) => i.costClass === 'capex' || !i.costClass)
-      .reduce((a, b) => a + b.totalCost, 0) +
-    stages.reduce((a, s) => a + s.budgetMaterial + s.budgetLabor, 0)
-
-  const estSoft = budgetItemsList
-    .filter((i) => i.costClass === 'soft_cost')
-    .reduce((a, b) => a + b.totalCost, 0)
-
-  const estLedger = ledgerEntries.reduce((a, b) => a + b.estimatedCost, 0)
-
-  const calculatedTotalBudget = estCapex + estSoft + estLedger
+  const calculatedTotalBudget = dbData.budgets.reduce(
+    (a, b) => a + Number(b.estimated_amount),
+    0,
+  )
 
   // Calculated Actual (Realized)
-  const actCapex =
-    (project.allocatedCosts || [])
-      .filter((c) => c.costClass === 'capex' || !c.costClass)
-      .reduce((a, b) => a + b.amount, 0) +
-    stages.reduce((a, s) => a + s.actualMaterial + s.actualLabor, 0) +
-    (project.laborAdjustments?.reduce((a, adj) => a + adj.amount, 0) || 0)
-
-  const actSoft = (project.allocatedCosts || [])
-    .filter((c) => c.costClass === 'soft_cost')
-    .reduce((a, b) => a + b.amount, 0)
-
-  const actLedger = ledgerEntries.reduce((a, b) => a + b.finalCost, 0)
-
-  const totalRealizedCosts = actCapex + actSoft + actLedger
+  const totalRealizedCosts = dbData.budgets.reduce(
+    (a, b) => a + Number(b.actual_amount),
+    0,
+  )
 
   // Financial Variance
   const financialVariance = calculatedTotalBudget - totalRealizedCosts
   const isOverBudget = financialVariance < 0
 
   // Outflows for reference
-  const totalOutflows = movements
-    .filter((m) => m.type === 'out')
-    .reduce((acc, m) => acc + m.amount, 0)
+  const totalOutflows = dbData.invoices
+    .filter((m) => m.status === 'paid')
+    .reduce((acc, m) => acc + Number(m.amount), 0)
 
   // Chart Data
-  const chartData = [
-    { name: 'CAPEX (Obra)', planned: estCapex, realized: actCapex },
-    { name: 'Soft Costs', planned: estSoft, realized: actSoft },
-    { name: 'Ledger', planned: estLedger, realized: actLedger },
-  ]
+  const chartData = dbData.budgets.map((b) => ({
+    name: b.category,
+    planned: Number(b.estimated_amount),
+    realized: Number(b.actual_amount),
+  }))
 
   const chartConfig = {
     planned: {
@@ -100,28 +108,25 @@ export function ProjectFinance({ projectId }: { projectId: string }) {
   }
 
   // Alerts
-  let delayedCount = 0
-  stages.forEach((s) => {
-    if (s.status === 'delayed') delayedCount++
-    s.subStages.forEach((sub) => {
-      if (sub.status === 'delayed') delayedCount++
-    })
-  })
+  const delayedCount = 0
   const estimatedDelayImpactPerTask = 500
   const totalDelayImpact = delayedCount * estimatedDelayImpactPerTask
 
   const today = new Date()
   today.setHours(0, 0, 0, 0)
-  const complianceAlerts = (project.complianceDocuments || []).filter((doc) => {
-    const exp = new Date(doc.expirationDate)
+
+  const complianceAlerts = dbData.compliance.filter((doc) => {
+    if (!doc.expiry_date) return false
+    const exp = new Date(doc.expiry_date)
     exp.setHours(0, 0, 0, 0)
     const diffDays = Math.ceil(
       (exp.getTime() - today.getTime()) / (1000 * 60 * 60 * 24),
     )
     return diffDays <= (project.alertLeadTimeDays || 30)
   })
+
   const expiredCount = complianceAlerts.filter(
-    (d) => new Date(d.expirationDate) < new Date(),
+    (d) => new Date(d.expiry_date) < new Date(),
   ).length
 
   return (

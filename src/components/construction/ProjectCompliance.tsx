@@ -18,6 +18,7 @@ import { supabase } from '@/lib/supabase/client'
 import { useLanguageStore } from '@/stores/useLanguageStore'
 import { FileText, CheckCircle, AlertTriangle } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 
 export function ProjectCompliance({ projectId }: { projectId: string }) {
   const [docs, setDocs] = useState<any[]>([])
@@ -40,9 +41,6 @@ export function ProjectCompliance({ projectId }: { projectId: string }) {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <FileText className="h-5 w-5 text-primary" /> Compliance & Legal
-          <Badge className="bg-amber-500 hover:bg-amber-600 text-white font-bold tracking-wider text-[10px] uppercase ml-2">
-            DEMO
-          </Badge>
         </CardTitle>
         <CardDescription>
           Monitor active and expired documents essential for operation.
@@ -59,36 +57,63 @@ export function ProjectCompliance({ projectId }: { projectId: string }) {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {docs.map((d) => (
-                <TableRow key={d.id}>
-                  <TableCell className="font-medium">
-                    {d.document_name}
-                  </TableCell>
-                  <TableCell>
-                    {d.expiry_date
-                      ? formatDate(d.expiry_date, 'dd/MM/yyyy')
-                      : 'N/A'}
-                  </TableCell>
-                  <TableCell>
-                    {d.status === 'compliant' ? (
-                      <Badge className="bg-green-500 hover:bg-green-600">
-                        <CheckCircle className="w-3 h-3 mr-1" /> Compliant
-                      </Badge>
-                    ) : d.status === 'expired' ? (
-                      <Badge variant="destructive">
-                        <AlertTriangle className="w-3 h-3 mr-1" /> Expired
-                      </Badge>
-                    ) : (
-                      <Badge
-                        variant="secondary"
-                        className="uppercase text-[10px]"
-                      >
-                        {d.status}
-                      </Badge>
-                    )}
+              {docs.length > 0 ? (
+                docs.map((d) => (
+                  <TableRow key={d.id}>
+                    <TableCell className="font-medium">
+                      {d.document_name}
+                      {d.file_url && (
+                        <a
+                          href={d.file_url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-primary hover:underline block text-xs mt-1"
+                        >
+                          View File
+                        </a>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {d.expiry_date
+                        ? formatDate(d.expiry_date, 'dd/MM/yyyy')
+                        : 'N/A'}
+                    </TableCell>
+                    <TableCell>
+                      {d.status === 'compliant' ? (
+                        <Badge className="bg-green-500 hover:bg-green-600">
+                          <CheckCircle className="w-3 h-3 mr-1" /> Compliant
+                        </Badge>
+                      ) : d.status === 'expired' ? (
+                        <Badge variant="destructive">
+                          <AlertTriangle className="w-3 h-3 mr-1" /> Expired
+                        </Badge>
+                      ) : (
+                        <Badge
+                          variant="secondary"
+                          className="uppercase text-[10px]"
+                        >
+                          {d.status}
+                        </Badge>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell
+                    colSpan={3}
+                    className="text-center py-12 text-muted-foreground"
+                  >
+                    <div className="flex flex-col items-center justify-center gap-2">
+                      <FileText className="h-8 w-8 text-muted-foreground/50 mb-2" />
+                      <p>No compliance documents available.</p>
+                      <Button variant="outline" size="sm" className="mt-2">
+                        Add Document
+                      </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
-              ))}
+              )}
             </TableBody>
           </Table>
         </div>

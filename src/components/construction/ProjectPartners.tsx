@@ -8,6 +8,7 @@ import {
 } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Users, Mail, Phone } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 import { supabase } from '@/lib/supabase/client'
 
 export function ProjectPartners({ projectId }: { projectId: string }) {
@@ -29,9 +30,6 @@ export function ProjectPartners({ projectId }: { projectId: string }) {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Users className="h-5 w-5 text-primary" /> Partners & Vendors
-          <Badge className="bg-amber-500 hover:bg-amber-600 text-white font-bold tracking-wider text-[10px] uppercase ml-2">
-            DEMO
-          </Badge>
         </CardTitle>
         <CardDescription>
           Contractors and suppliers actively linked to this project.
@@ -72,8 +70,14 @@ export function ProjectPartners({ projectId }: { projectId: string }) {
             </div>
           ))}
           {partners.length === 0 && (
-            <div className="col-span-full text-center py-8 text-muted-foreground">
-              No partners linked to this project yet.
+            <div className="col-span-full text-center py-12 text-muted-foreground border-2 border-dashed rounded-lg">
+              <div className="flex flex-col items-center justify-center gap-2">
+                <Users className="h-8 w-8 text-muted-foreground/50 mb-2" />
+                <p>No partners linked to this project yet.</p>
+                <Button variant="outline" size="sm" className="mt-2">
+                  Link Partner
+                </Button>
+              </div>
             </div>
           )}
         </div>

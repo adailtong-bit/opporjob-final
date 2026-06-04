@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import {
   Card,
   CardContent,
@@ -23,8 +24,8 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from '@/components/ui/chart'
-import { useProjectStore } from '@/stores/useProjectStore'
 import { useLanguageStore } from '@/stores/useLanguageStore'
+import { supabase } from '@/lib/supabase/client'
 import { Download, FileText, AlertTriangle, ShieldAlert } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import { Badge } from '@/components/ui/badge'
@@ -34,35 +35,46 @@ interface ProjectReportsProps {
 }
 
 export function ProjectReports({ projectId }: ProjectReportsProps) {
-  const { getProject } = useProjectStore()
   const { t, formatCurrency, formatDate } = useLanguageStore()
   const { toast } = useToast()
-  const project = getProject(projectId)
 
-  if (!project) return null
+  const [budgets, setBudgets] = useState<any[]>([])
+  const [compliance, setCompliance] = useState<any[]>([])
 
-  // Process data for charts
-  const budgetItems = project.budgetItems || []
-  const totalBudget = budgetItems.reduce((acc, item) => acc + item.totalCost, 0)
+  useEffect(() => {
+    const fetchData = async () => {
+      const { data: budgetsData } = await supabase
+        .from('project_budgets')
+        .select('*')
+        .eq('project_id', projectId)
+      if (budgetsData) setBudgets(budgetsData)
+
+      const { data: complianceData } = await supabase
+        .from('project_compliance')
+        .select('*')
+        .eq('project_id', projectId)
+      if (complianceData) setCompliance(complianceData)
+    }
+    fetchData()
+  }, [projectId])
+
+  const totalBudget = budgets.reduce(
+    (acc, item) => acc + Number(item.estimated_amount),
+    0,
+  )
 
   // Group by category
-  const categoryData = [
-    { name: t('proj.budget.material'), value: 0, color: 'hsl(var(--chart-1))' },
-    { name: t('proj.budget.labor'), value: 0, color: 'hsl(var(--chart-2))' },
-    { name: t('proj.budget.other'), value: 0, color: 'hsl(var(--chart-3))' },
-  ]
+  const categoryData = budgets.map((b, i) => ({
+    name: b.category,
+    value: Number(b.estimated_amount),
+    color: `hsl(var(--chart-${(i % 5) + 1}))`,
+  }))
 
-  budgetItems.forEach((item) => {
-    const idx =
-      item.category === 'material' ? 0 : item.category === 'labor' ? 1 : 2
-    categoryData[idx].value += item.totalCost
-  })
-
-  // Progress Data (Mocked actuals vs budget based on stages)
-  const progressData = project.stages.map((stage) => ({
-    name: stage.name.split('.')[0], // Short name
-    budget: stage.budgetMaterial + stage.budgetLabor,
-    actual: stage.actualMaterial + stage.actualLabor,
+  // Progress Data
+  const progressData = budgets.map((b) => ({
+    name: b.category,
+    budget: Number(b.estimated_amount),
+    actual: Number(b.actual_amount),
   }))
 
   const chartConfig = {
@@ -84,12 +96,13 @@ export function ProjectReports({ projectId }: ProjectReportsProps) {
   }
 
   // Compliance Expirations logic
-  const leadTimeDays = project.alertLeadTimeDays || 30
+  const leadTimeDays = 30
   const today = new Date()
 
-  const complianceAlerts = (project.complianceDocuments || [])
+  const complianceAlerts = compliance
     .filter((doc) => {
-      const exp = new Date(doc.expirationDate)
+      if (!doc.expiry_date) return false
+      const exp = new Date(doc.expiry_date)
       const diffDays = Math.ceil(
         (exp.getTime() - today.getTime()) / (1000 * 60 * 60 * 24),
       )
@@ -97,8 +110,7 @@ export function ProjectReports({ projectId }: ProjectReportsProps) {
     })
     .sort(
       (a, b) =>
-        new Date(a.expirationDate).getTime() -
-        new Date(b.expirationDate).getTime(),
+        new Date(a.expiry_date).getTime() - new Date(b.expiry_date).getTime(),
     )
 
   return (
@@ -135,7 +147,7 @@ export function ProjectReports({ projectId }: ProjectReportsProps) {
           <CardContent className="pt-4">
             <div className="grid gap-3">
               {complianceAlerts.map((doc) => {
-                const exp = new Date(doc.expirationDate)
+                const exp = new Date(doc.expiry_date)
                 const isExpired = exp.getTime() < today.getTime()
                 return (
                   <div
@@ -149,13 +161,11 @@ export function ProjectReports({ projectId }: ProjectReportsProps) {
                         <AlertTriangle className="h-5 w-5 text-yellow-500" />
                       )}
                       <div>
-                        <p className="font-medium text-sm">{doc.name}</p>
+                        <p className="font-medium text-sm">
+                          {doc.document_name}
+                        </p>
                         <p className="text-xs text-muted-foreground">
-                          {doc.partnerId === 'general'
-                            ? 'Projeto (Geral)'
-                            : project.partners.find(
-                                (p) => p.id === doc.partnerId,
-                              )?.companyName}
+                          Projeto (Geral)
                         </p>
                       </div>
                     </div>
@@ -171,7 +181,7 @@ export function ProjectReports({ projectId }: ProjectReportsProps) {
                         {isExpired ? 'Vencido' : 'Vence em Breve'}
                       </Badge>
                       <p className="text-xs text-muted-foreground mt-1">
-                        {formatDate(doc.expirationDate, 'dd/MM/yyyy')}
+                        {formatDate(doc.expiry_date, 'dd/MM/yyyy')}
                       </p>
                     </div>
                   </div>
@@ -191,39 +201,45 @@ export function ProjectReports({ projectId }: ProjectReportsProps) {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="h-[300px]">
-              <ChartContainer config={chartConfig} className="h-full w-full">
-                <BarChart data={progressData}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                  <XAxis
-                    dataKey="name"
-                    fontSize={12}
-                    tickLine={false}
-                    axisLine={false}
-                  />
-                  <YAxis
-                    fontSize={12}
-                    tickLine={false}
-                    axisLine={false}
-                    tickFormatter={(value) => `R$${value / 1000}k`}
-                  />
-                  <ChartTooltip content={<ChartTooltipContent />} />
-                  <Legend />
-                  <Bar
-                    dataKey="budget"
-                    fill="var(--color-budget)"
-                    radius={[4, 4, 0, 0]}
-                    name={t('proj.reports.budgeted')}
-                  />
-                  <Bar
-                    dataKey="actual"
-                    fill="var(--color-actual)"
-                    radius={[4, 4, 0, 0]}
-                    name={t('proj.reports.actual')}
-                  />
-                </BarChart>
-              </ChartContainer>
-            </div>
+            {progressData.length > 0 ? (
+              <div className="h-[300px]">
+                <ChartContainer config={chartConfig} className="h-full w-full">
+                  <BarChart data={progressData}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                    <XAxis
+                      dataKey="name"
+                      fontSize={12}
+                      tickLine={false}
+                      axisLine={false}
+                    />
+                    <YAxis
+                      fontSize={12}
+                      tickLine={false}
+                      axisLine={false}
+                      tickFormatter={(value) => `R$${value / 1000}k`}
+                    />
+                    <ChartTooltip content={<ChartTooltipContent />} />
+                    <Legend />
+                    <Bar
+                      dataKey="budget"
+                      fill="var(--color-budget)"
+                      radius={[4, 4, 0, 0]}
+                      name={t('proj.reports.budgeted')}
+                    />
+                    <Bar
+                      dataKey="actual"
+                      fill="var(--color-actual)"
+                      radius={[4, 4, 0, 0]}
+                      name={t('proj.reports.actual')}
+                    />
+                  </BarChart>
+                </ChartContainer>
+              </div>
+            ) : (
+              <div className="h-[300px] flex items-center justify-center border-2 border-dashed rounded-md bg-muted/10 text-muted-foreground">
+                No budget data to display
+              </div>
+            )}
           </CardContent>
         </Card>
 
@@ -233,34 +249,42 @@ export function ProjectReports({ projectId }: ProjectReportsProps) {
             <CardDescription>{t('proj.reports.chart_dist')}</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="h-[300px]">
-              <ChartContainer config={{}} className="h-full w-full">
-                <PieChart>
-                  <Pie
-                    data={categoryData}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={60}
-                    outerRadius={80}
-                    paddingAngle={5}
-                    dataKey="value"
-                  >
-                    {categoryData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Pie>
-                  <Tooltip
-                    formatter={(value: number) => formatCurrency(value)}
-                  />
-                  <Legend />
-                </PieChart>
-              </ChartContainer>
-            </div>
-            <div className="text-center mt-4">
-              <span className="text-sm text-muted-foreground">
-                {t('proj.reports.total')}: {formatCurrency(totalBudget)}
-              </span>
-            </div>
+            {categoryData.length > 0 ? (
+              <>
+                <div className="h-[300px]">
+                  <ChartContainer config={{}} className="h-full w-full">
+                    <PieChart>
+                      <Pie
+                        data={categoryData}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={60}
+                        outerRadius={80}
+                        paddingAngle={5}
+                        dataKey="value"
+                      >
+                        {categoryData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
+                        ))}
+                      </Pie>
+                      <Tooltip
+                        formatter={(value: number) => formatCurrency(value)}
+                      />
+                      <Legend />
+                    </PieChart>
+                  </ChartContainer>
+                </div>
+                <div className="text-center mt-4">
+                  <span className="text-sm text-muted-foreground">
+                    {t('proj.reports.total')}: {formatCurrency(totalBudget)}
+                  </span>
+                </div>
+              </>
+            ) : (
+              <div className="h-[300px] flex items-center justify-center border-2 border-dashed rounded-md bg-muted/10 text-muted-foreground">
+                No budget data to display
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>

@@ -19,6 +19,7 @@ import { useLanguageStore } from '@/stores/useLanguageStore'
 import { DollarSign, Star } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
+import { Button } from '@/components/ui/button'
 
 export function ProjectBudget({ projectId }: { projectId: string }) {
   const [budgets, setBudgets] = useState<any[]>([])
@@ -52,9 +53,6 @@ export function ProjectBudget({ projectId }: { projectId: string }) {
         <div>
           <CardTitle className="flex items-center gap-2">
             <DollarSign className="h-5 w-5 text-primary" /> Budget & Estimation
-            <Badge className="bg-amber-500 hover:bg-amber-600 text-white font-bold tracking-wider text-[10px] uppercase ml-2">
-              DEMO
-            </Badge>
           </CardTitle>
           <CardDescription>
             Track estimated vs actual costs across categories.
@@ -74,68 +72,91 @@ export function ProjectBudget({ projectId }: { projectId: string }) {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {budgets.map((b) => {
-                const variance =
-                  Number(b.estimated_amount) - Number(b.actual_amount)
-                return (
-                  <TableRow key={b.id}>
-                    <TableCell className="font-medium">{b.category}</TableCell>
-                    <TableCell className="text-right">
-                      {formatCurrency(b.estimated_amount)}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {formatCurrency(b.actual_amount)}
-                    </TableCell>
-                    <TableCell
-                      className={cn('text-right font-bold', {
-                        'text-red-500': variance < 0,
-                        'text-green-500': variance >= 0,
-                      })}
-                    >
-                      {formatCurrency(variance)}
-                    </TableCell>
-                    <TableCell>
-                      <Badge
-                        variant={
-                          b.status === 'over_budget' ? 'destructive' : 'default'
-                        }
-                        className="uppercase text-[10px]"
+              {budgets.length > 0 ? (
+                budgets.map((b) => {
+                  const variance =
+                    Number(b.estimated_amount) - Number(b.actual_amount)
+                  return (
+                    <TableRow key={b.id}>
+                      <TableCell className="font-medium">
+                        {b.category}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        {formatCurrency(b.estimated_amount)}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        {formatCurrency(b.actual_amount)}
+                      </TableCell>
+                      <TableCell
+                        className={cn('text-right font-bold', {
+                          'text-red-500': variance < 0,
+                          'text-green-500': variance >= 0,
+                        })}
                       >
-                        {b.status.replace('_', ' ')}
-                      </Badge>
-                    </TableCell>
-                  </TableRow>
-                )
-              })}
+                        {formatCurrency(variance)}
+                      </TableCell>
+                      <TableCell>
+                        <Badge
+                          variant={
+                            b.status === 'over_budget'
+                              ? 'destructive'
+                              : 'default'
+                          }
+                          className="uppercase text-[10px]"
+                        >
+                          {b.status.replace('_', ' ')}
+                        </Badge>
+                      </TableCell>
+                    </TableRow>
+                  )
+                })
+              ) : (
+                <TableRow>
+                  <TableCell
+                    colSpan={5}
+                    className="text-center py-12 text-muted-foreground"
+                  >
+                    <div className="flex flex-col items-center justify-center gap-2">
+                      <DollarSign className="h-8 w-8 text-muted-foreground/50 mb-2" />
+                      <p>No budget data available.</p>
+                      <Button variant="outline" size="sm" className="mt-2">
+                        Create Budget
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              )}
             </TableBody>
           </Table>
         </div>
 
-        <div className="mt-6 flex flex-col md:flex-row justify-end gap-4 md:gap-8 bg-muted/30 p-4 rounded-lg">
-          <div className="text-right">
-            <p className="text-sm text-muted-foreground">Total Estimated</p>
-            <p className="text-xl font-bold">
-              {formatCurrency(totalEstimated)}
-            </p>
+        {budgets.length > 0 && (
+          <div className="mt-6 flex flex-col md:flex-row justify-end gap-4 md:gap-8 bg-muted/30 p-4 rounded-lg">
+            <div className="text-right">
+              <p className="text-sm text-muted-foreground">Total Estimated</p>
+              <p className="text-xl font-bold">
+                {formatCurrency(totalEstimated)}
+              </p>
+            </div>
+            <div className="text-right">
+              <p className="text-sm text-muted-foreground">Total Actual</p>
+              <p className="text-xl font-bold text-primary">
+                {formatCurrency(totalActual)}
+              </p>
+            </div>
+            <div className="text-right border-t md:border-t-0 md:border-l pt-2 md:pt-0 md:pl-8">
+              <p className="text-sm text-muted-foreground">Total Variance</p>
+              <p
+                className={cn('text-xl font-bold', {
+                  'text-red-500': totalVariance < 0,
+                  'text-green-500': totalVariance >= 0,
+                })}
+              >
+                {formatCurrency(totalVariance)}
+              </p>
+            </div>
           </div>
-          <div className="text-right">
-            <p className="text-sm text-muted-foreground">Total Actual</p>
-            <p className="text-xl font-bold text-primary">
-              {formatCurrency(totalActual)}
-            </p>
-          </div>
-          <div className="text-right border-t md:border-t-0 md:border-l pt-2 md:pt-0 md:pl-8">
-            <p className="text-sm text-muted-foreground">Total Variance</p>
-            <p
-              className={cn('text-xl font-bold', {
-                'text-red-500': totalVariance < 0,
-                'text-green-500': totalVariance >= 0,
-              })}
-            >
-              {formatCurrency(totalVariance)}
-            </p>
-          </div>
-        </div>
+        )}
       </CardContent>
     </Card>
   )
