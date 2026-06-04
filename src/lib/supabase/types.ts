@@ -410,6 +410,7 @@ export type Database = {
           description: string | null
           external_id: string | null
           id: string
+          is_demo: boolean
           listing_type: string | null
           location: string | null
           owner_id: string | null
@@ -433,6 +434,7 @@ export type Database = {
           description?: string | null
           external_id?: string | null
           id?: string
+          is_demo?: boolean
           listing_type?: string | null
           location?: string | null
           owner_id?: string | null
@@ -456,6 +458,7 @@ export type Database = {
           description?: string | null
           external_id?: string | null
           id?: string
+          is_demo?: boolean
           listing_type?: string | null
           location?: string | null
           owner_id?: string | null
@@ -672,6 +675,7 @@ export type Database = {
           created_at: string | null
           description: string | null
           id: string
+          is_demo: boolean
           name: string
           owner_id: string | null
           photos: Json | null
@@ -684,6 +688,7 @@ export type Database = {
           created_at?: string | null
           description?: string | null
           id?: string
+          is_demo?: boolean
           name: string
           owner_id?: string | null
           photos?: Json | null
@@ -696,6 +701,7 @@ export type Database = {
           created_at?: string | null
           description?: string | null
           id?: string
+          is_demo?: boolean
           name?: string
           owner_id?: string | null
           photos?: Json | null
@@ -1174,6 +1180,7 @@ export const Constants = {
 //   listing_type: text (nullable)
 //   completion_photos: jsonb (nullable, default: '[]'::jsonb)
 //   completion_comments: text (nullable)
+//   is_demo: boolean (not null, default: false)
 // Table: marketing_content
 //   id: uuid (not null, default: gen_random_uuid())
 //   key: text (not null)
@@ -1237,6 +1244,7 @@ export const Constants = {
 //   updated_at: timestamp with time zone (nullable, default: now())
 //   progress: numeric (nullable, default: 0)
 //   photos: jsonb (nullable, default: '[]'::jsonb)
+//   is_demo: boolean (not null, default: false)
 // Table: push_subscriptions
 //   id: uuid (not null, default: gen_random_uuid())
 //   user_id: uuid (not null)

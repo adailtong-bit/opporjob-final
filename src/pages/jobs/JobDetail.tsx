@@ -844,10 +844,7 @@ export default function JobDetail() {
                           </div>
                           <span className="text-xs text-muted-foreground mt-1">
                             {isMe ? 'Você' : msg.sender?.name || 'Usuário'} •{' '}
-                            {new Date(msg.created_at).toLocaleTimeString(
-                              'en-US',
-                              { hour: '2-digit', minute: '2-digit' },
-                            )}
+                            {formatDate(msg.created_at, 'hh:mm a')}
                           </span>
                         </div>
                       )

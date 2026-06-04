@@ -2,7 +2,7 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { translations, Language } from '@/lib/translations'
 import { ptBR, enUS, es } from 'date-fns/locale'
-import { format } from 'date-fns'
+import { format, isValid } from 'date-fns'
 
 export type Currency = 'USD' | 'BRL' | 'EUR'
 
@@ -13,7 +13,10 @@ interface LanguageState {
   setCurrency: (currency: Currency) => void
   t: (key: string, params?: Record<string, string | number>) => string
   formatCurrency: (value: number) => string
-  formatDate: (date: Date, formatStr: string) => string
+  formatDate: (
+    date: Date | string | number | null | undefined,
+    formatStr: string,
+  ) => string
   getDateLocale: () => any
 }
 
@@ -54,8 +57,11 @@ export const useLanguageStore = create<LanguageState>()(
         }).format(value)
       },
       formatDate: (date, formatStr) => {
+        if (!date) return ''
+        const d = new Date(date)
+        if (!isValid(d)) return ''
         const locale = get().getDateLocale()
-        return format(date, formatStr, { locale })
+        return format(d, formatStr, { locale })
       },
       getDateLocale: () => {
         const currency = get().currentCurrency
