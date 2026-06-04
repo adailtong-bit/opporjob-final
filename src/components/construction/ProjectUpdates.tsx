@@ -101,7 +101,7 @@ export function ProjectUpdates({ projectId }: { projectId: string }) {
   const [dbUpdates, setDbUpdates] = useState<any[]>([])
 
   useEffect(() => {
-    if (project?.is_demo || true) {
+    if (project) {
       supabase
         .from('project_updates')
         .select('*')

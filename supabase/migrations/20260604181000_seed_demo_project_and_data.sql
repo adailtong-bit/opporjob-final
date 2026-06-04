@@ -1,8 +1,8 @@
 DO $$
 DECLARE
   v_project_id uuid := 'd0000000-0000-0000-0000-000000000001'::uuid;
-  v_vendor_1_id uuid := 'v0000000-0000-0000-0000-000000000001'::uuid;
-  v_vendor_2_id uuid := 'v0000000-0000-0000-0000-000000000002'::uuid;
+  v_vendor_1_id uuid := 'e0000000-0000-0000-0000-000000000001'::uuid;
+  v_vendor_2_id uuid := 'e0000000-0000-0000-0000-000000000002'::uuid;
   v_owner_id uuid;
 BEGIN
   -- Optionally find a user to own the project (the first one)
