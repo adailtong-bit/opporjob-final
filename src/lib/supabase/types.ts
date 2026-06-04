@@ -641,6 +641,118 @@ export type Database = {
         }
         Relationships: []
       }
+      project_budgets: {
+        Row: {
+          actual_amount: number
+          category: string
+          created_at: string
+          estimated_amount: number
+          id: string
+          project_id: string
+          status: string
+        }
+        Insert: {
+          actual_amount?: number
+          category: string
+          created_at?: string
+          estimated_amount?: number
+          id?: string
+          project_id: string
+          status?: string
+        }
+        Update: {
+          actual_amount?: number
+          category?: string
+          created_at?: string
+          estimated_amount?: number
+          id?: string
+          project_id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'project_budgets_project_id_fkey'
+            columns: ['project_id']
+            isOneToOne: false
+            referencedRelation: 'projects'
+            referencedColumns: ['id']
+          },
+        ]
+      }
+      project_compliance: {
+        Row: {
+          created_at: string
+          document_name: string
+          expiry_date: string | null
+          file_url: string | null
+          id: string
+          project_id: string
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          document_name: string
+          expiry_date?: string | null
+          file_url?: string | null
+          id?: string
+          project_id: string
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          document_name?: string
+          expiry_date?: string | null
+          file_url?: string | null
+          id?: string
+          project_id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'project_compliance_project_id_fkey'
+            columns: ['project_id']
+            isOneToOne: false
+            referencedRelation: 'projects'
+            referencedColumns: ['id']
+          },
+        ]
+      }
+      project_partners: {
+        Row: {
+          created_at: string
+          project_id: string
+          role: string
+          vendor_id: string
+        }
+        Insert: {
+          created_at?: string
+          project_id: string
+          role: string
+          vendor_id: string
+        }
+        Update: {
+          created_at?: string
+          project_id?: string
+          role?: string
+          vendor_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'project_partners_project_id_fkey'
+            columns: ['project_id']
+            isOneToOne: false
+            referencedRelation: 'projects'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'project_partners_vendor_id_fkey'
+            columns: ['vendor_id']
+            isOneToOne: false
+            referencedRelation: 'vendors'
+            referencedColumns: ['id']
+          },
+        ]
+      }
       project_updates: {
         Row: {
           created_at: string
@@ -1234,6 +1346,27 @@ export const Constants = {
 //   document: text (nullable)
 //   portfolio_photos: jsonb (nullable, default: '[]'::jsonb)
 //   priced_services: jsonb (nullable, default: '[]'::jsonb)
+// Table: project_budgets
+//   id: uuid (not null, default: gen_random_uuid())
+//   project_id: uuid (not null)
+//   category: text (not null)
+//   estimated_amount: numeric (not null, default: 0)
+//   actual_amount: numeric (not null, default: 0)
+//   status: text (not null, default: 'pending'::text)
+//   created_at: timestamp with time zone (not null, default: now())
+// Table: project_compliance
+//   id: uuid (not null, default: gen_random_uuid())
+//   project_id: uuid (not null)
+//   document_name: text (not null)
+//   status: text (not null, default: 'pending'::text)
+//   expiry_date: timestamp with time zone (nullable)
+//   file_url: text (nullable)
+//   created_at: timestamp with time zone (not null, default: now())
+// Table: project_partners
+//   project_id: uuid (not null)
+//   vendor_id: uuid (not null)
+//   role: text (not null)
+//   created_at: timestamp with time zone (not null, default: now())
 // Table: project_updates
 //   id: uuid (not null, default: gen_random_uuid())
 //   project_id: uuid (not null)
@@ -1348,6 +1481,16 @@ export const Constants = {
 // Table: profiles
 //   FOREIGN KEY profiles_id_fkey: FOREIGN KEY (id) REFERENCES auth.users(id) ON DELETE CASCADE
 //   PRIMARY KEY profiles_pkey: PRIMARY KEY (id)
+// Table: project_budgets
+//   PRIMARY KEY project_budgets_pkey: PRIMARY KEY (id)
+//   FOREIGN KEY project_budgets_project_id_fkey: FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE
+// Table: project_compliance
+//   PRIMARY KEY project_compliance_pkey: PRIMARY KEY (id)
+//   FOREIGN KEY project_compliance_project_id_fkey: FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE
+// Table: project_partners
+//   PRIMARY KEY project_partners_pkey: PRIMARY KEY (project_id, vendor_id)
+//   FOREIGN KEY project_partners_project_id_fkey: FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE
+//   FOREIGN KEY project_partners_vendor_id_fkey: FOREIGN KEY (vendor_id) REFERENCES vendors(id) ON DELETE CASCADE
 // Table: project_updates
 //   PRIMARY KEY project_updates_pkey: PRIMARY KEY (id)
 //   FOREIGN KEY project_updates_project_id_fkey: FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE
@@ -1449,6 +1592,15 @@ export const Constants = {
 //     USING: ((auth.uid() = id) OR is_admin() OR (auth.role() = 'authenticated'::text))
 //   Policy "profiles_update" (UPDATE, PERMISSIVE) roles={public}
 //     USING: ((auth.uid() = id) OR is_admin())
+// Table: project_budgets
+//   Policy "project_budgets_all" (ALL, PERMISSIVE) roles={public}
+//     USING: true
+// Table: project_compliance
+//   Policy "project_compliance_all" (ALL, PERMISSIVE) roles={public}
+//     USING: true
+// Table: project_partners
+//   Policy "project_partners_all" (ALL, PERMISSIVE) roles={public}
+//     USING: true
 // Table: project_updates
 //   Policy "auth_delete_project_updates" (DELETE, PERMISSIVE) roles={authenticated}
 //     USING: ((EXISTS ( SELECT 1    FROM projects   WHERE ((projects.id = project_updates.project_id) AND (projects.owner_id = auth.uid())))) OR is_admin())

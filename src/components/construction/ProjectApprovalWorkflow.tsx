@@ -27,6 +27,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
+import { useState, useEffect } from 'react'
+import { supabase } from '@/lib/supabase/client'
 import { useProjectStore } from '@/stores/useProjectStore'
 import { useLanguageStore } from '@/stores/useLanguageStore'
 import {
@@ -46,6 +48,7 @@ interface ProjectApprovalWorkflowProps {
 export function ProjectApprovalWorkflow({
   projectId,
 }: ProjectApprovalWorkflowProps) {
+  const [pendingInvoices, setPendingInvoices] = useState<any[]>([])
   const {
     getProject,
     updateApprovalStatus,
@@ -57,6 +60,18 @@ export function ProjectApprovalWorkflow({
   const { t, formatDate, formatCurrency } = useLanguageStore()
   const { toast } = useToast()
   const project = getProject(projectId)
+
+  useEffect(() => {
+    const fetchInvoices = async () => {
+      const { data } = await supabase
+        .from('invoices')
+        .select('*, vendors(name)')
+        .eq('project_id', projectId)
+        .in('status', ['pending', 'overdue'])
+      if (data) setPendingInvoices(data)
+    }
+    fetchInvoices()
+  }, [projectId])
 
   if (!project) return null
 
@@ -152,6 +167,22 @@ export function ProjectApprovalWorkflow({
       (m) => m.status === 'pending' || m.status === 'in_review',
     ) || []
 
+  const handleInvoiceAction = async (
+    id: string,
+    action: 'approve' | 'reject',
+  ) => {
+    const newStatus = action === 'approve' ? 'paid' : 'cancelled'
+    await supabase.from('invoices').update({ status: newStatus }).eq('id', id)
+    setPendingInvoices((prev) => prev.filter((inv) => inv.id !== id))
+    toast({
+      title: action === 'approve' ? 'Fatura Aprovada' : 'Fatura Rejeitada',
+      description:
+        action === 'approve'
+          ? 'A fatura foi marcada como paga.'
+          : 'A fatura foi cancelada.',
+    })
+  }
+
   const pendingLedgers =
     project.ledgerEntries?.filter(
       (l) =>
@@ -160,6 +191,90 @@ export function ProjectApprovalWorkflow({
 
   return (
     <div className="space-y-6 min-w-0">
+      {pendingInvoices.length > 0 && (
+        <Card className="w-full border-orange-200 shadow-sm">
+          <CardHeader className="bg-orange-50/50 pb-4">
+            <CardTitle className="flex items-center gap-2 text-orange-800">
+              <FileText className="h-5 w-5" /> Aprovação de Faturas (Invoices)
+            </CardTitle>
+            <CardDescription>
+              Valide e aprove faturas pendentes de fornecedores.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="pt-4">
+            <div className="rounded-md border overflow-x-auto w-full block">
+              <Table className="min-w-[800px] w-full">
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Descrição</TableHead>
+                    <TableHead>Fornecedor</TableHead>
+                    <TableHead>Vencimento</TableHead>
+                    <TableHead className="text-right">Valor</TableHead>
+                    <TableHead className="text-center">Status</TableHead>
+                    <TableHead className="text-right">Ação</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {pendingInvoices.map((inv) => (
+                    <TableRow key={inv.id}>
+                      <TableCell className="font-medium">
+                        {inv.description || 'Fatura de Serviço'}
+                      </TableCell>
+                      <TableCell>
+                        {inv.vendors?.name || 'Desconhecido'}
+                      </TableCell>
+                      <TableCell>
+                        {inv.due_date
+                          ? formatDate(inv.due_date, 'dd/MM/yyyy')
+                          : 'N/A'}
+                      </TableCell>
+                      <TableCell className="text-right font-bold text-orange-700">
+                        {formatCurrency(inv.amount)}
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <Badge
+                          variant={
+                            inv.status === 'overdue'
+                              ? 'destructive'
+                              : 'secondary'
+                          }
+                          className="uppercase"
+                        >
+                          {inv.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex justify-end items-center gap-2">
+                          <Button
+                            size="sm"
+                            onClick={() =>
+                              handleInvoiceAction(inv.id, 'approve')
+                            }
+                            className="bg-green-600 hover:bg-green-700"
+                          >
+                            <CheckCircle2 className="mr-1 h-4 w-4" /> Aprovar
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() =>
+                              handleInvoiceAction(inv.id, 'reject')
+                            }
+                            className="text-red-500 hover:bg-red-50 hover:text-red-600 border-red-200"
+                          >
+                            <XCircle className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {pendingLedgers.length > 0 && (
         <Card className="w-full border-purple-200 shadow-sm">
           <CardHeader className="bg-purple-50/50 pb-4">

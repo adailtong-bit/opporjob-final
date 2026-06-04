@@ -274,49 +274,56 @@ export function ProjectUpdates({ projectId }: { projectId: string }) {
       )}
 
       {/* Updates List */}
-      <div className="space-y-4">
+      <div className="mt-8">
         {allUpdates.length > 0 ? (
-          allUpdates
-            .sort(
-              (a, b) =>
-                new Date(b.createdAt).getTime() -
-                new Date(a.createdAt).getTime(),
-            )
-            .map((update) => (
-              <Card key={update.id}>
-                <CardHeader className="pb-2">
-                  <div className="flex justify-between items-start">
-                    <CardTitle className="text-lg">{update.title}</CardTitle>
-                    <span className="text-xs text-muted-foreground">
-                      {formatDate(update.createdAt, 'PPP')}
-                    </span>
-                  </div>
-                  {update.description && (
-                    <CardDescription className="mt-1 text-sm">
-                      {update.description}
-                    </CardDescription>
-                  )}
-                </CardHeader>
-                {update.photos && update.photos.length > 0 && (
-                  <CardContent>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                      {update.photos.map((photo, idx) => (
-                        <div
-                          key={idx}
-                          className="aspect-square rounded-lg overflow-hidden border shadow-sm"
-                        >
-                          <img
-                            src={photo}
-                            alt={`${update.title} ${idx}`}
-                            className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-                          />
+          <div className="relative border-l-2 border-muted ml-3 space-y-8 pb-4">
+            {allUpdates
+              .sort(
+                (a, b) =>
+                  new Date(b.createdAt).getTime() -
+                  new Date(a.createdAt).getTime(),
+              )
+              .map((update) => (
+                <div key={update.id} className="relative pl-6 sm:pl-8">
+                  <div className="absolute -left-[9px] top-1.5 h-4 w-4 rounded-full bg-primary ring-4 ring-background" />
+                  <Card className="hover:border-primary/50 transition-colors shadow-sm">
+                    <CardHeader className="pb-2">
+                      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-1">
+                        <CardTitle className="text-lg">
+                          {update.title}
+                        </CardTitle>
+                        <span className="text-xs font-medium text-muted-foreground bg-muted px-2 py-1 rounded-md shrink-0">
+                          {formatDate(update.createdAt, 'PPP')}
+                        </span>
+                      </div>
+                      {update.description && (
+                        <CardDescription className="mt-1 text-sm text-foreground/80">
+                          {update.description}
+                        </CardDescription>
+                      )}
+                    </CardHeader>
+                    {update.photos && update.photos.length > 0 && (
+                      <CardContent>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+                          {update.photos.map((photo: string, idx: number) => (
+                            <div
+                              key={idx}
+                              className="aspect-square rounded-md overflow-hidden border shadow-sm"
+                            >
+                              <img
+                                src={photo}
+                                alt={`${update.title} ${idx}`}
+                                className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                              />
+                            </div>
+                          ))}
                         </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                )}
-              </Card>
-            ))
+                      </CardContent>
+                    )}
+                  </Card>
+                </div>
+              ))}
+          </div>
         ) : (
           <div className="text-center py-12 bg-card rounded-lg border border-dashed">
             <ImageIcon className="mx-auto h-12 w-12 text-muted-foreground/50 mb-3" />
