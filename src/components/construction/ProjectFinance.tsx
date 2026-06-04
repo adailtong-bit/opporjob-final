@@ -30,10 +30,11 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from '@/components/ui/chart'
+import { formatCurrencyValue } from '@/lib/utils'
 
 export function ProjectFinance({ projectId }: { projectId: string }) {
   const { getProject } = useProjectStore()
-  const { formatCurrency, t } = useLanguageStore()
+  const { t } = useLanguageStore()
   const project = getProject(projectId)
 
   const [dbData, setDbData] = useState({
@@ -151,7 +152,7 @@ export function ProjectFinance({ projectId }: { projectId: string }) {
               <div className="flex items-center gap-2">
                 <PieChart className="h-5 w-5 text-blue-500" />
                 <span className="text-xl font-bold text-foreground truncate">
-                  {formatCurrency(calculatedTotalBudget)}
+                  {formatCurrencyValue(calculatedTotalBudget, 'BRL')}
                 </span>
               </div>
             </div>
@@ -163,7 +164,7 @@ export function ProjectFinance({ projectId }: { projectId: string }) {
               <div className="flex items-center gap-2">
                 <BookOpen className="h-5 w-5 text-purple-500" />
                 <span className="text-xl font-bold text-foreground truncate">
-                  {formatCurrency(totalRealizedCosts)}
+                  {formatCurrencyValue(totalRealizedCosts, 'BRL')}
                 </span>
               </div>
             </div>
@@ -176,7 +177,7 @@ export function ProjectFinance({ projectId }: { projectId: string }) {
               <div className="flex items-center gap-2">
                 <WalletCards className="h-5 w-5 text-orange-500" />
                 <span className="text-xl font-bold text-foreground truncate">
-                  {formatCurrency(totalOutflows)}
+                  {formatCurrencyValue(totalOutflows, 'BRL')}
                 </span>
               </div>
             </div>
@@ -207,7 +208,7 @@ export function ProjectFinance({ projectId }: { projectId: string }) {
                   )}
                 >
                   {isOverBudget ? '' : '+'}
-                  {formatCurrency(financialVariance)}
+                  {formatCurrencyValue(financialVariance, 'BRL')}
                 </span>
               </div>
             </div>
@@ -235,7 +236,7 @@ export function ProjectFinance({ projectId }: { projectId: string }) {
                     fontSize={12}
                     tickLine={false}
                     axisLine={false}
-                    tickFormatter={(value) => `R$${value / 1000}k`}
+                    tickFormatter={(value) => `R$${(value / 1000).toFixed(0)}k`}
                   />
                   <ChartTooltip content={<ChartTooltipContent />} />
                   <Legend verticalAlign="top" height={36} />
@@ -298,7 +299,7 @@ export function ProjectFinance({ projectId }: { projectId: string }) {
               <strong>{delayedCount}</strong>{' '}
               {t('alert.delay_impact_desc_2', undefined) ||
                 'delayed milestones/tasks. The estimated impact on indirect costs (Soft Costs) is'}{' '}
-              <strong>{formatCurrency(totalDelayImpact)}</strong>,{' '}
+              <strong>{formatCurrencyValue(totalDelayImpact, 'BRL')}</strong>,{' '}
               {t('alert.delay_impact_desc_3', undefined) ||
                 'increasing budget consumption.'}
             </AlertDescription>

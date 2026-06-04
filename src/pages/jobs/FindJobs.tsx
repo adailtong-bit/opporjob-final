@@ -34,6 +34,7 @@ import {
 } from 'lucide-react'
 import { formatDistanceToNow, subDays, isAfter } from 'date-fns'
 import { useLanguageStore } from '@/stores/useLanguageStore'
+import { formatCurrencyValue } from '@/lib/utils'
 import { useAuthStore } from '@/stores/useAuthStore'
 import { AdSection } from '@/components/AdSection'
 
@@ -48,7 +49,7 @@ export default function FindJobs() {
   const { jobs } = useJobStore()
   const { categories } = useCategoryStore()
   const { user } = useAuthStore()
-  const { t, formatCurrency, getDateLocale } = useLanguageStore()
+  const { t, getDateLocale } = useLanguageStore()
   const [searchParams, setSearchParams] = useSearchParams()
 
   const initialType = searchParams.get('type') || 'all'
@@ -521,7 +522,10 @@ export default function FindJobs() {
                   <span className="font-bold text-lg text-primary">
                     {displayPrice === 0
                       ? 'Grátis'
-                      : formatCurrency(displayPrice, (job as any).currency)}
+                      : formatCurrencyValue(
+                          displayPrice,
+                          (job as any).currency || 'BRL',
+                        )}
                   </span>
                 </div>
               </CardContent>

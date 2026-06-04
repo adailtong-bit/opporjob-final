@@ -3,7 +3,7 @@ import { useLanguageStore } from '@/stores/useLanguageStore'
 import { SafeImage } from '@/components/SafeImage'
 import { Badge } from '@/components/ui/badge'
 import { Link } from 'react-router-dom'
-import { cn } from '@/lib/utils'
+import { cn, formatCurrencyValue } from '@/lib/utils'
 import { useJobStore } from '@/stores/useJobStore'
 
 interface ListingProps {
@@ -24,7 +24,7 @@ export function ListingCard({
   status,
   isDemo,
 }: ListingProps) {
-  const { formatCurrency, t } = useLanguageStore()
+  const { t } = useLanguageStore()
   const { getJob } = useJobStore()
   const job = getJob(id)
   const showDemo = isDemo || (job as any)?.is_demo
@@ -97,7 +97,7 @@ export function ListingCard({
           <p className="font-bold text-lg mt-1 text-primary">
             {price === 0
               ? 'Free'
-              : formatCurrency(price, (job as any)?.currency)}
+              : formatCurrencyValue(price, (job as any)?.currency || 'BRL')}
           </p>
           {location && (
             <p className="text-xs text-muted-foreground mt-1 truncate">

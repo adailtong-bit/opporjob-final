@@ -18,6 +18,7 @@ import { useToast } from '@/hooks/use-toast'
 import { useLanguageStore } from '@/stores/useLanguageStore'
 import { CreditCard, Loader2, ShieldCheck, Lock } from 'lucide-react'
 import { supabase } from '@/lib/supabase/client'
+import { formatCurrencyValue } from '@/lib/utils'
 
 export default function ConstructionCheckout() {
   const { planId } = useParams()
@@ -29,7 +30,7 @@ export default function ConstructionCheckout() {
   }, [fetchPlans])
   const navigate = useNavigate()
   const { toast } = useToast()
-  const { formatCurrency, t } = useLanguageStore()
+  const { t } = useLanguageStore()
 
   const isAdmin = user?.role === 'admin' || user?.isPremium
 
@@ -276,7 +277,7 @@ export default function ConstructionCheckout() {
                 <span className="text-xl md:text-2xl font-bold text-primary break-all">
                   {isAdmin
                     ? t('checkout.free_admin')
-                    : formatCurrency(plan.price)}
+                    : formatCurrencyValue(plan.price, 'BRL')}
                 </span>
               </div>
             </CardContent>

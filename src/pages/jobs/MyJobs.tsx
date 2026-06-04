@@ -16,12 +16,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Eye, Plus, Search, MapPin, MessageSquare, Tag } from 'lucide-react'
 import { useLanguageStore } from '@/stores/useLanguageStore'
+import { formatCurrencyValue } from '@/lib/utils'
 
 export default function MyJobs() {
   const { user } = useAuthStore()
   const { jobs } = useJobStore()
   const { conversations } = useMessageStore()
-  const { t, formatCurrency, formatDate } = useLanguageStore()
+  const { t, formatDate } = useLanguageStore()
   const navigate = useNavigate()
 
   if (!user) return null
@@ -213,13 +214,14 @@ export default function MyJobs() {
                             {job.category}
                           </TableCell>
                           <TableCell className="whitespace-nowrap">
-                            {formatCurrency(
+                            {formatCurrencyValue(
                               job.listingType === 'product' ||
                                 job.listingType === 'community'
                                 ? (job.salePrice ?? 0)
                                 : job.listingType === 'rental'
                                   ? (job.rentalRate ?? 0)
                                   : (job.budget ?? 0),
+                              (job as any).currency || 'BRL',
                             )}
                           </TableCell>
                           <TableCell className="whitespace-nowrap">

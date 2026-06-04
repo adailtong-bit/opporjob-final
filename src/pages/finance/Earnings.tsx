@@ -15,15 +15,11 @@ import { Badge } from '@/components/ui/badge'
 import { CheckCircle, Clock, Download } from 'lucide-react'
 import { format } from 'date-fns'
 import { Button } from '@/components/ui/button'
-
-const formatUSD = (amount: number) =>
-  new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(
-    amount,
-  )
+import { formatCurrencyValue } from '@/lib/utils'
 
 export default function Earnings() {
   const { user } = useAuth()
-  const { t, formatCurrency } = useLanguageStore()
+  const { t } = useLanguageStore()
   const [invoices, setInvoices] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -63,7 +59,7 @@ export default function Earnings() {
     const rows = invoices.map((inv) => [
       format(new Date(inv.created_at), 'MM/dd/yyyy'),
       `"${(inv.description || '').replace(/"/g, '""')}"`,
-      `"${formatUSD(Number(inv.amount))}"`,
+      `"${formatCurrencyValue(Number(inv.amount), inv.currency || 'BRL')}"`,
       inv.status,
       inv.type || 'service',
     ])
@@ -102,7 +98,7 @@ export default function Earnings() {
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-emerald-700">
-              {formatUSD(totalEarned)}
+              {formatCurrencyValue(totalEarned, 'BRL')}
             </div>
           </CardContent>
         </Card>
@@ -115,7 +111,7 @@ export default function Earnings() {
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-amber-700">
-              {formatUSD(pendingPayouts)}
+              {formatCurrencyValue(pendingPayouts, 'BRL')}
             </div>
           </CardContent>
         </Card>
@@ -149,7 +145,10 @@ export default function Earnings() {
                       </TableCell>
                       <TableCell>{inv.description || '-'}</TableCell>
                       <TableCell className="font-medium">
-                        {formatUSD(Number(inv.amount))}
+                        {formatCurrencyValue(
+                          Number(inv.amount),
+                          inv.currency || 'BRL',
+                        )}
                       </TableCell>
                       <TableCell>
                         <Badge

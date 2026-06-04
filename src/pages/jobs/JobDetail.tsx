@@ -38,6 +38,7 @@ import {
   Star,
 } from 'lucide-react'
 import { useLanguageStore } from '@/stores/useLanguageStore'
+import { formatCurrencyValue } from '@/lib/utils'
 
 export default function JobDetail() {
   const { id } = useParams<{ id: string }>()
@@ -58,7 +59,7 @@ export default function JobDetail() {
   } = useMessageStore()
   const { addNotification } = useNotificationStore()
   const { toast } = useToast()
-  const { t, formatCurrency, formatDate } = useLanguageStore()
+  const { t, formatDate } = useLanguageStore()
 
   const job = getJob(id!)
   const { invoices } = useInvoices(user?.id)
@@ -172,7 +173,7 @@ export default function JobDetail() {
         toast({
           variant: 'destructive',
           title: 'Lance inválido',
-          description: `${t('job.auction_warning')} ${formatCurrency(lowestBid, (job as any).currency)}`,
+          description: `${t('job.auction_warning')} ${formatCurrencyValue(lowestBid, (job as any).currency || 'BRL')}`,
         })
         return
       }
@@ -183,6 +184,7 @@ export default function JobDetail() {
       executorId: user.id,
       executorName: user.name,
       amount: amount,
+      currency: (job as any).currency || 'BRL',
       description: bidDescription,
       executorReputation: user.reputation,
     })
@@ -190,7 +192,7 @@ export default function JobDetail() {
     addNotification({
       userId: job.ownerId,
       title: 'Novo Lance Recebido!',
-      message: `Você recebeu um lance de ${formatCurrency(amount, (job as any).currency)} no anúncio "${job.title}".`,
+      message: `Você recebeu um lance de ${formatCurrencyValue(amount, (job as any).currency || 'BRL')} no anúncio "${job.title}".`,
       type: 'info',
       link: `/jobs/${job.id}`,
     })
@@ -207,7 +209,7 @@ export default function JobDetail() {
     sendChatMessage(
       convId,
       user.id,
-      `Enviei uma proposta de ${formatCurrency(amount, (job as any).currency)}:\n${bidDescription}`,
+      `Enviei uma proposta de ${formatCurrencyValue(amount, (job as any).currency || 'BRL')}:\n${bidDescription}`,
     )
 
     toast({
@@ -373,12 +375,15 @@ export default function JobDetail() {
             <div className="text-2xl font-bold text-primary">
               {displayPrice === 0
                 ? 'Grátis'
-                : formatCurrency(displayPrice, (job as any).currency)}
+                : formatCurrencyValue(
+                    displayPrice,
+                    (job as any).currency || 'BRL',
+                  )}
             </div>
             {job.type === 'auction' && job.bids.length > 0 && (
               <div className="text-xs font-semibold text-emerald-600">
                 Melhor Oferta:{' '}
-                {formatCurrency(lowestBid, (job as any).currency)}
+                {formatCurrencyValue(lowestBid, (job as any).currency || 'BRL')}
               </div>
             )}
             {job.listingType === 'rental' && job.rentalRateType && (
@@ -793,7 +798,10 @@ export default function JobDetail() {
                         </div>
                         <div className="flex flex-col items-end gap-2 min-w-[120px]">
                           <span className="text-xl font-bold text-primary">
-                            {formatCurrency(bid.amount, (job as any).currency)}
+                            {formatCurrencyValue(
+                              bid.amount,
+                              bid.currency || (job as any).currency || 'BRL',
+                            )}
                           </span>
                           <Button
                             size="sm"
@@ -824,9 +832,11 @@ export default function JobDetail() {
                       job.status !== 'cancelled' && (
                         <Badge className="bg-indigo-500 hover:bg-indigo-600">
                           Protegido:{' '}
-                          {formatCurrency(
+                          {formatCurrencyValue(
                             acceptedBid?.amount || 0,
-                            (job as any).currency,
+                            acceptedBid?.currency ||
+                              (job as any).currency ||
+                              'BRL',
                           )}
                         </Badge>
                       )}
@@ -931,7 +941,10 @@ export default function JobDetail() {
                   job.status === 'open' && (
                     <CardDescription className="text-amber-600 font-medium">
                       Aviso: A oferta deve ser menor que{' '}
-                      {formatCurrency(lowestBid, (job as any).currency)}
+                      {formatCurrencyValue(
+                        lowestBid,
+                        (job as any).currency || 'BRL',
+                      )}
                     </CardDescription>
                   )}
               </CardHeader>
@@ -1063,7 +1076,10 @@ export default function JobDetail() {
             <p className="font-bold text-primary truncate">
               {displayPrice === 0
                 ? 'Grátis'
-                : formatCurrency(displayPrice, (job as any).currency)}
+                : formatCurrencyValue(
+                    displayPrice,
+                    (job as any).currency || 'BRL',
+                  )}
             </p>
           </div>
           <div>

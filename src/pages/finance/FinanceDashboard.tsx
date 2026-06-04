@@ -54,6 +54,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useLanguageStore } from '@/stores/useLanguageStore'
+import { formatCurrencyValue } from '@/lib/utils'
 import { CurrencyInput } from '@/components/CurrencyInput'
 import { supabase } from '@/lib/supabase/client'
 
@@ -93,7 +94,7 @@ export default function FinanceDashboard() {
       })
     }
   }
-  const { formatCurrency, formatDate, t } = useLanguageStore()
+  const { formatDate, t } = useLanguageStore()
 
   const [isScheduleOpen, setIsScheduleOpen] = useState(false)
   const [scheduleData, setScheduleData] = useState({
@@ -215,7 +216,7 @@ export default function FinanceDashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {formatCurrency(totalBalance)}
+              {formatCurrencyValue(totalBalance, 'BRL')}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
               {t('finance.balance_desc')}
@@ -231,7 +232,7 @@ export default function FinanceDashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {formatCurrency(totalSpent)}
+              {formatCurrencyValue(totalSpent, 'BRL')}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
               {t('finance.spent_desc')}
@@ -247,7 +248,7 @@ export default function FinanceDashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {formatCurrency(pendingAmount)}
+              {formatCurrencyValue(pendingAmount, 'BRL')}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
               {t('finance.pending_desc')}
@@ -299,7 +300,9 @@ export default function FinanceDashboard() {
                       <Tooltip
                         content={
                           <ChartTooltipContent
-                            formatter={(value) => formatCurrency(Number(value))}
+                            formatter={(value) =>
+                              formatCurrencyValue(Number(value), 'BRL')
+                            }
                           />
                         }
                       />
@@ -348,7 +351,10 @@ export default function FinanceDashboard() {
                             {tx.description}
                           </TableCell>
                           <TableCell className="font-semibold">
-                            {formatCurrency(tx.amount)}
+                            {formatCurrencyValue(
+                              tx.amount,
+                              tx.currency || 'BRL',
+                            )}
                           </TableCell>
                           <TableCell>
                             {tx.payer_id === user.id ? (
@@ -460,13 +466,17 @@ export default function FinanceDashboard() {
                     <YAxis
                       tickLine={false}
                       axisLine={false}
-                      tickFormatter={(value) => formatCurrency(value)}
+                      tickFormatter={(value) =>
+                        formatCurrencyValue(value, 'BRL')
+                      }
                     />
                     <Tooltip
                       content={
                         <ChartTooltipContent
                           indicator="dot"
-                          formatter={(value) => formatCurrency(Number(value))}
+                          formatter={(value) =>
+                            formatCurrencyValue(Number(value), 'BRL')
+                          }
                         />
                       }
                     />
@@ -526,7 +536,7 @@ export default function FinanceDashboard() {
                         </TableCell>
                         <TableCell>{t('finance.external_client')}</TableCell>
                         <TableCell className="font-semibold text-green-600">
-                          {formatCurrency(tx.amount)}
+                          {formatCurrencyValue(tx.amount, tx.currency || 'BRL')}
                         </TableCell>
                         <TableCell>
                           {tx.status === 'completed' && (
@@ -681,7 +691,9 @@ export default function FinanceDashboard() {
                           ? t('finance.you')
                           : t('finance.external')}
                       </TableCell>
-                      <TableCell>{formatCurrency(tx.amount)}</TableCell>
+                      <TableCell>
+                        {formatCurrencyValue(tx.amount, tx.currency || 'BRL')}
+                      </TableCell>
                       <TableCell>
                         <Badge
                           variant="outline"

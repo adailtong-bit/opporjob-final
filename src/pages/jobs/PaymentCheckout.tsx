@@ -17,6 +17,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Label } from '@/components/ui/label'
 import { useToast } from '@/hooks/use-toast'
 import { Loader2, CreditCard, Lock } from 'lucide-react'
+import { formatCurrencyValue } from '@/lib/utils'
 
 export default function PaymentCheckout() {
   const { jobId, bidId } = useParams<{ jobId: string; bidId: string }>()
@@ -28,7 +29,7 @@ export default function PaymentCheckout() {
   const { toast } = useToast()
 
   // Utilizando o contexto de formatação global e região (i18n)
-  const { t, formatCurrency, currency } = useLanguageStore()
+  const { t } = useLanguageStore()
 
   const [paymentMethod, setPaymentMethod] = useState('credit-card')
   const [isProcessing, setIsProcessing] = useState(false)
@@ -55,7 +56,7 @@ export default function PaymentCheckout() {
       payer_id: user.id,
       receiver_id: receiverId !== 'pending' ? receiverId : undefined,
       amount: amount,
-      currency: currency || 'USD',
+      currency: job.currency || 'BRL',
       description: job.title,
       status: 'escrow',
       type: 'service',
@@ -68,7 +69,7 @@ export default function PaymentCheckout() {
         addNotification({
           userId: bid.executorId,
           title: 'Proposal Accepted & Paid!',
-          message: `The contractor paid ${formatCurrency(amount)} (Escrow). You can start the job "${job.title}".`,
+          message: `The contractor paid ${formatCurrencyValue(amount, job.currency || 'BRL')} (Escrow). You can start the job "${job.title}".`,
           type: 'success',
           link: `/jobs/${job.id}`,
         })
@@ -173,7 +174,7 @@ export default function PaymentCheckout() {
                   {t('checkout.total', 'Total a Pagar')}
                 </span>
                 <span className="text-3xl font-bold text-primary tracking-tight">
-                  {formatCurrency(amount)}
+                  {formatCurrencyValue(amount, job.currency || 'BRL')}
                 </span>
               </div>
             </CardContent>

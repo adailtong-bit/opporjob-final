@@ -14,11 +14,12 @@ import {
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Check, HardHat } from 'lucide-react'
+import { formatCurrencyValue } from '@/lib/utils'
 
 export default function ConstructionPlans() {
   const navigate = useNavigate()
   const { plans, fetchPlans, loading } = useConstructionPlansStore()
-  const { t, formatCurrency } = useLanguageStore()
+  const { t } = useLanguageStore()
   const { user } = useAuthStore()
 
   useEffect(() => {
@@ -90,7 +91,7 @@ export default function ConstructionPlans() {
               <CardContent className="flex-1 space-y-6">
                 <div className="flex items-baseline gap-1">
                   <span className="text-4xl font-extrabold tracking-tight text-foreground">
-                    {formatCurrency(plan.price)}
+                    {formatCurrencyValue(plan.price, 'BRL')}
                   </span>
                   <span className="text-muted-foreground font-medium">
                     /{getCycleLabel(plan.billingCycle)}

@@ -23,11 +23,12 @@ import { Switch } from '@/components/ui/switch'
 import { Trash2, Edit2, Plus, HardHat, CheckCircle2 } from 'lucide-react'
 import { useLanguageStore } from '@/stores/useLanguageStore'
 import { ConstructionPlanFormModal } from '@/components/admin/ConstructionPlanFormModal'
+import { formatCurrencyValue } from '@/lib/utils'
 
 export default function ManageConstructionPlans() {
   const { plans, fetchPlans, deletePlan, togglePlanStatus } =
     useConstructionPlansStore()
-  const { t, formatCurrency } = useLanguageStore()
+  const { t } = useLanguageStore()
 
   useEffect(() => {
     fetchPlans()
@@ -129,9 +130,7 @@ export default function ManageConstructionPlans() {
                   </TableCell>
                   <TableCell>
                     <div className="font-semibold text-[15px]">
-                      {formatCurrency
-                        ? formatCurrency(plan.price)
-                        : `${plan.price}`}
+                      {formatCurrencyValue(plan.price, 'BRL')}
                     </div>
                     <div className="text-xs text-muted-foreground capitalize">
                       {getCycleLabel(plan.billingCycle)}

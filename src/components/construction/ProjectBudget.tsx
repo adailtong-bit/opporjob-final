@@ -18,12 +18,11 @@ import { supabase } from '@/lib/supabase/client'
 import { useLanguageStore } from '@/stores/useLanguageStore'
 import { DollarSign, Star } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
-import { cn } from '@/lib/utils'
+import { cn, formatCurrencyValue } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 
 export function ProjectBudget({ projectId }: { projectId: string }) {
   const [budgets, setBudgets] = useState<any[]>([])
-  const { formatCurrency } = useLanguageStore()
 
   useEffect(() => {
     const fetchBudgets = async () => {
@@ -82,10 +81,10 @@ export function ProjectBudget({ projectId }: { projectId: string }) {
                         {b.category}
                       </TableCell>
                       <TableCell className="text-right">
-                        {formatCurrency(b.estimated_amount)}
+                        {formatCurrencyValue(b.estimated_amount, 'BRL')}
                       </TableCell>
                       <TableCell className="text-right">
-                        {formatCurrency(b.actual_amount)}
+                        {formatCurrencyValue(b.actual_amount, 'BRL')}
                       </TableCell>
                       <TableCell
                         className={cn('text-right font-bold', {
@@ -93,7 +92,7 @@ export function ProjectBudget({ projectId }: { projectId: string }) {
                           'text-green-500': variance >= 0,
                         })}
                       >
-                        {formatCurrency(variance)}
+                        {formatCurrencyValue(variance, 'BRL')}
                       </TableCell>
                       <TableCell>
                         <Badge
@@ -141,13 +140,13 @@ export function ProjectBudget({ projectId }: { projectId: string }) {
             <div className="text-right">
               <p className="text-sm text-muted-foreground">Total Estimated</p>
               <p className="text-xl font-bold">
-                {formatCurrency(totalEstimated)}
+                {formatCurrencyValue(totalEstimated, 'BRL')}
               </p>
             </div>
             <div className="text-right">
               <p className="text-sm text-muted-foreground">Total Actual</p>
               <p className="text-xl font-bold text-primary">
-                {formatCurrency(totalActual)}
+                {formatCurrencyValue(totalActual, 'BRL')}
               </p>
             </div>
             <div className="text-right border-t md:border-t-0 md:border-l pt-2 md:pt-0 md:pl-8">
@@ -158,7 +157,7 @@ export function ProjectBudget({ projectId }: { projectId: string }) {
                   'text-green-500': totalVariance >= 0,
                 })}
               >
-                {formatCurrency(totalVariance)}
+                {formatCurrencyValue(totalVariance, 'BRL')}
               </p>
             </div>
           </div>

@@ -19,11 +19,12 @@ import { Button } from '@/components/ui/button'
 import { Plus, Receipt } from 'lucide-react'
 import { useLanguageStore } from '@/stores/useLanguageStore'
 import { supabase } from '@/lib/supabase/client'
+import { formatCurrencyValue } from '@/lib/utils'
 
 export function ProjectInvoices({ projectId }: { projectId: string }) {
   const [invoices, setInvoices] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
-  const { formatCurrency, formatDate } = useLanguageStore()
+  const { formatDate } = useLanguageStore()
 
   useEffect(() => {
     const fetchInvoices = async () => {
@@ -93,7 +94,7 @@ export function ProjectInvoices({ projectId }: { projectId: string }) {
                           : 'N/A'}
                       </TableCell>
                       <TableCell className="text-right font-bold">
-                        {formatCurrency(inv.amount)}
+                        {formatCurrencyValue(inv.amount, inv.currency || 'BRL')}
                       </TableCell>
                       <TableCell>
                         <Badge

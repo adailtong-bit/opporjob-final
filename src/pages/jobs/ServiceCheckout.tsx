@@ -17,6 +17,7 @@ import { Label } from '@/components/ui/label'
 import { useToast } from '@/hooks/use-toast'
 import { Loader2, CreditCard, ShieldCheck, ArrowLeft } from 'lucide-react'
 import { supabase } from '@/lib/supabase/client'
+import { formatCurrencyValue } from '@/lib/utils'
 
 export default function ServiceCheckout() {
   const { providerId } = useParams<{ providerId: string }>()
@@ -26,7 +27,7 @@ export default function ServiceCheckout() {
   const { createInvoice } = useInvoices(user?.id)
   const { addNotification } = useNotificationStore()
   const { toast } = useToast()
-  const { t, formatCurrency, currency } = useLanguageStore()
+  const { t, currency } = useLanguageStore()
 
   const serviceName = searchParams.get('service') || 'Serviço Personalizado'
   const priceParam = searchParams.get('price')
@@ -75,7 +76,7 @@ export default function ServiceCheckout() {
       payer_id: user.id,
       receiver_id: providerId,
       amount: amount * 1.05,
-      currency: currency || 'USD',
+      currency: currency || 'BRL',
       description: `Reserva de Serviço: ${serviceName}`,
       status: 'escrow',
       type: 'service_booking',
@@ -191,11 +192,15 @@ export default function ServiceCheckout() {
                   <span className="text-muted-foreground">
                     Subtotal do Serviço
                   </span>
-                  <span className="font-medium">{formatCurrency(amount)}</span>
+                  <span className="font-medium">
+                    {formatCurrencyValue(amount, currency || 'BRL')}
+                  </span>
                 </div>
                 <div className="flex justify-between text-sm text-muted-foreground">
                   <span>Taxa de Proteção da Plataforma (5%)</span>
-                  <span>{formatCurrency(amount * 0.05)}</span>
+                  <span>
+                    {formatCurrencyValue(amount * 0.05, currency || 'BRL')}
+                  </span>
                 </div>
               </div>
               <div className="border-t pt-4 mt-2 flex flex-col gap-1">
@@ -203,7 +208,7 @@ export default function ServiceCheckout() {
                   Total a Pagar
                 </span>
                 <span className="text-3xl font-bold text-primary tracking-tight">
-                  {formatCurrency(amount * 1.05)}
+                  {formatCurrencyValue(amount * 1.05, currency || 'BRL')}
                 </span>
               </div>
             </CardContent>

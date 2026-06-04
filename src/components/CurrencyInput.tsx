@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { Input } from '@/components/ui/input'
-import { cn } from '@/lib/utils'
+import { cn, formatCurrencyValue } from '@/lib/utils'
 import { useLanguageStore } from '@/stores/useLanguageStore'
 
 interface CurrencyInputProps extends Omit<
@@ -21,17 +21,8 @@ export function CurrencyInput({
   const { currentLanguage, currentCurrency } = useLanguageStore()
 
   React.useEffect(() => {
-    const resolvedCurrency = currentCurrency || 'USD'
-    let locale = 'en-US'
-    if (resolvedCurrency === 'BRL') locale = 'pt-BR'
-    else if (resolvedCurrency === 'EUR') locale = 'es-ES'
-
-    const formatted = new Intl.NumberFormat(locale, {
-      style: 'currency',
-      currency: resolvedCurrency,
-    }).format(value)
-
-    setDisplayValue(formatted)
+    const resolvedCurrency = currentCurrency || 'BRL'
+    setDisplayValue(formatCurrencyValue(value, resolvedCurrency))
   }, [value, currentLanguage, currentCurrency])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {

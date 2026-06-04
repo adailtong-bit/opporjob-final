@@ -5,6 +5,14 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
+export function formatCurrencyValue(amount: number, currency: string = 'BRL') {
+  const locale = currency === 'BRL' ? 'pt-BR' : 'en-US'
+  return new Intl.NumberFormat(locale, {
+    style: 'currency',
+    currency: currency,
+  }).format(amount)
+}
+
 export function maskPhone(value: string, region: string = 'US') {
   let v = value.replace(/\D/g, '')
   if (region === 'BR') {

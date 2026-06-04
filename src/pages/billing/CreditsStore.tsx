@@ -12,17 +12,18 @@ import { Coins, Zap, Trophy, Rocket } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import { Badge } from '@/components/ui/badge'
 import { useLanguageStore } from '@/stores/useLanguageStore'
+import { formatCurrencyValue } from '@/lib/utils'
 
 export default function CreditsStore() {
   const { user, buyCredits } = useAuthStore()
   const { toast } = useToast()
-  const { t, formatCurrency } = useLanguageStore()
+  const { t } = useLanguageStore()
 
   const handleBuy = (amount: number, price: number) => {
     buyCredits(amount)
     toast({
       title: 'Purchase Successful!',
-      description: `You acquired ${amount} credits for ${formatCurrency(price)}.`,
+      description: `You acquired ${amount} credits for ${formatCurrencyValue(price, 'BRL')}.`,
     })
   }
 
@@ -98,7 +99,7 @@ export default function CreditsStore() {
                   <div className="text-4xl font-bold mb-2">{pkg.amount}</div>
                   <div className="text-sm text-muted-foreground">Credits</div>
                   <div className="mt-4 text-2xl font-bold text-primary">
-                    {formatCurrency(pkg.price)}
+                    {formatCurrencyValue(pkg.price, 'BRL')}
                   </div>
                 </CardContent>
                 <CardFooter>
@@ -130,7 +131,7 @@ export default function CreditsStore() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">
-                    {formatCurrency(boost.price)}
+                    {formatCurrencyValue(boost.price, 'BRL')}
                   </div>
                 </CardContent>
                 <CardFooter>

@@ -188,6 +188,7 @@ export default function PostJob() {
         ownerId: user.id,
         ownerName: user.name || user.email || t('nav.visitor'),
         photos: uploadedUrls,
+        currency: 'BRL',
       }
 
       const createdJob = await addJob(payload)
