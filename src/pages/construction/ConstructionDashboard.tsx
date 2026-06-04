@@ -12,6 +12,7 @@ import {
   CardFooter,
 } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
+import { Badge } from '@/components/ui/badge'
 import {
   Table,
   TableBody,
@@ -20,6 +21,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { Badge } from '@/components/ui/badge'
 import {
   Plus,
   HardHat,
@@ -41,6 +43,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog'
 import { PremiumConstructionModal } from '@/components/PremiumConstructionModal'
+import { Badge } from '@/components/ui/badge'
 
 export default function ConstructionDashboard() {
   const { projects } = useProjectStore()
