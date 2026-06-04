@@ -172,7 +172,7 @@ export default function JobDetail() {
         toast({
           variant: 'destructive',
           title: 'Lance inválido',
-          description: `${t('job.auction_warning')} ${formatCurrency(lowestBid)}`,
+          description: `${t('job.auction_warning')} ${formatCurrency(lowestBid, (job as any).currency)}`,
         })
         return
       }
@@ -190,7 +190,7 @@ export default function JobDetail() {
     addNotification({
       userId: job.ownerId,
       title: 'Novo Lance Recebido!',
-      message: `Você recebeu um lance de ${formatCurrency(amount)} no anúncio "${job.title}".`,
+      message: `Você recebeu um lance de ${formatCurrency(amount, (job as any).currency)} no anúncio "${job.title}".`,
       type: 'info',
       link: `/jobs/${job.id}`,
     })
@@ -207,7 +207,7 @@ export default function JobDetail() {
     sendChatMessage(
       convId,
       user.id,
-      `Enviei uma proposta de ${formatCurrency(amount)}:\n${bidDescription}`,
+      `Enviei uma proposta de ${formatCurrency(amount, (job as any).currency)}:\n${bidDescription}`,
     )
 
     toast({
@@ -371,11 +371,14 @@ export default function JobDetail() {
                   : 'Valor'}
             </div>
             <div className="text-2xl font-bold text-primary">
-              {displayPrice === 0 ? 'Grátis' : formatCurrency(displayPrice)}
+              {displayPrice === 0
+                ? 'Grátis'
+                : formatCurrency(displayPrice, (job as any).currency)}
             </div>
             {job.type === 'auction' && job.bids.length > 0 && (
               <div className="text-xs font-semibold text-emerald-600">
-                Melhor Oferta: {formatCurrency(lowestBid)}
+                Melhor Oferta:{' '}
+                {formatCurrency(lowestBid, (job as any).currency)}
               </div>
             )}
             {job.listingType === 'rental' && job.rentalRateType && (
@@ -790,7 +793,7 @@ export default function JobDetail() {
                         </div>
                         <div className="flex flex-col items-end gap-2 min-w-[120px]">
                           <span className="text-xl font-bold text-primary">
-                            {formatCurrency(bid.amount)}
+                            {formatCurrency(bid.amount, (job as any).currency)}
                           </span>
                           <Button
                             size="sm"
@@ -820,7 +823,11 @@ export default function JobDetail() {
                     {job.status !== 'completed' &&
                       job.status !== 'cancelled' && (
                         <Badge className="bg-indigo-500 hover:bg-indigo-600">
-                          Protegido: {formatCurrency(acceptedBid?.amount || 0)}
+                          Protegido:{' '}
+                          {formatCurrency(
+                            acceptedBid?.amount || 0,
+                            (job as any).currency,
+                          )}
                         </Badge>
                       )}
                   </CardTitle>
@@ -924,7 +931,7 @@ export default function JobDetail() {
                   job.status === 'open' && (
                     <CardDescription className="text-amber-600 font-medium">
                       Aviso: A oferta deve ser menor que{' '}
-                      {formatCurrency(lowestBid)}
+                      {formatCurrency(lowestBid, (job as any).currency)}
                     </CardDescription>
                   )}
               </CardHeader>
@@ -1054,7 +1061,9 @@ export default function JobDetail() {
               {job.title}
             </p>
             <p className="font-bold text-primary truncate">
-              {displayPrice === 0 ? 'Grátis' : formatCurrency(displayPrice)}
+              {displayPrice === 0
+                ? 'Grátis'
+                : formatCurrency(displayPrice, (job as any).currency)}
             </p>
           </div>
           <div>

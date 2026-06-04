@@ -12,7 +12,7 @@ interface LanguageState {
   setLanguage: (lang: Language) => void
   setCurrency: (currency: Currency) => void
   t: (key: string, params?: Record<string, string | number>) => string
-  formatCurrency: (value: number) => string
+  formatCurrency: (value: number, currencyCode?: string) => string
   formatDate: (
     date: Date | string | number | null | undefined,
     formatStr: string,
@@ -28,8 +28,6 @@ export const useLanguageStore = create<LanguageState>()(
       setLanguage: (lang) =>
         set({
           currentLanguage: lang,
-          currentCurrency:
-            lang === 'pt' ? 'BRL' : lang === 'es' ? 'EUR' : 'USD',
         }),
       setCurrency: (currency) => set({ currentCurrency: currency }),
       t: (key, params) => {
@@ -44,8 +42,8 @@ export const useLanguageStore = create<LanguageState>()(
 
         return text
       },
-      formatCurrency: (value) => {
-        const currency = get().currentCurrency || 'USD'
+      formatCurrency: (value, currencyCode) => {
+        const currency = currencyCode || get().currentCurrency || 'USD'
 
         let locale = 'en-US'
         if (currency === 'BRL') locale = 'pt-BR'

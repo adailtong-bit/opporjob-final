@@ -52,12 +52,8 @@ export default function Dashboard() {
     useMessageStore()
   const { vendors, favorites, fetchVendors, fetchFavorites, toggleFavorite } =
     useVendorStore()
-  const { t, formatDate } = useLanguageStore()
-  const formatUSD = (amount: number) =>
-    new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    }).format(amount)
+  const { t, formatDate, formatCurrency } = useLanguageStore()
+  const formatUSD = (amount: number) => formatCurrency(amount, 'USD')
   const { toast } = useToast()
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
@@ -137,7 +133,9 @@ export default function Dashboard() {
               <Wallet className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{formatUSD(4500000)}</div>
+              <div className="text-2xl font-bold">
+                {formatCurrency(4500000)}
+              </div>
               <p className="text-xs text-muted-foreground">
                 {t('dashboard.admin.volume_desc')}
               </p>
@@ -510,7 +508,7 @@ export default function Dashboard() {
               <Wallet className="h-4 w-4 text-indigo-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{formatUSD(9600)}</div>
+              <div className="text-2xl font-bold">{formatCurrency(9600)}</div>
               <p className="text-xs text-muted-foreground flex items-center gap-1">
                 <ShieldCheck className="h-3 w-3" />{' '}
                 {t('dashboard.escrow_protected')}
@@ -566,12 +564,12 @@ export default function Dashboard() {
                       fontSize={12}
                       tickLine={false}
                       axisLine={false}
-                      tickFormatter={(value) => formatUSD(value)}
+                      tickFormatter={(value) => formatCurrency(value)}
                     />
                     <Tooltip
                       content={
                         <ChartTooltipContent
-                          formatter={(value) => formatUSD(Number(value))}
+                          formatter={(value) => formatCurrency(Number(value))}
                         />
                       }
                     />
@@ -610,7 +608,7 @@ export default function Dashboard() {
                     <Tooltip
                       content={
                         <ChartTooltipContent
-                          formatter={(value) => formatUSD(Number(value))}
+                          formatter={(value) => formatCurrency(Number(value))}
                         />
                       }
                     />

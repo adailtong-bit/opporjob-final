@@ -521,7 +521,7 @@ export default function FindJobs() {
                   <span className="font-bold text-lg text-primary">
                     {displayPrice === 0
                       ? 'Grátis'
-                      : formatCurrency(displayPrice)}
+                      : formatCurrency(displayPrice, (job as any).currency)}
                   </span>
                 </div>
               </CardContent>
