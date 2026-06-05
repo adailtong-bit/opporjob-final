@@ -10,12 +10,14 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { useJobStore } from '@/stores/useJobStore'
 import { usePWA } from '@/hooks/use-pwa'
 import { ProximityMap } from '@/components/home/ProximityMap'
+import { useState, useEffect } from 'react'
 
 export default function Index() {
   const { isInstallable, installPWA, shareContent, setBadge, clearBadge } =
     usePWA()
   const { t } = useLanguageStore()
-  const { jobs } = useJobStore()
+  const { jobs, incrementImpressions } = useJobStore()
+  const [trackedIds, setTrackedIds] = useState<Set<string>>(new Set())
 
   // Filter out test/dummy data for production
   const isProd =
@@ -72,6 +74,16 @@ export default function Index() {
       status: j.status,
     }
   })
+
+  useEffect(() => {
+    const newIds = mappedListings
+      .map((j) => j.id)
+      .filter((id) => !trackedIds.has(id))
+    if (newIds.length > 0) {
+      incrementImpressions(newIds)
+      setTrackedIds((prev) => new Set([...prev, ...newIds]))
+    }
+  }, [mappedListings, trackedIds, incrementImpressions])
 
   const renderSection = (title: string, type: string, filterType: string) => {
     const items = mappedListings

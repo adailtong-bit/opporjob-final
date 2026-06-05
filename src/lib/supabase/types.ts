@@ -104,6 +104,7 @@ export type Database = {
         Row: {
           created_at: string
           id: string
+          image_url: string | null
           name: string
           slug: string
           translation_key: string | null
@@ -112,6 +113,7 @@ export type Database = {
         Insert: {
           created_at?: string
           id: string
+          image_url?: string | null
           name: string
           slug: string
           translation_key?: string | null
@@ -120,6 +122,7 @@ export type Database = {
         Update: {
           created_at?: string
           id?: string
+          image_url?: string | null
           name?: string
           slug?: string
           translation_key?: string | null
@@ -417,6 +420,7 @@ export type Database = {
           description: string | null
           external_id: string | null
           id: string
+          impressions_count: number
           is_demo: boolean
           listing_type: string | null
           location: string | null
@@ -430,6 +434,7 @@ export type Database = {
           title: string
           type: string | null
           updated_at: string | null
+          views_count: number
         }
         Insert: {
           accepted_bid_id?: string | null
@@ -442,6 +447,7 @@ export type Database = {
           description?: string | null
           external_id?: string | null
           id?: string
+          impressions_count?: number
           is_demo?: boolean
           listing_type?: string | null
           location?: string | null
@@ -455,6 +461,7 @@ export type Database = {
           title: string
           type?: string | null
           updated_at?: string | null
+          views_count?: number
         }
         Update: {
           accepted_bid_id?: string | null
@@ -467,6 +474,7 @@ export type Database = {
           description?: string | null
           external_id?: string | null
           id?: string
+          impressions_count?: number
           is_demo?: boolean
           listing_type?: string | null
           location?: string | null
@@ -480,6 +488,7 @@ export type Database = {
           title?: string
           type?: string | null
           updated_at?: string | null
+          views_count?: number
         }
         Relationships: [
           {
@@ -1084,6 +1093,11 @@ export type Database = {
         Args: { bid_id_param: string; job_id_param: string }
         Returns: boolean
       }
+      increment_job_impressions: {
+        Args: { job_ids_param: string[] }
+        Returns: undefined
+      }
+      increment_job_view: { Args: { job_id_param: string }; Returns: undefined }
       is_admin: { Args: never; Returns: boolean }
     }
     Enums: {
@@ -1254,6 +1268,7 @@ export const Constants = {
 //   type: text (not null, default: 'job'::text)
 //   translation_key: text (nullable)
 //   created_at: timestamp with time zone (not null, default: now())
+//   image_url: text (nullable)
 // Table: construction_plans
 //   id: uuid (not null, default: gen_random_uuid())
 //   name: text (not null)
@@ -1343,6 +1358,8 @@ export const Constants = {
 //   completion_comments: text (nullable)
 //   is_demo: boolean (not null, default: false)
 //   currency: text (nullable, default: 'USD'::text)
+//   views_count: integer (not null, default: 0)
+//   impressions_count: integer (not null, default: 0)
 // Table: marketing_content
 //   id: uuid (not null, default: gen_random_uuid())
 //   key: text (not null)
@@ -1839,6 +1856,32 @@ export const Constants = {
 //       NEW.raw_user_meta_data->>'document'
 //     );
 //     RETURN NEW;
+//   END;
+//   $function$
+//
+// FUNCTION increment_job_impressions(uuid[])
+//   CREATE OR REPLACE FUNCTION public.increment_job_impressions(job_ids_param uuid[])
+//    RETURNS void
+//    LANGUAGE plpgsql
+//    SECURITY DEFINER
+//   AS $function$
+//   BEGIN
+//     UPDATE public.jobs
+//     SET impressions_count = impressions_count + 1
+//     WHERE id = ANY(job_ids_param);
+//   END;
+//   $function$
+//
+// FUNCTION increment_job_view(uuid)
+//   CREATE OR REPLACE FUNCTION public.increment_job_view(job_id_param uuid)
+//    RETURNS void
+//    LANGUAGE plpgsql
+//    SECURITY DEFINER
+//   AS $function$
+//   BEGIN
+//     UPDATE public.jobs
+//     SET views_count = views_count + 1
+//     WHERE id = job_id_param;
 //   END;
 //   $function$
 //

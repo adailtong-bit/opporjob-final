@@ -23,16 +23,16 @@ export function CategorySelector({
   const [search, setSearch] = useState('')
 
   const allSubCategories = useMemo(() => {
-    const list: { id: string; name: string }[] = []
+    const map = new Map<string, { id: string; name: string }>()
     categories.forEach((cat) => {
-      cat.subCategories.forEach((sub) => {
-        list.push({
-          id: sub.id,
-          name: sub.translationKey ? t(sub.translationKey) : sub.name,
-        })
+      cat.subCategories?.forEach((sub) => {
+        const name = sub.translationKey ? t(sub.translationKey) : sub.name
+        if (!map.has(name)) {
+          map.set(name, { id: sub.id, name: name })
+        }
       })
     })
-    return list.sort((a, b) => a.name.localeCompare(b.name))
+    return Array.from(map.values()).sort((a, b) => a.name.localeCompare(b.name))
   }, [categories, t])
 
   const filtered = useMemo(() => {

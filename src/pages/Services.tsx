@@ -1,18 +1,25 @@
 import { useState, useEffect } from 'react'
 import { Link, useSearchParams, useNavigate } from 'react-router-dom'
-import { Plus, SearchX } from 'lucide-react'
+import { Plus, SearchX, ChevronDown } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { ServiceCard } from '@/components/home/ServiceCard'
 import { useLanguageStore } from '@/stores/useLanguageStore'
 import { useCategoryStore } from '@/stores/useCategoryStore'
 import { useJobStore } from '@/stores/useJobStore'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 
 export default function Services() {
   const { t } = useLanguageStore()
   const { categories } = useCategoryStore()
-  const { jobs } = useJobStore()
+  const { jobs, incrementImpressions } = useJobStore()
   const [searchParams] = useSearchParams()
+  const [trackedIds, setTrackedIds] = useState<Set<string>>(new Set())
   const navigate = useNavigate()
 
   const categoryParam = searchParams.get('category')
@@ -33,7 +40,44 @@ export default function Services() {
     }
   }
 
-  const filteredCategories = categories.filter(
+  const getCatName = (cat: any) => {
+    if (!cat.translationKey) return cat.name
+    const translated = t(cat.translationKey)
+    return translated && translated !== cat.translationKey
+      ? translated
+      : cat.name
+  }
+
+  const getCatImage = (cat: any) => {
+    if (cat.imageUrl && !cat.imageUrl.includes('keyboard')) return cat.imageUrl
+
+    // Better dynamic fallback based on name or slug
+    const lowerName = cat.name.toLowerCase()
+    let query = encodeURIComponent(cat.name.toLowerCase())
+    if (lowerName.includes('marketing') || cat.slug === 'marketing')
+      query = 'digital%20marketing'
+    else if (lowerName.includes('sales') || cat.slug === 'sales-products')
+      query = 'business%20sales'
+    else if (lowerName.includes('services') || cat.slug === 'home-services')
+      query = 'professional%20services'
+    else if (lowerName.includes('tech') || cat.slug === 'it-programming')
+      query = 'software%20technology'
+    else if (lowerName.includes('construction')) query = 'construction%20site'
+    else if (lowerName.includes('maintenance')) query = 'building%20maintenance'
+    else query = encodeURIComponent(cat.slug.replace('-', ' '))
+
+    return `https://img.usecurling.com/p/600/400?q=${query}&dpr=2`
+  }
+  // Deduplicate categories by their slug so UI doesn't show copies
+  const uniqueCategoriesMap = new Map()
+  categories.forEach((cat) => {
+    if (!uniqueCategoriesMap.has(cat.slug)) {
+      uniqueCategoriesMap.set(cat.slug, cat)
+    }
+  })
+  const uniqueCategories = Array.from(uniqueCategoriesMap.values())
+
+  const filteredCategories = uniqueCategories.filter(
     (cat) => activeFilter === 'all' || cat.slug === activeFilter,
   )
 
@@ -42,7 +86,21 @@ export default function Services() {
       ? jobs
       : jobs.filter((job) => job.category === activeFilter)
 
-  const defaultImage = 'https://img.usecurling.com/p/400/300?q=services'
+  const visibleCategories = uniqueCategories.slice(0, 5)
+  const hiddenCategories = uniqueCategories.slice(5)
+  const isHiddenActive = hiddenCategories.some(
+    (cat) => cat.slug === activeFilter,
+  )
+
+  useEffect(() => {
+    const newIds = filteredJobs
+      .map((j) => j.id)
+      .filter((id) => !trackedIds.has(id))
+    if (newIds.length > 0) {
+      incrementImpressions(newIds)
+      setTrackedIds((prev) => new Set([...prev, ...newIds]))
+    }
+  }, [filteredJobs, trackedIds, incrementImpressions])
 
   return (
     <div className="pt-6 md:container md:mx-auto md:max-w-6xl relative min-h-screen pb-20">
@@ -55,18 +113,43 @@ export default function Services() {
         >
           {t('service.subcategory.all', { defaultValue: 'Todos' })}
         </Badge>
-        {categories.map((cat) => (
+        {visibleCategories.map((cat) => (
           <Badge
             key={cat.id}
             variant={activeFilter === cat.slug ? 'default' : 'outline'}
             className="flex-shrink-0 cursor-pointer px-4 py-1.5 text-sm transition-colors"
             onClick={() => handleFilterClick(cat.slug)}
           >
-            {cat.translationKey
-              ? t(cat.translationKey, { defaultValue: cat.name })
-              : cat.name}
+            {getCatName(cat)}
           </Badge>
         ))}
+        {hiddenCategories.length > 0 && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Badge
+                variant={isHiddenActive ? 'default' : 'outline'}
+                className="flex-shrink-0 cursor-pointer px-4 py-1.5 text-sm transition-colors flex items-center gap-1"
+              >
+                {t('more', { defaultValue: 'Mais' })}{' '}
+                <ChevronDown className="h-3 w-3" />
+              </Badge>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              align="end"
+              className="w-48 max-h-[300px] overflow-y-auto"
+            >
+              {hiddenCategories.map((cat) => (
+                <DropdownMenuItem
+                  key={cat.id}
+                  onClick={() => handleFilterClick(cat.slug)}
+                  className={activeFilter === cat.slug ? 'bg-muted' : ''}
+                >
+                  {getCatName(cat)}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
       </div>
 
       <div className="px-4 space-y-6">
@@ -79,12 +162,8 @@ export default function Services() {
             {filteredCategories.map((cat) => (
               <ServiceCard
                 key={cat.id}
-                title={
-                  cat.translationKey
-                    ? t(cat.translationKey, { defaultValue: cat.name })
-                    : cat.name
-                }
-                image={cat.imageUrl || defaultImage}
+                title={getCatName(cat)}
+                image={getCatImage(cat)}
                 link={`/find-jobs?category=${cat.slug}`}
               />
             ))}

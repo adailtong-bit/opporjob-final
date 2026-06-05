@@ -1,1140 +1,225 @@
-import { useState, useRef, useEffect } from 'react'
-import { useParams, useNavigate, Link } from 'react-router-dom'
-import { supabase } from '@/lib/supabase/client'
+import { useEffect, useState } from 'react'
+import { useParams, Link, useNavigate } from 'react-router-dom'
 import { useJobStore } from '@/stores/useJobStore'
-import { useInvoices } from '@/hooks/use-invoices'
-import { useAuthStore } from '@/stores/useAuthStore'
-import { useMessageStore } from '@/stores/useMessageStore'
-import { useNotificationStore } from '@/stores/useNotificationStore'
+import { useLanguageStore } from '@/stores/useLanguageStore'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Textarea } from '@/components/ui/textarea'
-import { Input } from '@/components/ui/input'
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardFooter,
-} from '@/components/ui/card'
-import { useToast } from '@/hooks/use-toast'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { SafeImage } from '@/components/SafeImage'
 import {
   MapPin,
   Calendar,
-  DollarSign,
-  Gavel,
-  ShieldAlert,
-  Send,
-  AlertOctagon,
-  CheckCircle,
-  MessageSquare,
-  CalendarDays,
-  Settings2,
-  Lock,
-  Upload,
-  X,
-  Loader2,
-  Star,
+  ShieldCheck,
+  Eye,
+  BarChart,
+  ArrowLeft,
 } from 'lucide-react'
-import { useLanguageStore } from '@/stores/useLanguageStore'
 import { formatCurrencyValue } from '@/lib/utils'
 
 export default function JobDetail() {
   const { id } = useParams<{ id: string }>()
-  const navigate = useNavigate()
-  const {
-    getJob,
-    addBid,
-    completeJob,
-    openDispute,
-    updateJobStatus,
-    finalizeJob,
-  } = useJobStore()
-  const { user, setPendingEvaluation } = useAuthStore()
-  const {
-    conversations,
-    getOrCreateConversation,
-    sendMessage: sendChatMessage,
-  } = useMessageStore()
-  const { addNotification } = useNotificationStore()
-  const { toast } = useToast()
+  const { getJob } = useJobStore()
   const { t, formatDate } = useLanguageStore()
-
-  const job = getJob(id!)
-  const { invoices } = useInvoices(user?.id)
-  const [bidAmount, setBidAmount] = useState('')
-  const [bidDescription, setBidDescription] = useState('')
-  const [chatMessage, setChatMessage] = useState('')
-  const [dbMessages, setDbMessages] = useState<any[]>([])
-
-  const [executionPhotos, setExecutionPhotos] = useState<string[]>([])
-  const [executionComments, setExecutionComments] = useState('')
-  const [uploadingExecutionFiles, setUploadingExecutionFiles] = useState(false)
-  const fileInputRef = useRef<HTMLInputElement>(null)
-
-  const [hasRated, setHasRated] = useState(false)
-  const [rating, setRating] = useState(0)
-  const [ratingComment, setRatingComment] = useState('')
-  const [submittingRating, setSubmittingRating] = useState(false)
-
-  const jobInvoice = invoices.find(
-    (inv) => inv.job_id === job?.id && inv.type === 'service',
-  )
+  const navigate = useNavigate()
+  const [job, setJob] = useState<any>(null)
 
   useEffect(() => {
-    const checkReview = async () => {
-      if (user && job?.id) {
-        const { data } = await supabase
-          .from('reviews')
-          .select('id')
-          .eq('job_id', job.id)
-          .eq('reviewer_id', user.id)
-          .maybeSingle()
-        if (data) {
-          setHasRated(true)
-        }
+    if (id) {
+      const foundJob = getJob(id)
+      if (foundJob) {
+        setJob(foundJob)
       }
     }
-    checkReview()
-  }, [user, job?.id])
+  }, [id, getJob])
 
-  const handleSubmitRating = async () => {
-    if (rating < 1 || rating > 5) {
-      toast({ variant: 'destructive', title: 'Select 1 to 5 stars' })
-      return
-    }
-    setSubmittingRating(true)
-    const targetId = acceptedBid?.executorId || ''
-    const { error } = await supabase.from('reviews').insert({
-      job_id: job!.id,
-      reviewer_id: user!.id,
-      target_id: targetId,
-      rating,
-      comment: ratingComment,
-    })
-
-    setSubmittingRating(false)
-    if (!error) {
-      setHasRated(true)
-      toast({ title: t('job.rating.thank_you') })
-    } else {
-      toast({ variant: 'destructive', title: 'Error' })
-    }
-  }
-
-  if (!job)
+  if (!job) {
     return (
-      <div className="p-8 text-center text-muted-foreground">
-        {t('job.not_found')}
+      <div className="flex flex-col items-center justify-center min-h-[50vh]">
+        <p className="text-muted-foreground">
+          {t('job.not_found', { defaultValue: 'Job not found.' })}
+        </p>
+        <Button variant="outline" className="mt-4" onClick={() => navigate(-1)}>
+          <ArrowLeft className="mr-2 h-4 w-4" />{' '}
+          {t('back', { defaultValue: 'Back' })}
+        </Button>
       </div>
     )
-
-  const isJobListing =
-    !job.listingType ||
-    job.listingType === 'job' ||
-    job.listingType === 'service'
-  const isOwner = user?.id === job.ownerId
-  const hasBidded = user
-    ? job.bids.some((b) => b.executorId === user.id)
-    : false
-  const acceptedBid = job.acceptedBidId
-    ? job.bids.find((b) => b.id === job.acceptedBidId)
-    : null
-  const isExecutor = user ? acceptedBid?.executorId === user.id : false
-  const canViewChat = user && (isOwner || isExecutor)
-
-  const lowestBid =
-    job.bids.length > 0
-      ? Math.min(...job.bids.map((b) => b.amount))
-      : (job.budget ?? 0)
-
-  const existingConv = user
-    ? conversations.find(
-        (c) =>
-          c.context?.id === job.id &&
-          c.participants.some((p) => p.id === user.id),
-      )
-    : undefined
-
-  const hasInteracted = !!existingConv
-
-  const handleBid = () => {
-    if (!user) {
-      navigate('/login', { state: { returnTo: `/jobs/${job.id}` } })
-      return
-    }
-    if (!bidAmount || !bidDescription) return
-
-    const amount = Number(bidAmount)
-
-    if (job.type === 'auction') {
-      if (amount >= lowestBid) {
-        toast({
-          variant: 'destructive',
-          title: 'Lance inválido',
-          description: `${t('job.auction_warning')} ${formatCurrencyValue(lowestBid, (job as any).currency || 'USD')}`,
-        })
-        return
-      }
-    }
-
-    addBid(job.id, {
-      jobId: job.id,
-      executorId: user.id,
-      executorName: user.name,
-      amount: amount,
-      currency: (job as any).currency || 'USD',
-      description: bidDescription,
-      executorReputation: user.reputation,
-    })
-
-    addNotification({
-      userId: job.ownerId,
-      title: 'Novo Lance Recebido!',
-      message: `Você recebeu um lance de ${formatCurrencyValue(amount, (job as any).currency || 'USD')} no anúncio "${job.title}".`,
-      type: 'info',
-      link: `/jobs/${job.id}`,
-    })
-
-    const convId = getOrCreateConversation(
-      { id: user.id, name: user.name, avatar: user.avatar || '' },
-      {
-        id: job.ownerId,
-        name: job.ownerName,
-        avatar: `https://img.usecurling.com/ppl/thumbnail?seed=${job.ownerId}`,
-      },
-      { type: 'job', id: job.id, title: job.title },
-    )
-    sendChatMessage(
-      convId,
-      user.id,
-      `Enviei uma proposta de ${formatCurrencyValue(amount, (job as any).currency || 'USD')}:\n${bidDescription}`,
-    )
-
-    toast({
-      title: 'Lance/Proposta enviado!',
-      description: 'O anunciante será notificado e uma conversa foi iniciada.',
-    })
-    setBidAmount('')
-    setBidDescription('')
   }
 
-  const handleContact = () => {
-    if (!user) {
-      navigate('/login', { state: { returnTo: `/jobs/${job.id}` } })
-      return
-    }
-    const convId = getOrCreateConversation(
-      { id: user.id, name: user.name, avatar: user.avatar || '' },
-      {
-        id: job.ownerId,
-        name: job.ownerName,
-        avatar: `https://img.usecurling.com/ppl/thumbnail?seed=${job.ownerId}`,
-      },
-      { type: 'job', id: job.id, title: job.title },
-      'analysis',
-    )
-    navigate(`/messages?conv=${convId}`)
-  }
+  const rawType = (job.listingType || 'job')
+    .toLowerCase()
+    .replace('post.type.', '')
+    .replace('.label', '')
 
-  const handleAcceptBid = (bidId: string) => {
-    navigate(`/payment/checkout/${job.id}/${bidId}`)
-  }
+  const translatedType =
+    t(`post.type.${rawType}.label`) ||
+    t(`post.type.${rawType}`) ||
+    job.listingType
 
-  const handleComplete = () => {
-    if (!user) return
-    setPendingEvaluation({
-      jobId: job.id,
-      targetId: acceptedBid?.executorId || '',
-      targetName: acceptedBid?.executorName || '',
-      type: 'contractor_to_executor',
-    })
-
-    completeJob(job.id)
-    toast({
-      title: 'Finalizado',
-      description: 'Por favor, avalie a contraparte para liberar o pagamento.',
-    })
-  }
-
-  const handleDispute = () => {
-    openDispute(job.id)
-    navigate(`/disputes/new/${job.id}`)
-  }
-
-  const handleSendMessage = async () => {
-    if (!user || !chatMessage.trim()) return
-
-    const msg = chatMessage.trim()
-    setChatMessage('')
-
-    await supabase.from('job_messages' as any).insert({
-      job_id: job.id,
-      sender_id: user.id,
-      content: msg,
-    })
-  }
-
-  const getStatusLabel = (status: string) => {
-    switch (status) {
-      case 'open':
-        return 'Disponível'
-      case 'in_progress':
-        return 'Em Negociação'
-      case 'completed':
-        return 'Fechado'
-      default:
-        return status
-    }
-  }
-
-  const getListingTypeLabel = (type?: string) => {
-    switch (type) {
-      case 'product':
-        return 'Produto Novo'
-      case 'desapego':
-        return 'Desapego / Usado'
-      case 'rental':
-        return 'Aluguel'
-      case 'community':
-      case 'donation':
-        return 'Comunidade / Doação'
-      case 'job':
-        return 'Vaga'
-      case 'service':
-        return 'Serviço'
-      default:
-        return 'Vaga / Serviço'
-    }
-  }
-
-  let displayPrice = job.budget || 0
-  if (job.listingType === 'product' && job.salePrice)
-    displayPrice = job.salePrice
-  if (job.listingType === 'rental' && job.rentalRate)
-    displayPrice = job.rentalRate
+  const price =
+    job.listingType === 'product' || job.listingType === 'community'
+      ? (job.salePrice ?? job.budget)
+      : job.listingType === 'rental'
+        ? (job.rentalRate ?? job.budget)
+        : job.budget
 
   return (
-    <div className="space-y-6 max-w-5xl mx-auto pb-24 lg:pb-10 p-4 md:p-8 pt-6 animate-fade-in w-full">
-      {(job as any).is_demo && (
-        <div className="bg-amber-100 border border-amber-300 text-amber-900 px-4 py-3 rounded-md flex items-center gap-3 shadow-sm mb-4">
-          <Star className="h-5 w-5 text-amber-600" />
-          <p className="text-sm font-medium">
-            {t('demo.notification') ||
-              'This is a demonstration listing to showcase platform features.'}
-          </p>
-        </div>
-      )}
-      <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2 mb-2">
-            <Badge variant="outline" className="border-primary text-primary">
-              {getListingTypeLabel(job.listingType)}
-            </Badge>
-            <Badge>{job.category}</Badge>
-            <Badge
-              variant={
-                job.status === 'open'
-                  ? 'default'
-                  : job.status === 'completed'
-                    ? 'destructive'
-                    : 'secondary'
-              }
-            >
-              {getStatusLabel(job.status)}
-            </Badge>
-          </div>
-          <h1 className="text-3xl font-bold flex flex-wrap items-center gap-2 sm:gap-3">
-            {job.title}
-            {(job as any).is_demo && (
-              <Badge className="bg-amber-500 hover:bg-amber-600 text-white font-bold tracking-wider text-[10px] uppercase">
-                {t('demo.badge') || 'DEMO'}
-              </Badge>
-            )}
-          </h1>
-          <div className="flex items-center gap-4 text-sm text-muted-foreground pt-1">
-            <span className="flex items-center gap-1">
-              <MapPin className="h-4 w-4" /> {job.location}
-            </span>
-            <span className="flex items-center gap-1">
-              <Calendar className="h-4 w-4" /> Publicado:{' '}
-              {formatDate(job.publicationDate, 'MM/dd/yyyy')}
-            </span>
-          </div>
-        </div>
-        <div className="flex flex-col items-start md:items-end gap-2 mt-4 md:mt-0">
-          <div className="text-left md:text-right">
-            <div className="text-sm text-muted-foreground">
-              {job.type === 'auction'
-                ? 'Orçamento Inicial'
-                : isJobListing
-                  ? 'Preço / Orçamento'
-                  : 'Valor'}
-            </div>
-            <div className="text-2xl font-bold text-primary">
-              {displayPrice === 0
-                ? 'Grátis'
-                : formatCurrencyValue(
-                    displayPrice,
-                    (job as any).currency || 'USD',
-                  )}
-            </div>
-            {job.type === 'auction' && job.bids.length > 0 && (
-              <div className="text-xs font-semibold text-emerald-600">
-                Melhor Oferta:{' '}
-                {formatCurrencyValue(lowestBid, (job as any).currency || 'USD')}
-              </div>
-            )}
-            {job.listingType === 'rental' && job.rentalRateType && (
-              <div className="text-xs text-muted-foreground flex items-center justify-start md:justify-end gap-1 mt-1">
-                <CalendarDays className="h-3 w-3" />
-                {job.rentalRateType === 'daily' ? 'Por Dia' : 'Por Mês'}
-              </div>
-            )}
-            {isJobListing && (
-              <div className="text-xs text-muted-foreground flex items-center justify-start md:justify-end gap-1 mt-1">
-                {job.type === 'auction' ? (
-                  <Gavel className="h-3 w-3" />
-                ) : (
-                  <DollarSign className="h-3 w-3" />
-                )}
-                {job.type === 'auction' ? 'Leilão Reverso' : 'Preço Fixo'}
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
+    <div className="container mx-auto px-4 py-8 max-w-6xl">
+      <Button
+        variant="ghost"
+        onClick={() => navigate(-1)}
+        className="mb-6 -ml-4"
+      >
+        <ArrowLeft className="mr-2 h-4 w-4" />{' '}
+        {t('back', { defaultValue: 'Back' })}
+      </Button>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-        <div className="lg:col-span-2 space-y-6">
-          {job.photos && job.photos.length > 0 && (
-            <Card className="overflow-hidden">
-              <img
-                src={job.photos[0]}
-                alt={job.title}
-                className="w-full h-64 md:h-96 object-cover"
-              />
-              {job.photos.length > 1 && (
-                <div className="grid grid-cols-4 gap-2 p-4 bg-muted/20">
-                  {job.photos.slice(1).map((photo, i) => (
-                    <img
-                      key={i}
-                      src={photo}
-                      alt={`Thumbnail ${i + 1}`}
-                      className="w-full h-20 object-cover rounded border cursor-pointer hover:opacity-80 transition-opacity"
-                    />
-                  ))}
+      <div className="flex flex-col lg:flex-row gap-8">
+        {/* Main Content */}
+        <div className="flex-1 space-y-6">
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 flex-wrap">
+              <Badge variant="secondary" className="capitalize">
+                {translatedType}
+              </Badge>
+              {job.category && <Badge variant="outline">{job.category}</Badge>}
+              <Badge
+                variant="default"
+                className="bg-green-600 hover:bg-green-700"
+              >
+                {t(`status.${job.status || 'open'}`)}
+              </Badge>
+            </div>
+            <h1 className="text-3xl md:text-4xl font-bold tracking-tight">
+              {job.title}
+            </h1>
+            <div className="flex items-center gap-4 text-muted-foreground text-sm">
+              {job.location && (
+                <div className="flex items-center gap-1">
+                  <MapPin className="h-4 w-4" />
+                  {job.location}
                 </div>
               )}
-            </Card>
+              {job.createdAt && (
+                <div className="flex items-center gap-1">
+                  <Calendar className="h-4 w-4" />
+                  {t('job.published', { defaultValue: 'Published on' })}:{' '}
+                  {formatDate(job.createdAt, 'PP')}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {job.photos && job.photos.length > 0 && (
+            <div className="rounded-xl overflow-hidden border bg-muted aspect-video md:aspect-[21/9] relative">
+              <SafeImage
+                src={job.photos[0]}
+                alt={job.title}
+                className="w-full h-full object-cover"
+              />
+            </div>
           )}
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Descrição</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="whitespace-pre-line leading-relaxed text-muted-foreground">
-                {job.description}
-              </p>
+          <div className="space-y-4 pt-4 border-t">
+            <h2 className="text-xl font-semibold">
+              {t('job.description', { defaultValue: 'Description' })}
+            </h2>
+            <div className="prose prose-sm md:prose-base dark:prose-invert max-w-none text-muted-foreground whitespace-pre-wrap">
+              {job.description}
+            </div>
+          </div>
+        </div>
+
+        {/* Sidebar */}
+        <div className="w-full lg:w-[380px] space-y-6">
+          <Card className="shadow-sm border-primary/10">
+            <CardContent className="p-6">
+              <div className="space-y-2 mb-6 text-center lg:text-left">
+                <p className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
+                  {price === 0
+                    ? t('post.free_help', { defaultValue: 'Free' })
+                    : t('job.budget', { defaultValue: 'Estimated Budget' })}
+                </p>
+                <div className="text-4xl font-bold text-primary">
+                  {price === 0
+                    ? t('job.premium.free', { defaultValue: 'Gratis' })
+                    : formatCurrencyValue(price, job.currency || 'USD')}
+                </div>
+                {job.type === 'fixed' && (
+                  <p className="text-xs text-muted-foreground">
+                    {t('job.fixed_price', { defaultValue: 'Fixed Price' })}
+                  </p>
+                )}
+              </div>
+
+              <Button className="w-full h-12 text-lg font-semibold mb-3">
+                {t('job.make_offer', { defaultValue: 'Make Offer' })}
+              </Button>
+              <Button variant="outline" className="w-full h-12">
+                {t('messages.open_chat', { defaultValue: 'Open Chat' })}
+              </Button>
             </CardContent>
           </Card>
 
-          {isOwner && (
-            <Card className="border-primary shadow-sm bg-primary/5">
-              <CardHeader className="pb-4">
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <Settings2 className="h-5 w-5 text-primary" /> Gerenciar
-                  Status
-                </CardTitle>
-                <CardDescription>
-                  Altere o status manualmente se necessário.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="flex flex-wrap gap-3">
-                  <Button
-                    variant={job.status === 'open' ? 'default' : 'outline'}
-                    onClick={() => updateJobStatus(job.id, 'open')}
-                    className={
-                      job.status === 'open' ? 'pointer-events-none' : ''
-                    }
-                  >
-                    Aberto / Disponível
-                  </Button>
-                  <Button
-                    variant={
-                      job.status === 'in_progress' ? 'default' : 'outline'
-                    }
-                    onClick={() => updateJobStatus(job.id, 'in_progress')}
-                    className={
-                      job.status === 'in_progress'
-                        ? 'bg-blue-600 hover:bg-blue-700 pointer-events-none'
-                        : ''
-                    }
-                  >
-                    Em Negociação
-                  </Button>
-                  <Button
-                    variant={job.status === 'completed' ? 'default' : 'outline'}
-                    onClick={() => updateJobStatus(job.id, 'completed')}
-                    className={
-                      job.status === 'completed'
-                        ? 'bg-destructive hover:bg-destructive/90 text-destructive-foreground pointer-events-none'
-                        : ''
-                    }
-                  >
-                    Fechado / Indisponível
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          )}
+          <Card className="bg-blue-50/50 dark:bg-blue-950/20 border-blue-100 dark:border-blue-900 shadow-sm">
+            <CardContent className="p-5 flex gap-4">
+              <ShieldCheck className="h-8 w-8 text-blue-600 dark:text-blue-400 shrink-0" />
+              <div className="space-y-1">
+                <h3 className="font-semibold text-blue-900 dark:text-blue-300">
+                  {t('job.safe_transaction', {
+                    defaultValue: 'Transação Segura',
+                  })}
+                </h3>
+                <p className="text-sm text-blue-700/80 dark:text-blue-400/80 leading-snug">
+                  {t('job.safe_transaction_desc', {
+                    defaultValue:
+                      'As interações na plataforma são protegidas. Sempre negocie e feche o pagamento através do sistema Escrow do OPPORJOB para garantir sua segurança.',
+                  })}
+                </p>
+              </div>
+            </CardContent>
+          </Card>
 
-          {isOwner && job.status === 'completed' && job.completionComments && (
-            <Card className="border-emerald-200 bg-emerald-50/50">
-              <CardHeader>
-                <CardTitle className="text-emerald-800 flex items-center gap-2">
-                  <CheckCircle className="h-5 w-5" />{' '}
-                  {t('job.execution.review_evidence')}
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-1">
-                  <p className="text-sm font-semibold text-emerald-900">
-                    {t('job.execution.provider_comments')}
-                  </p>
-                  <p className="text-sm text-emerald-900 whitespace-pre-line bg-white/50 p-3 rounded-md border border-emerald-100 shadow-sm">
-                    {job.completionComments}
-                  </p>
-                </div>
-
-                {job.completionPhotos && job.completionPhotos.length > 0 && (
-                  <div className="space-y-1">
-                    <p className="text-sm font-semibold text-emerald-900">
-                      {t('job.execution.completion_photos')}
-                    </p>
-                    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
-                      {job.completionPhotos.map((photo, i) => (
-                        <a
-                          key={i}
-                          href={photo}
-                          target="_blank"
-                          rel="noreferrer"
-                        >
-                          <img
-                            src={photo}
-                            alt={`Completion ${i}`}
-                            className="w-full aspect-square object-cover rounded border border-emerald-100 hover:opacity-80 transition-opacity shadow-sm"
-                          />
-                        </a>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                <div className="pt-4 border-t border-emerald-200/60 mt-4 flex flex-col gap-4">
-                  {jobInvoice && jobInvoice.status !== 'paid' ? (
-                    <Button asChild className="w-full sm:w-auto self-start">
-                      <Link
-                        to={`/payment/checkout/${job.id}/${acceptedBid?.id}`}
-                      >
-                        <DollarSign className="mr-2 h-4 w-4" />{' '}
-                        {t('job.action.pay_invoice')}
-                      </Link>
-                    </Button>
-                  ) : jobInvoice &&
-                    jobInvoice.status === 'paid' &&
-                    !hasRated ? (
-                    <div className="bg-white p-5 rounded-lg border border-emerald-100 shadow-sm space-y-4 animate-fade-in-up">
-                      <h4 className="font-semibold text-emerald-900 text-lg">
-                        {t('job.rating.title')}
-                      </h4>
-                      <div className="flex gap-2">
-                        {[1, 2, 3, 4, 5].map((star) => (
-                          <button
-                            key={star}
-                            type="button"
-                            onClick={() => setRating(star)}
-                            className={`hover:scale-110 transition-transform focus:outline-none`}
-                          >
-                            <Star
-                              className={`h-8 w-8 ${
-                                rating >= star
-                                  ? 'fill-yellow-400 text-yellow-400'
-                                  : 'text-gray-300'
-                              }`}
-                            />
-                          </button>
-                        ))}
-                      </div>
-                      <Textarea
-                        placeholder={t('job.rating.comment')}
-                        value={ratingComment}
-                        onChange={(e) => setRatingComment(e.target.value)}
-                        className="bg-white resize-none"
-                        rows={3}
-                      />
-                      <Button
-                        onClick={handleSubmitRating}
-                        disabled={submittingRating || rating === 0}
-                        className="w-full sm:w-auto"
-                      >
-                        {t('job.rating.submit')}
-                      </Button>
-                    </div>
-                  ) : hasRated ? (
-                    <div className="bg-white p-4 rounded-lg border border-emerald-100 flex items-center gap-3 text-emerald-700 shadow-sm font-medium animate-fade-in">
-                      <CheckCircle className="h-6 w-6 text-emerald-500" />
-                      {t('job.rating.thank_you')}
-                    </div>
-                  ) : null}
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {isExecutor &&
-            job.status === 'completed' &&
-            job.completionComments && (
-              <Card className="border-emerald-200 bg-emerald-50/50">
-                <CardHeader>
-                  <CardTitle className="text-emerald-800 flex items-center gap-2">
-                    <CheckCircle className="h-5 w-5" />{' '}
-                    {t('job.execution.completed_details')}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <p className="text-sm text-emerald-900 whitespace-pre-line bg-white/50 p-3 rounded-md border border-emerald-100 shadow-sm">
-                    {job.completionComments}
-                  </p>
-                  {job.completionPhotos && job.completionPhotos.length > 0 && (
-                    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
-                      {job.completionPhotos.map((photo, i) => (
-                        <a
-                          key={i}
-                          href={photo}
-                          target="_blank"
-                          rel="noreferrer"
-                        >
-                          <img
-                            src={photo}
-                            alt={`Completion ${i}`}
-                            className="w-full aspect-square object-cover rounded border hover:opacity-80 transition-opacity"
-                          />
-                        </a>
-                      ))}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            )}
-
-          {isExecutor && job.status === 'in_progress' && (
-            <Card className="border-primary shadow-sm bg-primary/5">
-              <CardHeader>
-                <CardTitle>{t('job.execution.workspace')}</CardTitle>
-                <CardDescription>
-                  {t('job.execution.finalize_desc')}
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">
-                    {t('job.execution.comments')}
-                  </label>
-                  <Textarea
-                    placeholder={t('job.execution.comments_placeholder')}
-                    value={executionComments}
-                    onChange={(e) => setExecutionComments(e.target.value)}
-                    rows={3}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">
-                    {t('job.execution.photos')}
-                  </label>
-                  {executionPhotos.length > 0 && (
-                    <div className="grid grid-cols-3 sm:grid-cols-4 gap-3 mb-2">
-                      {executionPhotos.map((photo, index) => (
-                        <div
-                          key={index}
-                          className="relative group aspect-square rounded-md overflow-hidden border bg-muted"
-                        >
-                          <img
-                            src={photo}
-                            alt="Upload preview"
-                            className="object-cover w-full h-full"
-                          />
-                          <button
-                            type="button"
-                            onClick={() =>
-                              setExecutionPhotos((prev) =>
-                                prev.filter((_, i) => i !== index),
-                              )
-                            }
-                            className="absolute top-1 right-1 bg-black/60 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                          >
-                            <X className="h-3 w-3" />
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                  <div
-                    className="border-2 border-dashed rounded-lg p-6 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-muted/50 transition-colors"
-                    onClick={() => fileInputRef.current?.click()}
-                  >
-                    {uploadingExecutionFiles ? (
-                      <Loader2 className="h-6 w-6 text-primary animate-spin mb-2" />
-                    ) : (
-                      <Upload className="h-6 w-6 text-muted-foreground mb-2" />
-                    )}
-                    <p className="text-sm text-muted-foreground">
-                      {t('job.execution.upload_photos')}
-                    </p>
-                    <input
-                      type="file"
-                      ref={fileInputRef}
-                      className="hidden"
-                      multiple
-                      accept="image/*"
-                      onChange={async (e) => {
-                        if (!e.target.files || e.target.files.length === 0)
-                          return
-                        const files = Array.from(e.target.files)
-                        setUploadingExecutionFiles(true)
-                        const newPhotos: string[] = []
-                        for (const file of files) {
-                          if (!file.type.startsWith('image/')) continue
-                          const fileExt = file.name.split('.').pop()
-                          const fileName = `${Math.random().toString(36).substring(2, 15)}.${fileExt}`
-                          const filePath = `${user?.id || 'guest'}/${fileName}`
-                          const { error } = await supabase.storage
-                            .from('project-images')
-                            .upload(filePath, file)
-                          if (!error) {
-                            const { data } = supabase.storage
-                              .from('project-images')
-                              .getPublicUrl(filePath)
-                            newPhotos.push(data.publicUrl)
-                          }
-                        }
-                        setExecutionPhotos((prev) => [...prev, ...newPhotos])
-                        setUploadingExecutionFiles(false)
-                      }}
-                    />
-                  </div>
-                </div>
-                <Button
-                  className="w-full"
-                  disabled={
-                    uploadingExecutionFiles || !executionComments.trim()
-                  }
-                  onClick={async () => {
-                    if (!executionComments.trim()) {
-                      toast({
-                        variant: 'destructive',
-                        title: t('val.required'),
-                      })
-                      return
-                    }
-                    await finalizeJob(job.id, {
-                      completionPhotos: executionPhotos,
-                      completionComments: executionComments,
-                    })
-                    toast({ title: t('job.execution.success') })
-                  }}
-                >
-                  <CheckCircle className="mr-2 h-4 w-4" />{' '}
-                  {t('job.execution.finalize')}
-                </Button>
-              </CardContent>
-            </Card>
-          )}
-
-          {isOwner && job.status === 'open' && isJobListing && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Propostas Recebidas ({job.bids.length})</CardTitle>
-                <CardDescription>
-                  {job.type === 'auction'
-                    ? 'Acompanhe os lances do leilão.'
-                    : 'Escolha a melhor proposta ou comprador/locatário.'}
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {job.bids.length === 0 ? (
-                  <div className="text-center py-6 text-muted-foreground">
-                    Nenhuma proposta recebida ainda.
-                  </div>
-                ) : (
-                  job.bids
-                    .sort((a, b) => a.amount - b.amount)
-                    .map((bid) => (
-                      <div
-                        key={bid.id}
-                        className="border rounded-lg p-4 flex flex-col md:flex-row gap-4 justify-between items-start bg-card/50"
-                      >
-                        <div className="space-y-2">
-                          <div className="flex items-center gap-2">
-                            <span className="font-semibold">
-                              {bid.executorName}
-                            </span>
-                            <Badge
-                              variant="outline"
-                              className="text-yellow-600 border-yellow-200 bg-yellow-50"
-                            >
-                              ★ {bid.executorReputation.toFixed(1)}
-                            </Badge>
-                          </div>
-                          <p className="text-sm text-muted-foreground">
-                            {bid.description}
-                          </p>
-                          <div className="text-xs text-muted-foreground">
-                            {formatDate(bid.createdAt, 'MM/dd/yyyy hh:mm a')}
-                          </div>
-                        </div>
-                        <div className="flex flex-col items-end gap-2 min-w-[120px]">
-                          <span className="text-xl font-bold text-primary">
-                            {formatCurrencyValue(
-                              bid.amount,
-                              bid.currency || (job as any).currency || 'USD',
-                            )}
-                          </span>
-                          <Button
-                            size="sm"
-                            onClick={() => handleAcceptBid(bid.id)}
-                          >
-                            Aceitar e Pagar
-                          </Button>
-                        </div>
-                      </div>
-                    ))
-                )}
-              </CardContent>
-            </Card>
-          )}
-
-          {(job.status === 'suspended' ||
-            job.status === 'in_progress' ||
-            job.status === 'completed' ||
-            job.status === 'dispute') &&
-            canViewChat && (
-              <Card className="border-primary/20 shadow-md">
-                <CardHeader className="bg-muted/30">
-                  <CardTitle className="flex items-center justify-between">
-                    <span className="flex items-center gap-2">
-                      <MessageSquare className="h-5 w-5" /> Sala de Chat Segura
-                    </span>
-                    {job.status !== 'completed' &&
-                      job.status !== 'cancelled' && (
-                        <Badge className="bg-indigo-500 hover:bg-indigo-600">
-                          Protegido:{' '}
-                          {formatCurrencyValue(
-                            acceptedBid?.amount || 0,
-                            acceptedBid?.currency ||
-                              (job as any).currency ||
-                              'USD',
-                          )}
-                        </Badge>
-                      )}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="p-0">
-                  <div className="h-[300px] overflow-y-auto p-4 space-y-4 bg-background flex flex-col">
-                    <div className="flex items-start">
-                      <div className="max-w-[80%] rounded-lg p-3 bg-muted">
-                        <p className="text-sm">
-                          Chat seguro iniciado. O pagamento está protegido em
-                          Escrow.
-                        </p>
-                      </div>
-                    </div>
-                    {dbMessages.map((msg) => {
-                      const isMe = msg.sender_id === user?.id
-                      return (
-                        <div
-                          key={msg.id}
-                          className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}
-                        >
-                          <div
-                            className={`max-w-[80%] rounded-lg p-3 ${isMe ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}
-                          >
-                            <p className="text-sm whitespace-pre-wrap">
-                              {msg.content}
-                            </p>
-                          </div>
-                          <span className="text-xs text-muted-foreground mt-1">
-                            {isMe ? 'Você' : msg.sender?.name || 'Usuário'} •{' '}
-                            {formatDate(msg.created_at, 'hh:mm a')}
-                          </span>
-                        </div>
-                      )
-                    })}
-                  </div>
-                  <div className="p-4 border-t flex gap-2">
-                    <Input
-                      placeholder="Mensagem..."
-                      value={chatMessage}
-                      onChange={(e) => setChatMessage(e.target.value)}
-                      onKeyDown={(e) =>
-                        e.key === 'Enter' && handleSendMessage()
-                      }
-                      disabled={
-                        job.status === 'completed' || job.status === 'dispute'
-                      }
-                    />
-                    <Button
-                      size="icon"
-                      onClick={handleSendMessage}
-                      disabled={
-                        job.status === 'completed' || job.status === 'dispute'
-                      }
-                    >
-                      <Send className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </CardContent>
-                <CardFooter className="flex flex-col md:flex-row justify-between bg-muted/30 p-4 border-t gap-2">
-                  <Button
-                    variant="outline"
-                    className="text-destructive hover:bg-destructive/10 border-destructive/20 w-full md:w-auto"
-                    onClick={handleDispute}
-                    disabled={
-                      job.status === 'completed' || job.status === 'dispute'
-                    }
-                  >
-                    <AlertOctagon className="mr-2 h-4 w-4" /> Abrir Disputa
-                  </Button>
-
-                  {isOwner &&
-                    (job.status === 'suspended' ||
-                      job.status === 'in_progress') && (
-                      <Button
-                        className="bg-emerald-600 hover:bg-emerald-700 w-full md:w-auto"
-                        onClick={handleComplete}
-                      >
-                        <CheckCircle className="mr-2 h-4 w-4" /> Concluir
-                      </Button>
-                    )}
-                </CardFooter>
-              </Card>
-            )}
-        </div>
-
-        <div className="space-y-6 lg:sticky lg:top-24">
-          {!isOwner && (
-            <Card
-              id="interaction-card"
-              className="transition-all duration-300 shadow-md border-primary/10"
-            >
-              <CardHeader>
-                <CardTitle>
-                  {isJobListing
-                    ? 'Interagir / Proposta'
-                    : 'Conversar com o Anunciante'}
-                </CardTitle>
-                {job.type === 'auction' &&
-                  isJobListing &&
-                  job.status === 'open' && (
-                    <CardDescription className="text-amber-600 font-medium">
-                      Aviso: A oferta deve ser menor que{' '}
-                      {formatCurrencyValue(
-                        lowestBid,
-                        (job as any).currency || 'USD',
-                      )}
-                    </CardDescription>
-                  )}
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {!user ? (
-                  <div className="flex flex-col items-center text-center p-6 border-2 border-dashed rounded-xl bg-muted/30 space-y-4">
-                    <div className="h-14 w-14 rounded-full bg-primary/10 flex items-center justify-center mb-1">
-                      <Lock className="h-7 w-7 text-primary" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-lg text-foreground">
-                        Faça login para interagir
-                      </h3>
-                      <p className="text-sm text-muted-foreground mt-2">
-                        Você precisa ter uma conta para enviar propostas ou
-                        conversar com o anunciante.
-                      </p>
-                    </div>
-                    <div className="w-full flex flex-col gap-3 pt-2">
-                      <Button asChild className="w-full">
-                        <Link to={`/login?redirect=/jobs/${job.id}`}>
-                          Fazer Login
-                        </Link>
-                      </Button>
-                      <Button asChild variant="outline" className="w-full">
-                        <Link to="/register">Criar Conta Grátis</Link>
-                      </Button>
-                    </div>
-                  </div>
-                ) : job.status !== 'open' ? (
-                  <div className="text-center py-6 text-muted-foreground border-2 border-dashed rounded-lg bg-muted/20">
-                    <Lock className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                    <p>Este anúncio já foi fechado ou está indisponível.</p>
-                  </div>
-                ) : hasBidded ? (
-                  <div className="text-center py-6 border rounded-lg bg-muted/10">
-                    <CheckCircle className="h-8 w-8 text-green-500 mx-auto mb-2" />
-                    <p className="font-medium">Proposta Enviada</p>
-                    <p className="text-sm text-muted-foreground mb-4">
-                      Aguarde o retorno do contratante.
-                    </p>
-                    <Button
-                      variant="outline"
-                      onClick={() => navigate('/my-jobs')}
-                    >
-                      Acompanhar Proposta
-                    </Button>
-                  </div>
-                ) : isJobListing ? (
-                  <>
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium">Valor (R$)</label>
-                      <Input
-                        type="number"
-                        placeholder="0.00"
-                        value={bidAmount}
-                        onChange={(e) => setBidAmount(e.target.value)}
-                        max={job.type === 'auction' ? lowestBid - 1 : undefined}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium">Mensagem</label>
-                      <Textarea
-                        placeholder="Descreva sua proposta ou dúvidas..."
-                        value={bidDescription}
-                        onChange={(e) => setBidDescription(e.target.value)}
-                      />
-                    </div>
-                    <Button className="w-full" size="lg" onClick={handleBid}>
-                      Enviar Proposta
-                    </Button>
-                  </>
-                ) : (
-                  <div className="pt-2">
-                    {hasInteracted && existingConv ? (
-                      <div className="text-center py-4 border rounded-lg bg-muted/10 space-y-3">
-                        <MessageSquare className="h-6 w-6 mx-auto text-primary" />
-                        <p className="font-medium">Conversa Iniciada</p>
-                        <Button
-                          className="w-full"
-                          variant="outline"
-                          onClick={() =>
-                            navigate(`/messages?conv=${existingConv.id}`)
-                          }
-                        >
-                          Ver Mensagens
-                        </Button>
-                      </div>
-                    ) : (
-                      <Button
-                        className="w-full"
-                        size="lg"
-                        onClick={handleContact}
-                      >
-                        <MessageSquare className="mr-2 h-5 w-5" /> Tenho
-                        Interesse
-                      </Button>
-                    )}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          )}
-
-          <Card className="bg-blue-50/50 border-blue-100">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm text-blue-800 flex items-center gap-2">
-                <ShieldAlert className="h-4 w-4" /> Transação Segura
+          <Card className="shadow-sm">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base flex items-center gap-2">
+                <BarChart className="h-5 w-5 text-muted-foreground" />
+                {t('job.stats.title', {
+                  defaultValue: 'Estatísticas do Anúncio',
+                })}
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-2 text-xs text-blue-700">
-              <p>
-                As interações na plataforma são protegidas. Sempre negocie e
-                feche o pagamento através do sistema Escrow do BIDWORK para
-                garantir sua segurança.
-              </p>
+            <CardContent>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <p className="text-xs text-muted-foreground">
+                    {t('job.stats.views', { defaultValue: 'Visualizações' })}
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <Eye className="h-4 w-4 text-primary" />
+                    <span className="text-xl font-semibold">
+                      {job.viewsCount || 0}
+                    </span>
+                  </div>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-xs text-muted-foreground line-clamp-1">
+                    {t('job.stats.impressions', {
+                      defaultValue: 'Nível de Exposição',
+                    })}
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <BarChart className="h-4 w-4 text-primary" />
+                    <span className="text-xl font-semibold">
+                      {job.impressionsCount || 0}
+                    </span>
+                  </div>
+                </div>
+              </div>
             </CardContent>
           </Card>
         </div>
       </div>
-
-      {/* Mobile Sticky Bottom Bar */}
-      {!isOwner && (
-        <div className="fixed bottom-0 left-0 right-0 p-4 bg-background/90 backdrop-blur-md border-t shadow-[0_-10px_40px_rgba(0,0,0,0.1)] z-40 lg:hidden flex items-center justify-between gap-4 animate-fade-in-up">
-          <div className="flex-1 min-w-0">
-            <p className="text-xs text-muted-foreground truncate">
-              {job.title}
-            </p>
-            <p className="font-bold text-primary truncate">
-              {displayPrice === 0
-                ? 'Grátis'
-                : formatCurrencyValue(
-                    displayPrice,
-                    (job as any).currency || 'USD',
-                  )}
-            </p>
-          </div>
-          <div>
-            {!user ? (
-              <Button asChild size="sm">
-                <Link to={`/login?redirect=/jobs/${job.id}`}>Fazer Login</Link>
-              </Button>
-            ) : job.status !== 'open' ? (
-              <Button disabled size="sm" variant="secondary">
-                Indisponível
-              </Button>
-            ) : hasBidded ? (
-              <Button
-                disabled
-                size="sm"
-                variant="outline"
-                className="border-green-500 text-green-600"
-              >
-                Enviada
-              </Button>
-            ) : hasInteracted && existingConv && !isJobListing ? (
-              <Button size="sm" asChild>
-                <Link to={`/messages?conv=${existingConv.id}`}>Ver Chat</Link>
-              </Button>
-            ) : (
-              <Button
-                size="sm"
-                onClick={() => {
-                  document.getElementById('interaction-card')?.scrollIntoView({
-                    behavior: 'smooth',
-                    block: 'center',
-                  })
-                  const card = document.getElementById('interaction-card')
-                  if (card) {
-                    card.classList.add(
-                      'ring-2',
-                      'ring-primary',
-                      'ring-offset-2',
-                    )
-                    setTimeout(() => {
-                      card.classList.remove(
-                        'ring-2',
-                        'ring-primary',
-                        'ring-offset-2',
-                      )
-                    }, 1500)
-                  }
-                }}
-              >
-                {isJobListing ? 'Fazer Proposta' : 'Tenho Interesse'}
-              </Button>
-            )}
-          </div>
-        </div>
-      )}
     </div>
   )
 }

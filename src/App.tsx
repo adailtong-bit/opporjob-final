@@ -82,6 +82,20 @@ import { usePWA } from '@/hooks/use-pwa'
 import logoImg from '@/assets/corepm-f1280.png'
 import { PushNotificationPrompt } from '@/components/PushNotificationPrompt'
 
+const PageTracker = () => {
+  const location = useLocation()
+
+  useEffect(() => {
+    const match = location.pathname.match(/^\/jobs\/([a-zA-Z0-9-]+)$/)
+    if (match) {
+      const jobId = match[1]
+      useJobStore.getState().incrementView(jobId)
+    }
+  }, [location.pathname])
+
+  return null
+}
+
 const ScrollToTop = () => {
   const { pathname } = useLocation()
 
@@ -587,6 +601,7 @@ const App = () => {
       <BrowserRouter
         future={{ v7_startTransition: false, v7_relativeSplatPath: false }}
       >
+        <PageTracker />
         <AuthSync />
         <CategorySync />
         <JobSync />

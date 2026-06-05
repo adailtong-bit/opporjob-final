@@ -58,6 +58,8 @@ export interface Job {
   externalId?: string
   completionPhotos?: string[]
   completionComments?: string
+  viewsCount?: number
+  impressionsCount?: number
 }
 
 interface JobState {
@@ -77,6 +79,8 @@ interface JobState {
   ) => Promise<void>
   openDispute: (jobId: string) => Promise<void>
   updateJobStatus: (jobId: string, status: Job['status']) => Promise<void>
+  incrementView: (jobId: string) => Promise<void>
+  incrementImpressions: (jobIds: string[]) => Promise<void>
 }
 
 export const useJobStore = create<JobState>((set, get) => ({
@@ -111,6 +115,8 @@ export const useJobStore = create<JobState>((set, get) => ({
         acceptedBidId: d.accepted_bid_id,
         completionPhotos: d.completion_photos || [],
         completionComments: d.completion_comments,
+        viewsCount: d.views_count || 0,
+        impressionsCount: d.impressions_count || 0,
         createdAt: new Date(d.created_at),
         bids: (d.bids || []).map((b: any) => ({
           id: b.id,
@@ -306,5 +312,24 @@ export const useJobStore = create<JobState>((set, get) => ({
     }))
     await supabase.from('jobs').update({ status }).eq('id', jobId)
     await get().fetchJobs()
+  },
+  incrementView: async (jobId) => {
+    set((state) => ({
+      jobs: state.jobs.map((j) =>
+        j.id === jobId ? { ...j, viewsCount: (j.viewsCount || 0) + 1 } : j,
+      ),
+    }))
+    await supabase.rpc('increment_job_view', { job_id_param: jobId })
+  },
+  incrementImpressions: async (jobIds) => {
+    if (!jobIds || jobIds.length === 0) return
+    set((state) => ({
+      jobs: state.jobs.map((j) =>
+        jobIds.includes(j.id)
+          ? { ...j, impressionsCount: (j.impressionsCount || 0) + 1 }
+          : j,
+      ),
+    }))
+    await supabase.rpc('increment_job_impressions', { job_ids_param: jobIds })
   },
 }))
