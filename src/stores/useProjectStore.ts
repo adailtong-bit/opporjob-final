@@ -338,6 +338,7 @@ export interface Project {
   ledgerEntries?: ProjectLedgerEntry[]
   photos?: string[]
   updates?: ProjectUpdate[]
+  isDemo?: boolean
 }
 
 interface ProjectState {
@@ -1051,7 +1052,15 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
         return p
       }),
     })),
-  getProject: (id) => get().projects.find((p) => p.id === id),
+  getProject: (id) => {
+    const project = get().projects.find((p) => p.id === id)
+    if (!project) return undefined
+    const isProd =
+      typeof window !== 'undefined' &&
+      window.location.hostname === 'opporjob.com'
+    if (isProd && (project.isDemo || (project as any).is_demo)) return undefined
+    return project
+  },
   generateInvoice: (projectId, stageId, subStageId, type) =>
     set((state) => ({
       projects: state.projects.map((p) => {

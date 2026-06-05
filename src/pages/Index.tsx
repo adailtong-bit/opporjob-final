@@ -24,15 +24,20 @@ export default function Index() {
     import.meta.env.PROD ||
     (typeof window !== 'undefined' && window.location.hostname !== 'localhost')
 
+  const isStrictProd =
+    typeof window !== 'undefined' && window.location.hostname === 'opporjob.com'
+
   const validJobs = jobs.filter((j: any) => {
-    if (!isProd) return true
+    if (isStrictProd && (j.isDemo || j.is_demo)) return false
+
+    if (!isProd && !isStrictProd) return true
 
     // Strict production filter as defined in the system policies
     // Only explicitly published records are allowed in production
-    if (j.is_published !== true) return false
+    if (j.is_published !== true && isStrictProd) return false
 
     const isTestFlag = j.is_test || j.isTest || j.status === 'test'
-    if (isTestFlag) return false
+    if (isTestFlag && isStrictProd) return false
 
     const titleLower = (j.title || '').toLowerCase()
     const descLower = (j.description || '').toLowerCase()
@@ -48,7 +53,9 @@ export default function Index() {
       descLower.includes('mock') ||
       descLower.includes('lorem')
 
-    return !hasTestWord
+    if (hasTestWord && isStrictProd) return false
+
+    return true
   })
 
   const mappedListings = validJobs.map((j) => {
@@ -72,6 +79,7 @@ export default function Index() {
       location: j.location,
       type: tabType,
       status: j.status,
+      isDemo: j.isDemo || j.is_demo,
     }
   })
 
@@ -112,6 +120,7 @@ export default function Index() {
                 image={item.image}
                 location={item.location}
                 status={item.status}
+                isDemo={item.isDemo}
               />
             ))}
           </div>

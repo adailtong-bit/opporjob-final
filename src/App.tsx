@@ -89,6 +89,26 @@ const PageTracker = () => {
     const match = location.pathname.match(/^\/jobs\/([a-zA-Z0-9-]+)$/)
     if (match) {
       const jobId = match[1]
+
+      // Direct Access Prevention for Demo items in Production
+      const isStrictProd =
+        typeof window !== 'undefined' &&
+        window.location.hostname === 'opporjob.com'
+      if (isStrictProd) {
+        const checkJob = async () => {
+          const { data } = await supabase
+            .from('jobs')
+            .select('is_demo')
+            .eq('id', jobId)
+            .single()
+          if (data?.is_demo) {
+            window.location.replace('/')
+            return
+          }
+        }
+        checkJob()
+      }
+
       useJobStore.getState().incrementView(jobId)
 
       const trackJobView = async () => {
@@ -100,6 +120,30 @@ const PageTracker = () => {
       }
 
       trackJobView()
+    }
+
+    const projectMatch = location.pathname.match(
+      /^\/construction\/projects\/([a-zA-Z0-9-]+)$/,
+    )
+    if (projectMatch) {
+      const projectId = projectMatch[1]
+      const isStrictProd =
+        typeof window !== 'undefined' &&
+        window.location.hostname === 'opporjob.com'
+      if (isStrictProd) {
+        const checkProject = async () => {
+          const { data } = await supabase
+            .from('projects')
+            .select('is_demo')
+            .eq('id', projectId)
+            .single()
+          if (data?.is_demo) {
+            window.location.replace('/')
+            return
+          }
+        }
+        checkProject()
+      }
     }
   }, [location.pathname])
 

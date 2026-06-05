@@ -140,13 +140,27 @@ export function MyAdsDashboard() {
                     <Badge className="absolute top-2 left-2 shadow-sm capitalize bg-black/70 text-white hover:bg-black/80">
                       {translatedType}
                     </Badge>
+                    {(ad.isDemo || (ad as any).is_demo) && (
+                      <Badge className="absolute top-2 right-2 shadow-sm font-bold tracking-wider text-[10px] uppercase bg-amber-500 hover:bg-amber-600 text-white">
+                        {t('demo.badge.job', { defaultValue: 'Anúncio Demo' })}
+                      </Badge>
+                    )}
                   </div>
                 )}
                 <CardContent className="p-4 flex-1 flex flex-col">
                   {!ad.photos?.length && (
-                    <Badge className="w-fit mb-3 capitalize bg-primary/10 text-primary hover:bg-primary/20">
-                      {translatedType}
-                    </Badge>
+                    <div className="flex items-center gap-2 mb-3">
+                      <Badge className="w-fit capitalize bg-primary/10 text-primary hover:bg-primary/20">
+                        {translatedType}
+                      </Badge>
+                      {(ad.isDemo || (ad as any).is_demo) && (
+                        <Badge className="shadow-sm font-bold tracking-wider text-[10px] uppercase bg-amber-500 hover:bg-amber-600 text-white">
+                          {t('demo.badge.job', {
+                            defaultValue: 'Anúncio Demo',
+                          })}
+                        </Badge>
+                      )}
+                    </div>
                   )}
                   <h3 className="font-bold text-lg line-clamp-2 leading-tight">
                     {ad.title}

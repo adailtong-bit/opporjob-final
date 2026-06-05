@@ -13,6 +13,7 @@ interface ListingProps {
   price: number
   location?: string
   status?: string
+  isDemo?: boolean
 }
 
 export function ListingCard({
@@ -27,7 +28,7 @@ export function ListingCard({
   const { t } = useLanguageStore()
   const { getJob } = useJobStore()
   const job = getJob(id)
-  const showDemo = isDemo || (job as any)?.is_demo
+  const showDemo = isDemo || (job as any)?.is_demo || (job as any)?.isDemo
 
   return (
     <Card className="overflow-hidden border-none shadow-sm hover:shadow-md transition-shadow cursor-pointer group">
@@ -44,7 +45,7 @@ export function ListingCard({
               variant="default"
               className="absolute top-2 right-2 bg-amber-500 hover:bg-amber-600 text-white shadow-sm font-bold tracking-wider uppercase text-[10px] z-10"
             >
-              {t('demo.badge') || 'DEMO'}
+              {t('demo.badge.job') || 'Anúncio Demo'}
             </Badge>
           )}
           {status && (

@@ -60,6 +60,7 @@ export interface Job {
   completionComments?: string
   viewsCount?: number
   impressionsCount?: number
+  isDemo?: boolean
 }
 
 interface JobState {
@@ -117,6 +118,7 @@ export const useJobStore = create<JobState>((set, get) => ({
         completionComments: d.completion_comments,
         viewsCount: d.views_count || 0,
         impressionsCount: d.impressions_count || 0,
+        isDemo: d.is_demo || false,
         createdAt: new Date(d.created_at),
         bids: (d.bids || []).map((b: any) => ({
           id: b.id,
@@ -166,7 +168,15 @@ export const useJobStore = create<JobState>((set, get) => ({
 
     return null
   },
-  getJob: (id) => get().jobs.find((j) => j.id === id),
+  getJob: (id) => {
+    const job = get().jobs.find((j) => j.id === id)
+    if (!job) return undefined
+    const isProd =
+      typeof window !== 'undefined' &&
+      window.location.hostname === 'opporjob.com'
+    if (isProd && (job.isDemo || (job as any).is_demo)) return undefined
+    return job
+  },
   updateJob: async (id, job) => {
     const updateData: any = {}
     if (job.title) updateData.title = job.title

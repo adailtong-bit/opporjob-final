@@ -84,6 +84,13 @@ export default function ProjectDetail() {
         .single()
 
       if (data) {
+        const isProd =
+          typeof window !== 'undefined' &&
+          window.location.hostname === 'opporjob.com'
+        if (isProd && data.is_demo) {
+          window.location.href = '/'
+          return
+        }
         if (data.is_demo) {
           setDbProject({
             id: data.id,
@@ -195,7 +202,7 @@ export default function ProjectDetail() {
         </Alert>
       )}
 
-      {(project as any).is_demo && (
+      {((project as any).isDemo || (project as any).is_demo) && (
         <div className="bg-amber-100 border border-amber-300 text-amber-900 px-4 py-3 rounded-md flex items-center gap-3 shadow-sm mb-4">
           <Star className="h-5 w-5 text-amber-600" />
           <p className="text-sm font-medium">
@@ -287,9 +294,9 @@ export default function ProjectDetail() {
         <div className="flex flex-col items-start gap-2.5 w-full mt-1 sm:mt-2">
           <h1 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight text-foreground text-left w-full break-words flex flex-wrap items-center gap-2 sm:gap-3">
             {project.name}
-            {(project as any).is_demo && (
+            {((project as any).isDemo || (project as any).is_demo) && (
               <Badge className="bg-amber-500 hover:bg-amber-600 text-white font-bold tracking-wider text-[10px] uppercase">
-                {t('demo.badge') || 'DEMO'}
+                {t('demo.badge.project') || 'Projeto Demo'}
               </Badge>
             )}
           </h1>

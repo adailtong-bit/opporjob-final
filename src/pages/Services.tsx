@@ -81,10 +81,18 @@ export default function Services() {
     (cat) => activeFilter === 'all' || cat.slug === activeFilter,
   )
 
+  const isStrictProd =
+    typeof window !== 'undefined' && window.location.hostname === 'opporjob.com'
+
+  const validJobs = jobs.filter((j: any) => {
+    if (isStrictProd && (j.isDemo || j.is_demo)) return false
+    return true
+  })
+
   const filteredJobs =
     activeFilter === 'all'
-      ? jobs
-      : jobs.filter((job) => job.category === activeFilter)
+      ? validJobs
+      : validJobs.filter((job) => job.category === activeFilter)
 
   const visibleCategories = uniqueCategories.slice(0, 5)
   const hiddenCategories = uniqueCategories.slice(5)
@@ -230,6 +238,13 @@ export default function Services() {
                           currency: 'USD',
                         }).format(job.budget || 0)}
                       </span>
+                      {(job.isDemo || (job as any).is_demo) && (
+                        <Badge className="bg-amber-500 hover:bg-amber-600 text-white text-[10px] uppercase ml-auto">
+                          {t('demo.badge.job', {
+                            defaultValue: 'Anúncio Demo',
+                          })}
+                        </Badge>
+                      )}
                     </div>
                   </div>
                 </div>
