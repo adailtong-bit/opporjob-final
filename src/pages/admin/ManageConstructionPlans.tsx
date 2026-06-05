@@ -31,13 +31,12 @@ export default function ManageConstructionPlans() {
   const { t } = useLanguageStore()
 
   useEffect(() => {
-    fetchPlans()
+    fetchPlans(true)
   }, [fetchPlans])
 
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingPlan, setEditingPlan] = useState<ConstructionPlan | null>(null)
 
-  // Removido o filtro, exibindo a tabela completa do banco de dados (1:1 com a base real)
   const constructionPlans = plans
 
   const openAdd = () => {
@@ -55,6 +54,9 @@ export default function ManageConstructionPlans() {
   }
 
   const getAudienceLabel = (val: string) => {
+    if (val === 'provider') return 'Prestador'
+    if (val === 'advertiser') return 'Anunciante'
+    if (val === 'both') return 'Global'
     return t(`audience.${val}`) || val
   }
 
@@ -63,35 +65,34 @@ export default function ManageConstructionPlans() {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
-            <HardHat className="h-8 w-8 text-primary" />{' '}
-            {t('admin.cplans.title')}
+            <HardHat className="h-8 w-8 text-primary" /> Planos de Assinatura
           </h1>
-          <p className="text-muted-foreground">{t('admin.cplans.desc')}</p>
+          <p className="text-muted-foreground">
+            Gerencie os planos unificados para prestadores e anunciantes.
+          </p>
         </div>
         <Button onClick={openAdd}>
-          <Plus className="mr-2 h-4 w-4" /> {t('admin.plans.new')}
+          <Plus className="mr-2 h-4 w-4" /> Novo Plano
         </Button>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>{t('admin.cplans.configured')}</CardTitle>
-          <CardDescription>{t('admin.cplans.configured_desc')}</CardDescription>
+          <CardTitle>Planos Configurados</CardTitle>
+          <CardDescription>
+            Lista de todos os planos disponíveis na plataforma.
+          </CardDescription>
         </CardHeader>
         <CardContent className="p-0">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-[300px]">
-                  {t('admin.cplans.th.name')}
-                </TableHead>
-                <TableHead>{t('admin.cplans.th.audience')}</TableHead>
-                <TableHead>{t('admin.cplans.th.price')}</TableHead>
-                <TableHead>{t('admin.cplans.th.limits')}</TableHead>
-                <TableHead>{t('admin.cplans.th.status')}</TableHead>
-                <TableHead className="text-right">
-                  {t('admin.cplans.th.actions')}
-                </TableHead>
+                <TableHead className="w-[300px]">Nome do Plano</TableHead>
+                <TableHead>Público Alvo / Tipo</TableHead>
+                <TableHead>Preço e Validade</TableHead>
+                <TableHead>Limites</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead className="text-right">Ações</TableHead>
               </TableRow>
             </TableHeader>{' '}
             <TableBody>
@@ -106,60 +107,55 @@ export default function ManageConstructionPlans() {
                       className="text-xs text-muted-foreground mt-1 line-clamp-2"
                       title={plan.description}
                     >
-                      {plan.description || t('admin.cplans.no_desc')}
+                      {plan.description || 'Sem descrição'}
                     </div>
                     {plan.features && plan.features.length > 0 && (
                       <div className="mt-2 text-xs flex items-center gap-1 text-primary">
                         <CheckCircle2 className="h-3 w-3" />{' '}
-                        {t('admin.cplans.items_included').replace(
-                          '{count}',
-                          plan.features.length.toString(),
-                        )}
+                        {plan.features.length} item(s) incluso(s)
                       </div>
                     )}
                   </TableCell>
                   <TableCell>
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
-                      {getAudienceLabel(plan.targetAudience)}
-                    </span>
-                    {plan.popular && (
-                      <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-primary text-primary-foreground">
-                        {t('admin.cplans.popular')}
+                    <div className="flex flex-col gap-1 items-start">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
+                        {getAudienceLabel(plan.targetAudience)}
                       </span>
-                    )}
+                      {plan.entityType && plan.entityType !== 'both' && (
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300 uppercase">
+                          {plan.entityType}
+                        </span>
+                      )}
+                      {plan.popular && (
+                        <span className="mt-1 inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-primary text-primary-foreground">
+                          Popular
+                        </span>
+                      )}
+                    </div>
                   </TableCell>
                   <TableCell>
                     <div className="font-semibold text-[15px]">
-                      {formatCurrencyValue(plan.price, 'USD')}
+                      {formatCurrencyValue(plan.price, plan.currency || 'USD')}
                     </div>
                     <div className="text-xs text-muted-foreground capitalize">
                       {getCycleLabel(plan.billingCycle)}
                     </div>
                     {plan.validityDays && (
                       <div className="text-xs text-muted-foreground">
-                        {t('admin.cplans.validity').replace(
-                          '{days}',
-                          plan.validityDays.toString(),
-                        )}
+                        Válido por {plan.validityDays} dias
                       </div>
                     )}
                   </TableCell>
                   <TableCell>
                     <div className="text-sm">
                       <span className="font-bold">{plan.maxProjects}</span>{' '}
-                      {t('admin.cplans.active_projects').replace('{count}', '')}
+                      Projetos Ativos
                     </div>
                     <div className="text-xs text-muted-foreground mt-0.5">
-                      {t('admin.cplans.size').replace(
-                        '{size}',
-                        plan.workSize || '',
-                      )}
+                      Porte: {plan.workSize || 'Qualquer'}
                     </div>
                     <div className="text-xs text-muted-foreground">
-                      {t('admin.cplans.complexity').replace(
-                        '{complexity}',
-                        plan.complexity || '',
-                      )}
+                      Complexidade: {plan.complexity || 'Baixa'}
                     </div>
                   </TableCell>{' '}
                   <TableCell>
@@ -181,7 +177,9 @@ export default function ManageConstructionPlans() {
                       variant="ghost"
                       className="text-destructive hover:bg-destructive/10"
                       onClick={() => {
-                        if (confirm(t('admin.cplans.delete_confirm'))) {
+                        if (
+                          confirm('Tem certeza que deseja excluir este plano?')
+                        ) {
                           deletePlan(plan.id)
                         }
                       }}
@@ -197,7 +195,7 @@ export default function ManageConstructionPlans() {
                     colSpan={6}
                     className="text-center py-12 text-muted-foreground"
                   >
-                    {t('admin.cplans.empty')}
+                    Nenhum plano configurado.
                   </TableCell>
                 </TableRow>
               )}

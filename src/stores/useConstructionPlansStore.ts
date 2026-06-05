@@ -6,6 +6,7 @@ export interface ConstructionPlan {
   name: string
   description: string
   price: number
+  currency: string
   billingCycle: string
   maxProjects: number
   workSize: string
@@ -13,6 +14,7 @@ export interface ConstructionPlan {
   features: string[]
   active: boolean
   targetAudience: string
+  entityType: string
   validityDays: number
   pushEnabled: boolean
   pushLeadTimeHours: number
@@ -28,7 +30,7 @@ export interface ConstructionPlan {
 interface ConstructionPlansState {
   plans: ConstructionPlan[]
   loading: boolean
-  fetchPlans: () => Promise<void>
+  fetchPlans: (adminMode?: boolean) => Promise<void>
   addPlan: (plan: Partial<ConstructionPlan>) => Promise<void>
   updatePlan: (id: string, plan: Partial<ConstructionPlan>) => Promise<void>
   deletePlan: (id: string) => Promise<void>
@@ -39,12 +41,18 @@ export const useConstructionPlansStore = create<ConstructionPlansState>(
   (set, get) => ({
     plans: [],
     loading: false,
-    fetchPlans: async () => {
+    fetchPlans: async (adminMode = false) => {
       set({ loading: true })
-      const { data, error } = await supabase
+      let query = supabase
         .from('construction_plans')
         .select('*')
         .order('price', { ascending: true })
+
+      if (!adminMode) {
+        query = query.eq('active', true)
+      }
+
+      const { data, error } = await query
 
       if (!error && data) {
         set({
@@ -53,13 +61,15 @@ export const useConstructionPlansStore = create<ConstructionPlansState>(
             name: d.name,
             description: d.description || '',
             price: d.price,
+            currency: d.currency || 'USD',
             billingCycle: d.billing_cycle,
             maxProjects: d.max_projects || 0,
             workSize: d.work_size || '',
             complexity: d.complexity || '',
             features: d.features || [],
             active: d.active,
-            targetAudience: d.target_audience || 'contractor',
+            targetAudience: d.target_audience || 'both',
+            entityType: d.entity_type || 'both',
             validityDays: d.validity_days || 30,
             pushEnabled: d.push_enabled || false,
             pushLeadTimeHours: d.push_lead_time_hours || 24,
@@ -83,13 +93,15 @@ export const useConstructionPlansStore = create<ConstructionPlansState>(
           name: plan.name || '',
           description: plan.description || '',
           price: plan.price || 0,
+          currency: plan.currency || 'USD',
           billing_cycle: plan.billingCycle || 'monthly',
           max_projects: plan.maxProjects || 1,
           work_size: plan.workSize || 'Pequena',
           complexity: plan.complexity || 'Low',
           features: plan.features || [],
           active: plan.active !== false,
-          target_audience: plan.targetAudience || 'contractor',
+          target_audience: plan.targetAudience || 'both',
+          entity_type: plan.entityType || 'both',
           validity_days: plan.validityDays || 30,
           push_enabled: plan.pushEnabled || false,
           push_lead_time_hours: plan.pushLeadTimeHours || 24,
@@ -103,7 +115,7 @@ export const useConstructionPlansStore = create<ConstructionPlansState>(
         },
       ])
       if (!error) {
-        get().fetchPlans()
+        get().fetchPlans(true)
       }
     },
     updatePlan: async (id, plan) => {
@@ -113,6 +125,7 @@ export const useConstructionPlansStore = create<ConstructionPlansState>(
           name: plan.name,
           description: plan.description,
           price: plan.price,
+          currency: plan.currency,
           billing_cycle: plan.billingCycle,
           max_projects: plan.maxProjects,
           work_size: plan.workSize,
@@ -120,6 +133,7 @@ export const useConstructionPlansStore = create<ConstructionPlansState>(
           features: plan.features,
           active: plan.active,
           target_audience: plan.targetAudience,
+          entity_type: plan.entityType,
           validity_days: plan.validityDays,
           push_enabled: plan.pushEnabled,
           push_lead_time_hours: plan.pushLeadTimeHours,
@@ -133,7 +147,7 @@ export const useConstructionPlansStore = create<ConstructionPlansState>(
         })
         .eq('id', id)
       if (!error) {
-        get().fetchPlans()
+        get().fetchPlans(true)
       }
     },
     deletePlan: async (id) => {
@@ -142,7 +156,7 @@ export const useConstructionPlansStore = create<ConstructionPlansState>(
         .delete()
         .eq('id', id)
       if (!error) {
-        get().fetchPlans()
+        get().fetchPlans(true)
       }
     },
     togglePlanStatus: async (id) => {
@@ -153,7 +167,7 @@ export const useConstructionPlansStore = create<ConstructionPlansState>(
           .update({ active: !plan.active })
           .eq('id', id)
         if (!error) {
-          get().fetchPlans()
+          get().fetchPlans(true)
         }
       }
     },

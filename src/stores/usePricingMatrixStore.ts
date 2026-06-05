@@ -1,84 +1,72 @@
 import { create } from 'zustand'
-import { persist } from 'zustand/middleware'
+import { supabase } from '@/lib/supabase/client'
 
 export interface PricingRules {
-  siteLevels: Record<string, number>
-  regionMultipliers: Record<string, number>
-  categoryMultipliers: Record<string, number>
+  tiers: Record<string, number>
+  regions: Record<string, number>
+  categories: Record<string, number>
 }
 
 interface PricingMatrixState {
   rules: PricingRules
-  setSiteLevelPrice: (level: string, price: number) => void
-  setRegionMultiplier: (region: string, mult: number) => void
-  setCategoryMultiplier: (category: string, mult: number) => void
+  isLoading: boolean
+  fetchRules: () => Promise<void>
+  updateRules: (newRules: PricingRules) => Promise<void>
   calculatePrice: (
-    level: string,
+    tier: string,
     region: string,
     category: string,
     days: number,
   ) => number
 }
 
-export const usePricingMatrixStore = create<PricingMatrixState>()(
-  persist(
-    (set, get) => ({
-      rules: {
-        siteLevels: {
-          Bronze: 50,
-          Silver: 100,
-          Gold: 200,
-          Premium: 500,
-        },
-        regionMultipliers: {
-          BR: 1,
-          US: 1.5,
-          Other: 1.2,
-        },
-        categoryMultipliers: {
-          Construction: 1.5,
-          Maintenance: 1.2,
-          Cleaning: 1.0,
-          Technology: 2.0,
-        },
-      },
-      setSiteLevelPrice: (level, price) =>
-        set((state) => ({
-          rules: {
-            ...state.rules,
-            siteLevels: { ...state.rules.siteLevels, [level]: price },
-          },
-        })),
-      setRegionMultiplier: (region, mult) =>
-        set((state) => ({
-          rules: {
-            ...state.rules,
-            regionMultipliers: {
-              ...state.rules.regionMultipliers,
-              [region]: mult,
-            },
-          },
-        })),
-      setCategoryMultiplier: (category, mult) =>
-        set((state) => ({
-          rules: {
-            ...state.rules,
-            categoryMultipliers: {
-              ...state.rules.categoryMultipliers,
-              [category]: mult,
-            },
-          },
-        })),
-      calculatePrice: (level, region, category, days) => {
-        const { rules } = get()
-        const base = rules.siteLevels[level] || 50
-        const rMult = rules.regionMultipliers[region] || 1
-        const cMult = rules.categoryMultipliers[category] || 1
-        // Charge proportionally by months (minimum 1 month)
-        const months = Math.max(1, Math.ceil(days / 30))
-        return base * rMult * cMult * months
-      },
-    }),
-    { name: 'pricing-matrix-storage' },
-  ),
-)
+const defaultRules: PricingRules = {
+  tiers: {
+    'Tier 3 (Basic)': 50,
+    'Tier 2 (Standard)': 100,
+    'Tier 1 (Premium)': 200,
+    'Tier 0 (Enterprise)': 500,
+  },
+  regions: { Local: 1.0, National: 1.2, Global: 1.5 },
+  categories: {
+    Construction: 1.5,
+    Maintenance: 1.2,
+    General: 1.0,
+    Technology: 2.0,
+  },
+}
+
+export const usePricingMatrixStore = create<PricingMatrixState>((set, get) => ({
+  rules: defaultRules,
+  isLoading: false,
+  fetchRules: async () => {
+    set({ isLoading: true })
+    const { data, error } = await supabase
+      .from('site_settings')
+      .select('value')
+      .eq('key', 'ads_pricing_matrix')
+      .single()
+    if (!error && data?.value) {
+      set({ rules: data.value as unknown as PricingRules, isLoading: false })
+    } else {
+      set({ isLoading: false })
+    }
+  },
+  updateRules: async (newRules) => {
+    set({ rules: newRules })
+    await supabase
+      .from('site_settings')
+      .upsert(
+        { key: 'ads_pricing_matrix', value: newRules as any },
+        { onConflict: 'key' },
+      )
+  },
+  calculatePrice: (tier, region, category, days) => {
+    const { rules } = get()
+    const base = rules.tiers[tier] || 50
+    const rMult = rules.regions[region] || 1
+    const cMult = rules.categories[category] || 1
+    const months = Math.max(1, Math.ceil(days / 30))
+    return base * rMult * cMult * months
+  },
+}))

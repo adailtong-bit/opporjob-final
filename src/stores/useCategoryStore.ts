@@ -13,6 +13,7 @@ export type CategoryType =
   | 'marketplace'
   | 'rental'
   | 'donation'
+  | 'ad'
   | 'other'
 
 export interface Category {

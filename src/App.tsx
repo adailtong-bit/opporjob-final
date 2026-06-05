@@ -40,6 +40,7 @@ import LoyaltyProgram from '@/pages/loyalty/LoyaltyProgram'
 import TestingHub from '@/pages/testing/TestingHub'
 import FinanceDashboard from '@/pages/finance/FinanceDashboard'
 import Earnings from '@/pages/finance/Earnings'
+import MySubscription from '@/pages/subscription/MySubscription'
 import AccountingExport from '@/pages/finance/AccountingExport'
 import ManageCategories from '@/pages/admin/ManageCategories'
 import ManageCategoryDetail from '@/pages/admin/ManageCategoryDetail'
@@ -71,6 +72,7 @@ import ManageUsers from '@/pages/admin/ManageUsers'
 import AuditLogs from '@/pages/admin/AuditLogs'
 import PushNotifications from '@/pages/admin/PushNotifications'
 import ManageIntegrations from '@/pages/admin/ManageIntegrations'
+import FinancialControl from '@/pages/admin/FinancialControl'
 import { useAuthStore } from '@/stores/useAuthStore'
 import { useNotificationStore } from '@/stores/useNotificationStore'
 import { supabase } from '@/lib/supabase/client'
@@ -785,6 +787,14 @@ const App = () => {
                     </AdminRoute>
                   }
                 />
+                <Route
+                  path="/admin/finance"
+                  element={
+                    <AdminRoute>
+                      <FinancialControl />
+                    </AdminRoute>
+                  }
+                />
                 <Route path="/plans" element={<PlansList />} />
                 <Route path="/plans/:id" element={<PlanDetail />} />
                 <Route path="/post-job" element={<PostJob />} />
@@ -856,6 +866,7 @@ const App = () => {
                 />
                 <Route path="/payment/success" element={<PaymentSuccess />} />
                 {/* Finance Routes */}
+                <Route path="/my-subscription" element={<MySubscription />} />
                 <Route path="/subscription" element={<SubscriptionPlans />} />
                 <Route path="/credits" element={<CreditsStore />} />
                 <Route path="/loyalty" element={<LoyaltyProgram />} />

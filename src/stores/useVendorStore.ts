@@ -1,6 +1,15 @@
 import { create } from 'zustand'
 import { supabase } from '@/lib/supabase/client'
 
+export interface VendorContact {
+  id?: string
+  vendor_id?: string
+  name: string
+  email: string | null
+  phone: string | null
+  role: string
+}
+
 export interface Vendor {
   id: string
   name: string
@@ -18,7 +27,13 @@ export interface Vendor {
   zip_code: string | null
   pix_key: string | null
   bank_data: any | null
+  company_name: string | null
+  tax_id: string | null
+  financial_email: string | null
+  job_title: string | null
+  complement?: string | null
   created_at: string
+  vendor_contacts?: VendorContact[]
 }
 
 interface VendorState {
@@ -41,7 +56,7 @@ export const useVendorStore = create<VendorState>((set, get) => ({
     set({ loading: true })
     const { data, error } = await supabase
       .from('vendors')
-      .select('*')
+      .select('*, vendor_contacts(*)')
       .order('name')
     if (!error && data) {
       set({ vendors: data as Vendor[], loading: false })
@@ -66,27 +81,82 @@ export const useVendorStore = create<VendorState>((set, get) => ({
     const {
       data: { user },
     } = await supabase.auth.getUser()
+
+    const { vendor_contacts, ...vendorData } = vendor
+
     const { data, error } = await supabase
       .from('vendors')
-      .insert([{ ...vendor, owner_id: user?.id }])
+      .insert([{ ...vendorData, owner_id: user?.id } as any])
       .select()
       .single()
+
     if (!error && data) {
-      set({ vendors: [...get().vendors, data as Vendor] })
-      return data as Vendor
+      let insertedContacts: any[] = []
+      if (vendor_contacts && vendor_contacts.length > 0) {
+        const contactsToInsert = vendor_contacts.map((c) => ({
+          vendor_id: data.id,
+          name: c.name,
+          email: c.email,
+          phone: c.phone,
+          role: c.role,
+        }))
+        const { data: contactsData } = await supabase
+          .from('vendor_contacts')
+          .insert(contactsToInsert)
+          .select()
+        if (contactsData) insertedContacts = contactsData
+      }
+
+      const newVendor = { ...data, vendor_contacts: insertedContacts } as Vendor
+      set({ vendors: [...get().vendors, newVendor] })
+      return newVendor
     }
     return null
   },
   updateVendor: async (id, vendor) => {
+    const { vendor_contacts, ...vendorData } = vendor
+
     const { data, error } = await supabase
       .from('vendors')
-      .update(vendor)
+      .update(vendorData as any)
       .eq('id', id)
       .select()
       .single()
+
     if (!error && data) {
+      let updatedContacts: any[] = []
+
+      if (vendor_contacts) {
+        await supabase.from('vendor_contacts').delete().eq('vendor_id', id)
+
+        if (vendor_contacts.length > 0) {
+          const contactsToInsert = vendor_contacts.map((c) => ({
+            vendor_id: id,
+            name: c.name,
+            email: c.email,
+            phone: c.phone,
+            role: c.role,
+          }))
+          const { data: contactsData } = await supabase
+            .from('vendor_contacts')
+            .insert(contactsToInsert)
+            .select()
+          if (contactsData) updatedContacts = contactsData
+        }
+      } else {
+        const { data: existingContacts } = await supabase
+          .from('vendor_contacts')
+          .select('*')
+          .eq('vendor_id', id)
+        updatedContacts = existingContacts || []
+      }
+
+      const updatedVendor = {
+        ...data,
+        vendor_contacts: updatedContacts,
+      } as Vendor
       set({
-        vendors: get().vendors.map((v) => (v.id === id ? (data as Vendor) : v)),
+        vendors: get().vendors.map((v) => (v.id === id ? updatedVendor : v)),
       })
     }
   },

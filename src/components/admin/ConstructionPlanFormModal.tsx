@@ -41,12 +41,14 @@ export function ConstructionPlanFormModal({
     name: '',
     description: '',
     price: 0,
+    currency: 'USD',
     billingCycle: 'monthly',
     maxProjects: 1,
     workSize: 'Pequena',
     complexity: 'Low',
     features: [],
-    targetAudience: 'contractor',
+    targetAudience: 'provider',
+    entityType: 'both',
     validityDays: 30,
     pushEnabled: false,
     priorityWeight: 1,
@@ -57,7 +59,7 @@ export function ConstructionPlanFormModal({
     popular: false,
   })
 
-  const [newFeature, setNewFeature] = useState('')
+  const [newFeature, setFeature] = useState('')
 
   useEffect(() => {
     if (planToEdit) {
@@ -67,12 +69,14 @@ export function ConstructionPlanFormModal({
         name: '',
         description: '',
         price: 0,
+        currency: 'USD',
         billingCycle: 'monthly',
         maxProjects: 1,
         workSize: 'Pequena',
         complexity: 'Low',
         features: [],
-        targetAudience: 'contractor',
+        targetAudience: 'provider',
+        entityType: 'both',
         validityDays: 30,
         pushEnabled: false,
         priorityWeight: 1,
@@ -100,7 +104,7 @@ export function ConstructionPlanFormModal({
         ...formData,
         features: [...(formData.features || []), newFeature.trim()],
       })
-      setNewFeature('')
+      setFeature('')
     }
   }
 
@@ -150,58 +154,50 @@ export function ConstructionPlanFormModal({
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Público Alvo</Label>
-                  <Select
-                    value={formData.targetAudience}
-                    onValueChange={(v) =>
-                      setFormData({ ...formData, targetAudience: v })
+                  <Label>Descrição</Label>
+                  <Textarea
+                    rows={2}
+                    value={formData.description}
+                    onChange={(e) =>
+                      setFormData({ ...formData, description: e.target.value })
                     }
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="contractor">
-                        Profissional / Executor
-                      </SelectItem>
-                      <SelectItem value="employer">
-                        Cliente / Contratante
-                      </SelectItem>
-                      <SelectItem value="advertiser">
-                        Anunciante (Advertiser)
-                      </SelectItem>
-                      <SelectItem value="both">Global / Todos</SelectItem>
-                    </SelectContent>
-                  </Select>
+                    placeholder="Descrição resumida do que o plano oferece."
+                  />
                 </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label>Descrição</Label>
-                <Textarea
-                  rows={2}
-                  value={formData.description}
-                  onChange={(e) =>
-                    setFormData({ ...formData, description: e.target.value })
-                  }
-                  placeholder="Descrição resumida do que o plano oferece."
-                />
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="space-y-2">
-                  <Label>Preço (USD)</Label>
-                  <Input
-                    type="number"
-                    step="0.01"
-                    value={formData.price}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        price: parseFloat(e.target.value) || 0,
-                      })
-                    }
-                  />
+                  <Label>Preço e Moeda</Label>
+                  <div className="flex gap-2">
+                    <Select
+                      value={formData.currency || 'USD'}
+                      onValueChange={(v) =>
+                        setFormData({ ...formData, currency: v })
+                      }
+                    >
+                      <SelectTrigger className="w-[90px]">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="USD">USD</SelectItem>
+                        <SelectItem value="BRL">BRL</SelectItem>
+                        <SelectItem value="EUR">EUR</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      className="flex-1"
+                      value={formData.price}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          price: parseFloat(e.target.value) || 0,
+                        })
+                      }
+                    />
+                  </div>
                 </div>
                 <div className="space-y-2">
                   <Label>Ciclo de Cobrança</Label>
@@ -294,7 +290,7 @@ export function ConstructionPlanFormModal({
                 <div className="flex gap-2">
                   <Input
                     value={newFeature}
-                    onChange={(e) => setNewFeature(e.target.value)}
+                    onChange={(e) => setFeature(e.target.value)}
                     placeholder="Ex: Emissão de faturas ilimitada"
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') {
@@ -370,26 +366,58 @@ export function ConstructionPlanFormModal({
                   Regras de Acesso e Prioridade
                 </h3>
                 <p className="text-sm text-muted-foreground mb-4">
-                  Configure os privilégios baseados no perfil.
+                  Configure os privilégios baseados no perfil e entidade.
                 </p>
 
                 <div className="space-y-6">
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label>Peso de Prioridade (Ex: 1 a 100)</Label>
-                      <Input
-                        type="number"
-                        value={formData.priorityWeight}
-                        onChange={(e) =>
-                          setFormData({
-                            ...formData,
-                            priorityWeight: Number(e.target.value),
-                          })
+                      <Label>Público Alvo</Label>
+                      <Select
+                        value={formData.targetAudience}
+                        onValueChange={(v) =>
+                          setFormData({ ...formData, targetAudience: v })
                         }
-                      />
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="provider">
+                            Prestador (Service Provider)
+                          </SelectItem>
+                          <SelectItem value="advertiser">
+                            Anunciante (Advertiser)
+                          </SelectItem>
+                          <SelectItem value="both">Ambos (Global)</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
                     <div className="space-y-2">
-                      <Label>Acesso Antecipado (Horas)</Label>
+                      <Label>Tipo de Entidade</Label>
+                      <Select
+                        value={formData.entityType || 'both'}
+                        onValueChange={(v) =>
+                          setFormData({ ...formData, entityType: v })
+                        }
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="pf">Pessoa Física (PF)</SelectItem>
+                          <SelectItem value="pj">
+                            Pessoa Jurídica (PJ)
+                          </SelectItem>
+                          <SelectItem value="both">Ambos (Global)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4 border-t pt-4">
+                    <div className="space-y-2">
+                      <Label>Acesso Antecipado a Vagas (Horas)</Label>
                       <Input
                         type="number"
                         value={formData.earlyAccessHours}
@@ -401,63 +429,53 @@ export function ConstructionPlanFormModal({
                         }
                       />
                     </div>
+                    <div className="space-y-2">
+                      <Label>Peso de Prioridade (Busca e Listagem)</Label>
+                      <Input
+                        type="number"
+                        value={formData.priorityWeight}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            priorityWeight: Number(e.target.value),
+                          })
+                        }
+                      />
+                    </div>
                   </div>
 
-                  <div className="space-y-2 border-t pt-4">
-                    <Label className="text-base">
-                      Lógica de Match por Habilidade
-                    </Label>
-                    <Select
-                      value={formData.skillMatchingRule || 'flexible'}
-                      onValueChange={(val) =>
-                        setFormData({ ...formData, skillMatchingRule: val })
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="strict">
-                          Estrito (Exige match exato)
-                        </SelectItem>
-                        <SelectItem value="flexible">
-                          Flexível (Permite variação)
-                        </SelectItem>
-                        <SelectItem value="all">
-                          Acesso Total (Ignora bloqueios)
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label>Peso da Habilidade [1 a 10]</Label>
-                    <Input
-                      type="number"
-                      min={1}
-                      max={10}
-                      value={formData.skillWeight}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          skillWeight: Number(e.target.value),
-                        })
-                      }
-                    />
-                  </div>
-
-                  <div className="space-y-2 border-t pt-4">
-                    <Label>Boost de Visibilidade dos Anúncios</Label>
-                    <Input
-                      type="number"
-                      value={formData.visibilityBoost}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          visibilityBoost: Number(e.target.value),
-                        })
-                      }
-                    />
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>Impulso de Visibilidade (Anúncios)</Label>
+                      <Input
+                        type="number"
+                        value={formData.visibilityBoost}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            visibilityBoost: Number(e.target.value),
+                          })
+                        }
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Lógica de Match por Habilidade</Label>
+                      <Select
+                        value={formData.skillMatchingRule || 'flexible'}
+                        onValueChange={(val) =>
+                          setFormData({ ...formData, skillMatchingRule: val })
+                        }
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="strict">Estrito</SelectItem>
+                          <SelectItem value="flexible">Flexível</SelectItem>
+                          <SelectItem value="all">Acesso Total</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -477,7 +495,7 @@ export function ConstructionPlanFormModal({
                     }
                   />
                   <Label htmlFor="pushEnabled" className="cursor-pointer">
-                    Habilitar Notificações Push Especiais
+                    Habilitar Notificações Push Especiais (Leads)
                   </Label>
                 </div>
 
@@ -497,7 +515,7 @@ export function ConstructionPlanFormModal({
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label>Texto da Notificação (Template)</Label>
+                      <Label>Texto da Mensagem Push (Template)</Label>
                       <Textarea
                         value={formData.pushMessageText}
                         onChange={(e) =>

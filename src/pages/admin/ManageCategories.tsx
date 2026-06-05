@@ -48,6 +48,14 @@ export default function ManageCategories() {
   const [newCategory, setNewCategory] = useState('')
   const [newType, setNewType] = useState<CategoryType>('job')
 
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 10
+  const totalPages = Math.max(1, Math.ceil(categories.length / itemsPerPage))
+  const currentCategories = categories.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage,
+  )
+
   const handleAdd = () => {
     if (!newCategory.trim()) {
       toast({
@@ -71,6 +79,8 @@ export default function ManageCategories() {
     switch (type) {
       case 'job':
         return t('post.type.job.label')
+      case 'ad':
+        return 'Advertising'
       case 'marketplace':
         return t('post.type.product.label')
       case 'rental':
@@ -115,7 +125,10 @@ export default function ManageCategories() {
                 <SelectValue placeholder={t('proj.approvals.type')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="job">{t('post.type.job.label')}</SelectItem>
+                <SelectItem value="job">
+                  {t('post.type.job.label')} (Service)
+                </SelectItem>
+                <SelectItem value="ad">Advertising (Ads)</SelectItem>
                 <SelectItem value="marketplace">
                   {t('post.type.product.label')}
                 </SelectItem>
@@ -148,7 +161,7 @@ export default function ManageCategories() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {categories.map((category) => (
+              {currentCategories.map((category) => (
                 <TableRow key={category.id}>
                   <TableCell className="font-medium">
                     {category.translationKey
@@ -222,6 +235,31 @@ export default function ManageCategories() {
               )}
             </TableBody>
           </Table>
+          {totalPages > 1 && (
+            <div className="flex items-center justify-center space-x-2 py-4 border-t">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+              >
+                Previous
+              </Button>
+              <div className="text-sm text-muted-foreground">
+                Page {currentPage} of {totalPages}
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() =>
+                  setCurrentPage((p) => Math.min(totalPages, p + 1))
+                }
+                disabled={currentPage === totalPages}
+              >
+                Next
+              </Button>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

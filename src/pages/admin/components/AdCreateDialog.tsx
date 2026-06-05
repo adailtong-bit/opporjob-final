@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import {
   Dialog,
   DialogContent,
@@ -16,381 +16,300 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useAdStore } from '@/stores/useAdStore'
+import { useVendorStore } from '@/stores/useVendorStore'
 import { usePricingMatrixStore } from '@/stores/usePricingMatrixStore'
+import { useCategoryStore } from '@/stores/useCategoryStore'
 import { useToast } from '@/hooks/use-toast'
-import { differenceInDays } from 'date-fns'
 
-export default function AdCreateDialog({
+export function AdCreateDialog({
   open,
   onOpenChange,
 }: {
   open: boolean
-  onOpenChange: (o: boolean) => void
+  onOpenChange: (open: boolean) => void
 }) {
   const { addAd } = useAdStore()
-  const { rules, calculatePrice } = usePricingMatrixStore()
+  const { vendors, fetchVendors } = useVendorStore()
+  const { rules, fetchRules, calculatePrice } = usePricingMatrixStore()
+  const { categories, fetchCategories } = useCategoryStore()
   const { toast } = useToast()
 
-  const [form, setForm] = useState({
-    advertiserName: '',
-    legalAddress: '',
-    taxId: '',
-    billingName: '',
-    billingEmail: '',
-    billingPhone: '',
-    adContactName: '',
-    adContactEmail: '',
-    adContactPhone: '',
+  const [formData, setFormData] = useState({
     title: '',
-    category: 'Construction',
-    region: 'BR',
-    planLevel: 'Bronze',
-    startDate: '',
-    endDate: '',
-    imageUrl: '',
+    advertiser_id: '',
+    tier: 'Tier 3 (Basic)',
+    region: 'Global',
+    category: 'General',
+    media_url: '',
+    target_url: '',
+    start_date: '',
+    end_date: '',
   })
+
+  const [calculatedPrice, setCalculatedPrice] = useState(0)
 
   useEffect(() => {
     if (open) {
-      setForm({
-        advertiserName: '',
-        legalAddress: '',
-        taxId: '',
-        billingName: '',
-        billingEmail: '',
-        billingPhone: '',
-        adContactName: '',
-        adContactEmail: '',
-        adContactPhone: '',
+      fetchVendors()
+      fetchRules()
+      fetchCategories()
+      setFormData({
         title: '',
-        category: 'Construction',
-        region: 'BR',
-        planLevel: 'Bronze',
-        startDate: '',
-        endDate: '',
-        imageUrl: '',
+        advertiser_id: '',
+        tier: 'Tier 3 (Basic)',
+        region: 'Global',
+        category: 'General',
+        media_url: '',
+        target_url: '',
+        start_date: '',
+        end_date: '',
       })
     }
-  }, [open])
+  }, [open, fetchVendors, fetchRules, fetchCategories])
 
-  const price = useMemo(() => {
-    if (!form.startDate || !form.endDate) return 0
-    const days = differenceInDays(
-      new Date(form.endDate),
-      new Date(form.startDate),
-    )
-    if (days <= 0) return 0
-    return calculatePrice(form.planLevel, form.region, form.category, days)
-  }, [form, calculatePrice])
-
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (file) setForm((p) => ({ ...p, imageUrl: URL.createObjectURL(file) }))
-  }
-
-  const handleSubmit = () => {
-    if (!form.advertiserName || !form.startDate || !form.endDate || !form.title)
+  useEffect(() => {
+    if (!formData.start_date || !formData.end_date) {
+      setCalculatedPrice(0)
       return
-    addAd({
-      title: form.title,
-      advertiserName: form.advertiserName,
-      advertiserDetails: {
-        legalAddress: form.legalAddress,
-        taxId: form.taxId,
-        billingContact: {
-          name: form.billingName,
-          email: form.billingEmail,
-          phone: form.billingPhone,
-        },
-        adContact: {
-          name: form.adContactName,
-          email: form.adContactEmail,
-          phone: form.adContactPhone,
-        },
-      },
-      category: form.category,
-      region: form.region,
-      country:
-        form.region === 'BR' ? 'BR' : form.region === 'US' ? 'US' : 'Other',
-      planLevel: form.planLevel,
-      startDate: new Date(form.startDate),
-      endDate: new Date(form.endDate),
-      calculatedPrice: price,
-      status: 'active',
-      createdAt: new Date(),
-      skillWeight:
-        form.planLevel === 'Premium'
-          ? 10
-          : form.planLevel === 'Gold'
-            ? 7
-            : form.planLevel === 'Silver'
-              ? 4
-              : 1,
-      views: 0,
-      clicks: 0,
-      likes: 0,
-      dislikes: 0,
-      active: true,
-      segment: 'all',
-      type: 'segmented',
-      isConstruction: form.category === 'Construction',
-      imageUrl:
-        form.imageUrl ||
-        `https://img.usecurling.com/p/600/200?q=${form.category.toLowerCase()}`,
-    })
-    onOpenChange(false)
-    toast({
-      title: 'Ad Created',
-      description: `Initial billing of $${price.toFixed(2)}`,
-    })
-  }
+    }
+    const start = new Date(formData.start_date)
+    const end = new Date(formData.end_date)
+    const days = Math.ceil(
+      (end.getTime() - start.getTime()) / (1000 * 3600 * 24),
+    )
 
-  const isValid =
-    form.advertiserName &&
-    form.title &&
-    form.startDate &&
-    form.endDate &&
-    form.billingEmail
+    if (days > 0 && rules) {
+      const price = calculatePrice(
+        formData.tier,
+        formData.region,
+        formData.category,
+        days,
+      )
+      setCalculatedPrice(price)
+    } else {
+      setCalculatedPrice(0)
+    }
+  }, [
+    formData.tier,
+    formData.region,
+    formData.category,
+    formData.start_date,
+    formData.end_date,
+    rules,
+    calculatePrice,
+  ])
+
+  const handleSave = async () => {
+    if (
+      !formData.title ||
+      !formData.advertiser_id ||
+      !formData.start_date ||
+      !formData.end_date
+    ) {
+      toast({
+        title: 'Please fill in all required fields',
+        variant: 'destructive',
+      })
+      return
+    }
+
+    try {
+      await addAd({
+        title: formData.title,
+        advertiser_id: formData.advertiser_id,
+        media_url: formData.media_url,
+        target_url: formData.target_url,
+        status: 'draft',
+        tier: formData.tier,
+        specifications: {
+          region: formData.region,
+          category: formData.category,
+        },
+        start_date: new Date(formData.start_date).toISOString(),
+        end_date: new Date(formData.end_date).toISOString(),
+        price: calculatedPrice,
+      })
+      toast({ title: 'Campaign created successfully' })
+      onOpenChange(false)
+    } catch (error) {
+      toast({ title: 'Error creating campaign', variant: 'destructive' })
+    }
+  }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl">
-        <DialogHeader>
-          <DialogTitle>Create New Ad</DialogTitle>
+      <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col p-0">
+        <DialogHeader className="p-6 pb-4 border-b">
+          <DialogTitle>Create Advertising Campaign</DialogTitle>
         </DialogHeader>
-        <Tabs defaultValue="company" className="w-full mt-2">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="company">Company</TabsTrigger>
-            <TabsTrigger value="contacts">Contacts</TabsTrigger>
-            <TabsTrigger value="campaign">Campaign</TabsTrigger>
-            <TabsTrigger value="media">Media</TabsTrigger>
-          </TabsList>
 
-          <TabsContent value="company" className="space-y-4 mt-4">
+        <div className="flex-1 overflow-y-auto p-6 space-y-4">
+          <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>Company Name</Label>
+              <Label>Campaign Title *</Label>
               <Input
-                value={form.advertiserName}
+                value={formData.title}
                 onChange={(e) =>
-                  setForm((p) => ({ ...p, advertiserName: e.target.value }))
+                  setFormData({ ...formData, title: e.target.value })
                 }
+                placeholder="e.g. Summer Sale 2026"
               />
             </div>
             <div className="space-y-2">
-              <Label>Legal Address</Label>
-              <Input
-                value={form.legalAddress}
-                onChange={(e) =>
-                  setForm((p) => ({ ...p, legalAddress: e.target.value }))
+              <Label>Advertiser (Vendor) *</Label>
+              <Select
+                value={formData.advertiser_id}
+                onValueChange={(val) =>
+                  setFormData({ ...formData, advertiser_id: val })
                 }
-              />
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select advertiser" />
+                </SelectTrigger>
+                <SelectContent>
+                  {vendors.map((v) => (
+                    <SelectItem key={v.id} value={v.id}>
+                      {v.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
-            <div className="space-y-2">
-              <Label>CNPJ / Tax ID</Label>
-              <Input
-                value={form.taxId}
-                onChange={(e) =>
-                  setForm((p) => ({ ...p, taxId: e.target.value }))
-                }
-              />
-            </div>
-          </TabsContent>
+          </div>
 
-          <TabsContent
-            value="contacts"
-            className="space-y-4 mt-4 h-[250px] overflow-y-auto pr-2"
-          >
-            <h4 className="font-semibold text-sm border-b pb-1">Billing</h4>
-            <div className="grid grid-cols-2 gap-2">
-              <div className="space-y-1">
-                <Label>Name</Label>
-                <Input
-                  value={form.billingName}
-                  onChange={(e) =>
-                    setForm((p) => ({ ...p, billingName: e.target.value }))
-                  }
-                />
-              </div>
-              <div className="space-y-1">
-                <Label>Email*</Label>
-                <Input
-                  type="email"
-                  value={form.billingEmail}
-                  onChange={(e) =>
-                    setForm((p) => ({ ...p, billingEmail: e.target.value }))
-                  }
-                />
-              </div>
-              <div className="space-y-1 col-span-2">
-                <Label>Phone</Label>
-                <Input
-                  value={form.billingPhone}
-                  onChange={(e) =>
-                    setForm((p) => ({ ...p, billingPhone: e.target.value }))
-                  }
-                />
-              </div>
-            </div>
-            <h4 className="font-semibold text-sm border-b pb-1 mt-4">
-              Marketing
-            </h4>
-            <div className="grid grid-cols-2 gap-2">
-              <div className="space-y-1">
-                <Label>Name</Label>
-                <Input
-                  value={form.adContactName}
-                  onChange={(e) =>
-                    setForm((p) => ({ ...p, adContactName: e.target.value }))
-                  }
-                />
-              </div>
-              <div className="space-y-1">
-                <Label>Email</Label>
-                <Input
-                  type="email"
-                  value={form.adContactEmail}
-                  onChange={(e) =>
-                    setForm((p) => ({ ...p, adContactEmail: e.target.value }))
-                  }
-                />
-              </div>
-              <div className="space-y-1 col-span-2">
-                <Label>Phone</Label>
-                <Input
-                  value={form.adContactPhone}
-                  onChange={(e) =>
-                    setForm((p) => ({ ...p, adContactPhone: e.target.value }))
-                  }
-                />
-              </div>
-            </div>
-          </TabsContent>
-
-          <TabsContent
-            value="campaign"
-            className="space-y-4 mt-4 h-[250px] overflow-y-auto pr-2"
-          >
+          <div className="grid grid-cols-3 gap-4">
             <div className="space-y-2">
-              <Label>Campaign Title*</Label>
-              <Input
-                value={form.title}
-                onChange={(e) =>
-                  setForm((p) => ({ ...p, title: e.target.value }))
+              <Label>Tier</Label>
+              <Select
+                value={formData.tier}
+                onValueChange={(val) => setFormData({ ...formData, tier: val })}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.keys(rules?.tiers || {}).map((t) => (
+                    <SelectItem key={t} value={t}>
+                      {t}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Region</Label>
+              <Select
+                value={formData.region}
+                onValueChange={(val) =>
+                  setFormData({ ...formData, region: val })
                 }
-              />
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.keys(rules?.regions || {}).map((r) => (
+                    <SelectItem key={r} value={r}>
+                      {r}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Category</Label>
-                <Select
-                  value={form.category}
-                  onValueChange={(v) => setForm((p) => ({ ...p, category: v }))}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Object.keys(rules.categoryMultipliers).map((c) => (
-                      <SelectItem key={c} value={c}>
-                        {c}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label>Region</Label>
-                <Select
-                  value={form.region}
-                  onValueChange={(v) => setForm((p) => ({ ...p, region: v }))}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Object.keys(rules.regionMultipliers).map((r) => (
-                      <SelectItem key={r} value={r}>
-                        {r}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label>Level</Label>
-                <Select
-                  value={form.planLevel}
-                  onValueChange={(v) =>
-                    setForm((p) => ({ ...p, planLevel: v }))
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Object.keys(rules.siteLevels).map((l) => (
-                      <SelectItem key={l} value={l}>
-                        {l}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label>Cost</Label>
-                <div className="h-10 px-3 py-2 border rounded-md bg-muted text-primary font-bold">
-                  $ {price.toFixed(2)}
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label>Start*</Label>
-                <Input
-                  type="date"
-                  value={form.startDate}
-                  onChange={(e) =>
-                    setForm((p) => ({ ...p, startDate: e.target.value }))
-                  }
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>End*</Label>
-                <Input
-                  type="date"
-                  value={form.endDate}
-                  onChange={(e) =>
-                    setForm((p) => ({ ...p, endDate: e.target.value }))
-                  }
-                />
-              </div>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="media" className="space-y-4 mt-4">
             <div className="space-y-2">
-              <Label>Image (JPG, PNG)</Label>
-              <Input
-                type="file"
-                accept="image/png, image/jpeg"
-                onChange={handleImageChange}
-              />
+              <Label>Category</Label>
+              <Select
+                value={formData.category}
+                onValueChange={(val) =>
+                  setFormData({ ...formData, category: val })
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {categories.map((c) => (
+                    <SelectItem key={c.slug} value={c.name}>
+                      {c.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
-            {form.imageUrl && (
-              <div className="mt-4 border rounded-md p-2 flex justify-center bg-muted/50">
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>Media URL (Image) *</Label>
+              <Input
+                value={formData.media_url}
+                onChange={(e) =>
+                  setFormData({ ...formData, media_url: e.target.value })
+                }
+                placeholder="https://..."
+              />
+              {formData.media_url && (
                 <img
-                  src={form.imageUrl}
+                  src={formData.media_url}
                   alt="Preview"
-                  className="max-h-[160px] object-contain rounded"
+                  className="mt-2 w-full h-32 object-cover rounded-md border"
+                  onError={(e) => (e.currentTarget.style.display = 'none')}
+                  onLoad={(e) => (e.currentTarget.style.display = 'block')}
                 />
-              </div>
-            )}
-          </TabsContent>
-        </Tabs>
-        <DialogFooter className="mt-4">
-          <Button onClick={handleSubmit} disabled={!isValid}>
-            Create Ad
+              )}
+            </div>
+            <div className="space-y-2">
+              <Label>Target URL (Link)</Label>
+              <Input
+                value={formData.target_url}
+                onChange={(e) =>
+                  setFormData({ ...formData, target_url: e.target.value })
+                }
+                placeholder="https://..."
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>Start Date *</Label>
+              <Input
+                type="date"
+                value={formData.start_date}
+                onChange={(e) =>
+                  setFormData({ ...formData, start_date: e.target.value })
+                }
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>End Date *</Label>
+              <Input
+                type="date"
+                value={formData.end_date}
+                onChange={(e) =>
+                  setFormData({ ...formData, end_date: e.target.value })
+                }
+              />
+            </div>
+          </div>
+
+          <div className="bg-muted p-4 rounded-lg flex justify-between items-center mt-4">
+            <div className="font-medium">Estimated Price</div>
+            <div className="text-xl font-bold text-primary">
+              {new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD',
+              }).format(calculatedPrice)}
+            </div>
+          </div>
+        </div>
+
+        <DialogFooter className="p-6 pt-4 border-t sticky bottom-0 bg-background rounded-b-lg">
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            Cancel
           </Button>
+          <Button onClick={handleSave}>Save Campaign</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

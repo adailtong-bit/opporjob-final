@@ -15,6 +15,62 @@ export type Database = {
   }
   public: {
     Tables: {
+      advertising_campaigns: {
+        Row: {
+          advertiser_id: string | null
+          created_at: string
+          end_date: string | null
+          id: string
+          media_url: string | null
+          price: number | null
+          specifications: Json | null
+          start_date: string | null
+          status: string | null
+          target_url: string | null
+          tier: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          advertiser_id?: string | null
+          created_at?: string
+          end_date?: string | null
+          id?: string
+          media_url?: string | null
+          price?: number | null
+          specifications?: Json | null
+          start_date?: string | null
+          status?: string | null
+          target_url?: string | null
+          tier?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          advertiser_id?: string | null
+          created_at?: string
+          end_date?: string | null
+          id?: string
+          media_url?: string | null
+          price?: number | null
+          specifications?: Json | null
+          start_date?: string | null
+          status?: string | null
+          target_url?: string | null
+          tier?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'advertising_campaigns_advertiser_id_fkey'
+            columns: ['advertiser_id']
+            isOneToOne: false
+            referencedRelation: 'vendors'
+            referencedColumns: ['id']
+          },
+        ]
+      }
       audit_logs: {
         Row: {
           action: string
@@ -139,6 +195,7 @@ export type Database = {
           currency: string | null
           description: string | null
           early_access_hours: number | null
+          entity_type: string | null
           features: Json | null
           id: string
           max_projects: number | null
@@ -165,6 +222,7 @@ export type Database = {
           currency?: string | null
           description?: string | null
           early_access_hours?: number | null
+          entity_type?: string | null
           features?: Json | null
           id?: string
           max_projects?: number | null
@@ -191,6 +249,7 @@ export type Database = {
           currency?: string | null
           description?: string | null
           early_access_hours?: number | null
+          entity_type?: string | null
           features?: Json | null
           id?: string
           max_projects?: number | null
@@ -418,6 +477,7 @@ export type Database = {
           created_at: string | null
           currency: string | null
           description: string | null
+          early_access_hours: number | null
           external_id: string | null
           id: string
           impressions_count: number
@@ -427,6 +487,7 @@ export type Database = {
           owner_id: string | null
           owner_name: string | null
           photos: Json | null
+          priority_weight: number | null
           progress: number | null
           source: string | null
           status: string | null
@@ -445,6 +506,7 @@ export type Database = {
           created_at?: string | null
           currency?: string | null
           description?: string | null
+          early_access_hours?: number | null
           external_id?: string | null
           id?: string
           impressions_count?: number
@@ -454,6 +516,7 @@ export type Database = {
           owner_id?: string | null
           owner_name?: string | null
           photos?: Json | null
+          priority_weight?: number | null
           progress?: number | null
           source?: string | null
           status?: string | null
@@ -472,6 +535,7 @@ export type Database = {
           created_at?: string | null
           currency?: string | null
           description?: string | null
+          early_access_hours?: number | null
           external_id?: string | null
           id?: string
           impressions_count?: number
@@ -481,6 +545,7 @@ export type Database = {
           owner_id?: string | null
           owner_name?: string | null
           photos?: Json | null
+          priority_weight?: number | null
           progress?: number | null
           source?: string | null
           status?: string | null
@@ -583,12 +648,15 @@ export type Database = {
           neighborhood: string | null
           number: string | null
           phone: string | null
+          plan_id: string | null
           portfolio_photos: Json | null
           priced_services: Json | null
           role: string | null
           state: string | null
           status: string | null
           street: string | null
+          subscription_end_date: string | null
+          subscription_status: string | null
           tax_id: string | null
           updated_at: string | null
           zip_code: string | null
@@ -612,12 +680,15 @@ export type Database = {
           neighborhood?: string | null
           number?: string | null
           phone?: string | null
+          plan_id?: string | null
           portfolio_photos?: Json | null
           priced_services?: Json | null
           role?: string | null
           state?: string | null
           status?: string | null
           street?: string | null
+          subscription_end_date?: string | null
+          subscription_status?: string | null
           tax_id?: string | null
           updated_at?: string | null
           zip_code?: string | null
@@ -641,17 +712,28 @@ export type Database = {
           neighborhood?: string | null
           number?: string | null
           phone?: string | null
+          plan_id?: string | null
           portfolio_photos?: Json | null
           priced_services?: Json | null
           role?: string | null
           state?: string | null
           status?: string | null
           street?: string | null
+          subscription_end_date?: string | null
+          subscription_status?: string | null
           tax_id?: string | null
           updated_at?: string | null
           zip_code?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: 'profiles_plan_id_fkey'
+            columns: ['plan_id']
+            isOneToOne: false
+            referencedRelation: 'construction_plans'
+            referencedColumns: ['id']
+          },
+        ]
       }
       project_budgets: {
         Row: {
@@ -1023,10 +1105,14 @@ export type Database = {
           bank_data: Json | null
           category: string | null
           city: string | null
+          company_name: string | null
+          complement: string | null
           created_at: string
           document: string | null
           email: string | null
+          financial_email: string | null
           id: string
+          job_title: string | null
           name: string
           neighborhood: string | null
           number: string | null
@@ -1036,6 +1122,7 @@ export type Database = {
           state: string | null
           status: string | null
           street: string | null
+          tax_id: string | null
           updated_at: string
           website: string | null
           zip_code: string | null
@@ -1044,10 +1131,14 @@ export type Database = {
           bank_data?: Json | null
           category?: string | null
           city?: string | null
+          company_name?: string | null
+          complement?: string | null
           created_at?: string
           document?: string | null
           email?: string | null
+          financial_email?: string | null
           id?: string
+          job_title?: string | null
           name: string
           neighborhood?: string | null
           number?: string | null
@@ -1057,6 +1148,7 @@ export type Database = {
           state?: string | null
           status?: string | null
           street?: string | null
+          tax_id?: string | null
           updated_at?: string
           website?: string | null
           zip_code?: string | null
@@ -1065,10 +1157,14 @@ export type Database = {
           bank_data?: Json | null
           category?: string | null
           city?: string | null
+          company_name?: string | null
+          complement?: string | null
           created_at?: string
           document?: string | null
           email?: string | null
+          financial_email?: string | null
           id?: string
+          job_title?: string | null
           name?: string
           neighborhood?: string | null
           number?: string | null
@@ -1078,6 +1174,7 @@ export type Database = {
           state?: string | null
           status?: string | null
           street?: string | null
+          tax_id?: string | null
           updated_at?: string
           website?: string | null
           zip_code?: string | null
@@ -1242,6 +1339,20 @@ export const Constants = {
 // --- COLUMN TYPES (actual PostgreSQL types) ---
 // Use this to know the real database type when writing migrations.
 // "string" in TypeScript types above may be uuid, text, varchar, timestamptz, etc.
+// Table: advertising_campaigns
+//   id: uuid (not null, default: gen_random_uuid())
+//   advertiser_id: uuid (nullable)
+//   title: text (not null)
+//   media_url: text (nullable)
+//   target_url: text (nullable)
+//   status: text (nullable, default: 'draft'::text)
+//   tier: text (nullable)
+//   specifications: jsonb (nullable, default: '{}'::jsonb)
+//   start_date: timestamp with time zone (nullable)
+//   end_date: timestamp with time zone (nullable)
+//   price: numeric (nullable, default: 0)
+//   created_at: timestamp with time zone (not null, default: now())
+//   updated_at: timestamp with time zone (not null, default: now())
 // Table: audit_logs
 //   id: uuid (not null, default: gen_random_uuid())
 //   user_id: uuid (nullable)
@@ -1294,6 +1405,7 @@ export const Constants = {
 //   skill_weight: integer (nullable, default: 1)
 //   popular: boolean (nullable, default: false)
 //   currency: text (nullable, default: 'USD'::text)
+//   entity_type: text (nullable, default: 'both'::text)
 // Table: equipment
 //   id: uuid (not null, default: gen_random_uuid())
 //   name: text (not null)
@@ -1360,6 +1472,8 @@ export const Constants = {
 //   currency: text (nullable, default: 'USD'::text)
 //   views_count: integer (not null, default: 0)
 //   impressions_count: integer (not null, default: 0)
+//   priority_weight: integer (nullable, default: 1)
+//   early_access_hours: integer (nullable, default: 0)
 // Table: marketing_content
 //   id: uuid (not null, default: gen_random_uuid())
 //   key: text (not null)
@@ -1405,6 +1519,9 @@ export const Constants = {
 //   document: text (nullable)
 //   portfolio_photos: jsonb (nullable, default: '[]'::jsonb)
 //   priced_services: jsonb (nullable, default: '[]'::jsonb)
+//   plan_id: uuid (nullable)
+//   subscription_status: text (nullable, default: 'inactive'::text)
+//   subscription_end_date: timestamp with time zone (nullable)
 // Table: project_budgets
 //   id: uuid (not null, default: gen_random_uuid())
 //   project_id: uuid (not null)
@@ -1501,8 +1618,16 @@ export const Constants = {
 //   pix_key: text (nullable)
 //   bank_data: jsonb (nullable, default: '{}'::jsonb)
 //   owner_id: uuid (nullable)
+//   financial_email: text (nullable)
+//   company_name: text (nullable)
+//   tax_id: text (nullable)
+//   job_title: text (nullable)
+//   complement: text (nullable)
 
 // --- CONSTRAINTS ---
+// Table: advertising_campaigns
+//   FOREIGN KEY advertising_campaigns_advertiser_id_fkey: FOREIGN KEY (advertiser_id) REFERENCES vendors(id) ON DELETE CASCADE
+//   PRIMARY KEY advertising_campaigns_pkey: PRIMARY KEY (id)
 // Table: audit_logs
 //   PRIMARY KEY audit_logs_pkey: PRIMARY KEY (id)
 //   FOREIGN KEY audit_logs_user_id_fkey: FOREIGN KEY (user_id) REFERENCES profiles(id) ON DELETE SET NULL
@@ -1548,6 +1673,7 @@ export const Constants = {
 // Table: profiles
 //   FOREIGN KEY profiles_id_fkey: FOREIGN KEY (id) REFERENCES auth.users(id) ON DELETE CASCADE
 //   PRIMARY KEY profiles_pkey: PRIMARY KEY (id)
+//   FOREIGN KEY profiles_plan_id_fkey: FOREIGN KEY (plan_id) REFERENCES construction_plans(id) ON DELETE SET NULL
 // Table: project_budgets
 //   PRIMARY KEY project_budgets_pkey: PRIMARY KEY (id)
 //   FOREIGN KEY project_budgets_project_id_fkey: FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE
@@ -1591,6 +1717,11 @@ export const Constants = {
 //   PRIMARY KEY vendors_pkey: PRIMARY KEY (id)
 
 // --- ROW LEVEL SECURITY POLICIES ---
+// Table: advertising_campaigns
+//   Policy "admin_all_advertising_campaigns" (ALL, PERMISSIVE) roles={authenticated}
+//     USING: is_admin()
+//   Policy "public_read_advertising_campaigns" (SELECT, PERMISSIVE) roles={public}
+//     USING: (status = 'active'::text)
 // Table: audit_logs
 //   Policy "audit_logs_select" (SELECT, PERMISSIVE) roles={public}
 //     USING: is_admin()
@@ -1605,7 +1736,7 @@ export const Constants = {
 //   Policy "public_read_categories" (SELECT, PERMISSIVE) roles={public}
 //     USING: true
 // Table: construction_plans
-//   Policy "admin_all_cplans" (ALL, PERMISSIVE) roles={public}
+//   Policy "admin_all_cplans" (ALL, PERMISSIVE) roles={authenticated}
 //     USING: (is_admin() = true)
 //     WITH CHECK: (is_admin() = true)
 //   Policy "public_read_cplans" (SELECT, PERMISSIVE) roles={public}
@@ -1623,13 +1754,15 @@ export const Constants = {
 //   Policy "favorites_select" (SELECT, PERMISSIVE) roles={authenticated}
 //     USING: (auth.uid() = user_id)
 // Table: invoices
+//   Policy "admin_all_invoices" (ALL, PERMISSIVE) roles={authenticated}
+//     USING: (is_admin() = true)
 //   Policy "auth_read_invoices" (SELECT, PERMISSIVE) roles={authenticated}
-//     USING: ((auth.uid() = payer_id) OR (auth.uid() = receiver_id) OR (EXISTS ( SELECT 1    FROM projects   WHERE ((projects.id = invoices.project_id) AND (projects.owner_id = auth.uid())))) OR is_admin())
+//     USING: ((auth.uid() = payer_id) OR (auth.uid() = receiver_id) OR (is_admin() = true))
 //   Policy "invoices_insert" (INSERT, PERMISSIVE) roles={authenticated}
 //     WITH CHECK: ((auth.uid() = payer_id) OR (auth.uid() = receiver_id) OR (is_admin() = true))
 //   Policy "invoices_select" (SELECT, PERMISSIVE) roles={authenticated}
 //     USING: ((auth.uid() = payer_id) OR (auth.uid() = receiver_id) OR (is_admin() = true))
-//   Policy "invoices_update" (UPDATE, PERMISSIVE) roles={public}
+//   Policy "invoices_update" (UPDATE, PERMISSIVE) roles={authenticated}
 //     USING: ((auth.uid() = payer_id) OR (auth.uid() = receiver_id) OR (is_admin() = true))
 // Table: job_messages
 //   Policy "job_messages_insert" (INSERT, PERMISSIVE) roles={authenticated}
@@ -1783,6 +1916,61 @@ export const Constants = {
 //   END;
 //   $function$
 //
+// FUNCTION handle_ad_completion()
+//   CREATE OR REPLACE FUNCTION public.handle_ad_completion()
+//    RETURNS trigger
+//    LANGUAGE plpgsql
+//    SECURITY DEFINER
+//   AS $function$
+//   DECLARE
+//     v_vendor RECORD;
+//     v_admin_id UUID;
+//     v_region TEXT;
+//     v_tier TEXT;
+//     v_category TEXT;
+//   BEGIN
+//     IF OLD.status NOT IN ('completed', 'expired') AND NEW.status IN ('completed', 'expired') THEN
+//
+//       SELECT * INTO v_vendor FROM public.vendors WHERE id = NEW.advertiser_id;
+//
+//       SELECT id INTO v_admin_id FROM public.profiles WHERE is_admin = true LIMIT 1;
+//
+//       v_region := COALESCE(NEW.specifications->>'region', 'Global');
+//       v_category := COALESCE(NEW.specifications->>'category', 'General');
+//       v_tier := COALESCE(NEW.tier, 'N/A');
+//
+//       IF v_vendor.owner_id IS NOT NULL THEN
+//         INSERT INTO public.invoices (
+//           job_id,
+//           project_id,
+//           payer_id,
+//           receiver_id,
+//           vendor_id,
+//           amount,
+//           status,
+//           type,
+//           currency,
+//           description,
+//           due_date
+//         ) VALUES (
+//           NULL,
+//           NULL,
+//           v_vendor.owner_id,
+//           v_admin_id,
+//           NEW.advertiser_id,
+//           NEW.price,
+//           'review',
+//           'advertising',
+//           'USD',
+//           'Campaign: ' || NEW.title || ' | Period: ' || COALESCE(NEW.start_date::date::text, 'N/A') || ' to ' || COALESCE(NEW.end_date::date::text, 'N/A') || ' | Tier: ' || v_tier || ' | Category: ' || v_category,
+//           NOW() + INTERVAL '15 days'
+//         );
+//       END IF;
+//     END IF;
+//     RETURN NEW;
+//   END;
+//   $function$
+//
 // FUNCTION handle_job_completion()
 //   CREATE OR REPLACE FUNCTION public.handle_job_completion()
 //    RETURNS trigger
@@ -1855,6 +2043,23 @@ export const Constants = {
 //       NEW.raw_user_meta_data->>'account',
 //       NEW.raw_user_meta_data->>'document'
 //     );
+//     RETURN NEW;
+//   END;
+//   $function$
+//
+// FUNCTION handle_subscription_payment()
+//   CREATE OR REPLACE FUNCTION public.handle_subscription_payment()
+//    RETURNS trigger
+//    LANGUAGE plpgsql
+//    SECURITY DEFINER
+//   AS $function$
+//   BEGIN
+//     IF NEW.status = 'paid' AND NEW.type = 'subscription' THEN
+//       UPDATE public.profiles
+//       SET subscription_status = 'active',
+//           subscription_end_date = NOW() + INTERVAL '30 days'
+//       WHERE id = NEW.payer_id;
+//     END IF;
 //     RETURN NEW;
 //   END;
 //   $function$
@@ -1955,13 +2160,53 @@ export const Constants = {
 //   END;
 //   $function$
 //
+// FUNCTION trigger_invoice_email_webhook()
+//   CREATE OR REPLACE FUNCTION public.trigger_invoice_email_webhook()
+//    RETURNS trigger
+//    LANGUAGE plpgsql
+//    SECURITY DEFINER
+//   AS $function$
+//   DECLARE
+//     v_url TEXT := 'https://yhyiwrerqojrqjvlumov.supabase.co/functions/v1/send-invoice-email';
+//     v_payload JSONB;
+//     v_req_id BIGINT;
+//   BEGIN
+//     IF NEW.type = 'advertising' THEN
+//       RETURN NEW;
+//     END IF;
+//
+//     v_payload := jsonb_build_object(
+//       'record', to_jsonb(NEW),
+//       'type', TG_OP
+//     );
+//
+//     IF EXISTS (SELECT 1 FROM pg_extension WHERE extname = 'pg_net') THEN
+//       BEGIN
+//         SELECT net.http_post(
+//           url := v_url,
+//           headers := '{"Content-Type": "application/json"}'::jsonb,
+//           body := v_payload
+//         ) INTO v_req_id;
+//       EXCEPTION WHEN OTHERS THEN
+//         RAISE NOTICE 'Failed to invoke webhook for email';
+//       END;
+//     END IF;
+//
+//     RETURN NEW;
+//   END;
+//   $function$
+//
 
 // --- TRIGGERS ---
+// Table: advertising_campaigns
+//   on_ad_completed: CREATE TRIGGER on_ad_completed AFTER UPDATE OF status ON public.advertising_campaigns FOR EACH ROW EXECUTE FUNCTION handle_ad_completion()
 // Table: bids
 //   audit_bids: CREATE TRIGGER audit_bids AFTER INSERT OR DELETE OR UPDATE ON public.bids FOR EACH ROW EXECUTE FUNCTION log_audit_event()
 // Table: invoices
 //   audit_invoices: CREATE TRIGGER audit_invoices AFTER INSERT OR DELETE OR UPDATE ON public.invoices FOR EACH ROW EXECUTE FUNCTION log_audit_event()
 //   enforce_paid_invoice_lock: CREATE TRIGGER enforce_paid_invoice_lock BEFORE UPDATE ON public.invoices FOR EACH ROW EXECUTE FUNCTION lock_paid_invoices()
+//   on_invoice_created_email: CREATE TRIGGER on_invoice_created_email AFTER INSERT ON public.invoices FOR EACH ROW EXECUTE FUNCTION trigger_invoice_email_webhook()
+//   on_subscription_paid: CREATE TRIGGER on_subscription_paid AFTER UPDATE OF status ON public.invoices FOR EACH ROW EXECUTE FUNCTION handle_subscription_payment()
 // Table: jobs
 //   on_job_completed: CREATE TRIGGER on_job_completed AFTER UPDATE OF status ON public.jobs FOR EACH ROW EXECUTE FUNCTION handle_job_completion()
 // Table: profiles
@@ -1977,6 +2222,7 @@ export const Constants = {
 // Table: invoices
 //   CREATE INDEX idx_invoices_subscription_status ON public.invoices USING btree (payer_id, type, status)
 // Table: jobs
+//   CREATE INDEX idx_jobs_is_demo ON public.jobs USING btree (is_demo)
 //   CREATE UNIQUE INDEX jobs_external_id_key ON public.jobs USING btree (external_id)
 // Table: marketing_content
 //   CREATE UNIQUE INDEX marketing_content_key_key ON public.marketing_content USING btree (key)

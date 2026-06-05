@@ -28,6 +28,7 @@ import {
   PanelBottom,
   Database,
   DollarSign,
+  ShieldCheck,
 } from 'lucide-react'
 import {
   Sidebar,
@@ -163,6 +164,11 @@ export function MainSidebar() {
             url: '/admin/integrations',
             icon: Database,
           },
+          {
+            title: 'Controle Financeiro',
+            url: '/admin/finance',
+            icon: DollarSign,
+          },
         ],
       })
     }
@@ -174,6 +180,11 @@ export function MainSidebar() {
         ...(user.role === 'executor' || user.role === 'partner' || isAdmin
           ? [{ title: t('nav.earnings'), url: '/earnings', icon: DollarSign }]
           : []),
+        {
+          title: t('nav.my_subscription'),
+          url: '/my-subscription',
+          icon: ShieldCheck,
+        },
         { title: t('nav.sub_plans'), url: '/subscription', icon: Crown },
         { title: t('nav.ranking'), url: '/leaderboard', icon: Trophy },
         { title: t('nav.documents'), url: '/documents', icon: FolderOpen },

@@ -63,6 +63,7 @@ export function VendorsTabContent() {
     state: '',
     zip_code: '',
     pix_key: '',
+    job_title: '',
     bank_data: { bank: '', agency: '', account: '', accountType: '' },
   }
 
@@ -111,6 +112,7 @@ export function VendorsTabContent() {
       state: vendor.state || '',
       zip_code: vendor.zip_code || '',
       pix_key: vendor.pix_key || '',
+      job_title: vendor.job_title || '',
       bank_data: vendor.bank_data || defaultFormData.bank_data,
     })
     setIsModalOpen(true)
