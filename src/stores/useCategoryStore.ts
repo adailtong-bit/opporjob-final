@@ -21,6 +21,7 @@ export interface Category {
   slug: string
   type: CategoryType
   translationKey?: string
+  imageUrl?: string
   subCategories: SubCategory[]
 }
 
@@ -28,12 +29,17 @@ interface CategoryState {
   categories: Category[]
   isLoading: boolean
   fetchCategories: () => Promise<void>
-  addCategory: (name: string, type?: CategoryType) => Promise<void>
+  addCategory: (
+    name: string,
+    type?: CategoryType,
+    imageUrl?: string,
+  ) => Promise<void>
   removeCategory: (id: string) => Promise<void>
   updateCategory: (
     id: string,
     name: string,
     type?: CategoryType,
+    imageUrl?: string,
   ) => Promise<void>
   addSubCategory: (categoryId: string, name: string) => Promise<void>
   removeSubCategory: (categoryId: string, subId: string) => Promise<void>
@@ -72,6 +78,7 @@ const initialCategories: Category[] = [
     slug: 'renovations',
     type: 'job',
     translationKey: 'category.reform',
+    imageUrl: 'https://img.usecurling.com/p/400/300?q=home%20renovation',
     subCategories: [
       createSubCat('sub-1-1', 'Painting', 'subcat.painting'),
       createSubCat('sub-1-2', 'Drywall Installation', 'subcat.drywall'),
@@ -86,6 +93,7 @@ const initialCategories: Category[] = [
     slug: 'construction',
     type: 'job',
     translationKey: 'category.construction',
+    imageUrl: 'https://img.usecurling.com/p/400/300?q=construction%20site',
     subCategories: [
       createSubCat('sub-2-1', 'Masonry', 'subcat.masonry'),
       createSubCat('sub-2-2', 'Roofing', 'subcat.roofing'),
@@ -99,6 +107,7 @@ const initialCategories: Category[] = [
     slug: 'it-programming',
     type: 'job',
     translationKey: 'category.ti',
+    imageUrl: 'https://img.usecurling.com/p/400/300?q=programming%20code',
     subCategories: [
       createSubCat('sub-3-1', 'Web Development', 'subcat.webdev'),
       createSubCat('sub-3-2', 'Mobile Apps', 'subcat.mobile'),
@@ -112,6 +121,7 @@ const initialCategories: Category[] = [
     slug: 'design',
     type: 'job',
     translationKey: 'category.design',
+    imageUrl: 'https://img.usecurling.com/p/400/300?q=web%20design',
     subCategories: [
       createSubCat('sub-4-1', 'Visual Identity', 'subcat.visualid'),
       createSubCat('sub-4-2', 'Web Design', 'subcat.webdesign'),
@@ -124,6 +134,7 @@ const initialCategories: Category[] = [
     slug: 'marketing',
     type: 'job',
     translationKey: 'category.marketing',
+    imageUrl: 'https://img.usecurling.com/p/400/300?q=digital%20marketing',
     subCategories: [
       createSubCat('sub-5-1', 'SEO', 'subcat.seo'),
       createSubCat('sub-5-2', 'Traffic Management', 'subcat.traffic'),
@@ -136,6 +147,7 @@ const initialCategories: Category[] = [
     slug: 'sales-products',
     type: 'marketplace',
     translationKey: 'category.sales',
+    imageUrl: 'https://img.usecurling.com/p/400/300?q=retail%20products',
     subCategories: [
       createSubCat('sub-6-1', 'Electronics', 'subcat.electronics'),
       createSubCat('sub-6-2', 'Furniture', 'subcat.furniture'),
@@ -148,6 +160,7 @@ const initialCategories: Category[] = [
     slug: 'rentals',
     type: 'rental',
     translationKey: 'category.rental',
+    imageUrl: 'https://img.usecurling.com/p/400/300?q=equipment%20rental',
     subCategories: [
       createSubCat('sub-7-1', 'Equipment', 'subcat.equipment'),
       createSubCat('sub-7-2', 'Vehicles', 'subcat.vehicles'),
@@ -160,6 +173,7 @@ const initialCategories: Category[] = [
     slug: 'donation',
     type: 'donation',
     translationKey: 'category.donation',
+    imageUrl: 'https://img.usecurling.com/p/400/300?q=charity%20donation',
     subCategories: [
       createSubCat('sub-8-1', 'Leftover Materials', 'subcat.leftovers'),
       createSubCat('sub-8-2', 'Clothes & PPE', 'subcat.clothes_ppe'),
@@ -171,6 +185,7 @@ const initialCategories: Category[] = [
     slug: 'home-services',
     type: 'job',
     translationKey: 'category.home_services',
+    imageUrl: 'https://img.usecurling.com/p/400/300?q=home%20services',
     subCategories: [
       createSubCat('sub-9-1', 'Appliance Repair or Maintenance'),
       createSubCat('sub-9-2', 'Carpentry'),
@@ -206,6 +221,7 @@ const initialCategories: Category[] = [
     slug: 'auto-services',
     type: 'job',
     translationKey: 'category.auto_services',
+    imageUrl: 'https://img.usecurling.com/p/400/300?q=auto%20repair',
     subCategories: [
       createSubCat('sub-10-1', 'Auto Detailing'),
       createSubCat('sub-10-2', 'Auto Repair or Maintenance'),
@@ -219,6 +235,7 @@ const initialCategories: Category[] = [
     slug: 'professional-personal-services',
     type: 'job',
     translationKey: 'category.prof_personal',
+    imageUrl: 'https://img.usecurling.com/p/400/300?q=professional%20services',
     subCategories: [
       createSubCat('sub-11-1', 'Academic Tutoring'),
       createSubCat('sub-11-2', 'Accounting and Financial Services'),
@@ -255,6 +272,7 @@ export const useCategoryStore = create<CategoryState>((set) => ({
           slug: c.slug,
           type: c.type as CategoryType,
           translationKey: c.translation_key || undefined,
+          imageUrl: c.image_url || undefined,
           subCategories: (subCats || [])
             .filter((s: any) => s.category_id === c.id)
             .map((s: any) => ({
@@ -272,19 +290,24 @@ export const useCategoryStore = create<CategoryState>((set) => ({
       set({ isLoading: false })
     }
   },
-  addCategory: async (name, type = 'job') => {
+  addCategory: async (name, type = 'job', imageUrl?: string) => {
     const id = generateId()
     const slug = createSlug(name)
-    const newCat: Category = { id, name, slug, type, subCategories: [] }
-
-    set((state) => ({ categories: [...state.categories, newCat] }))
-
-    await supabase.from('categories').insert({
+    const newCat: Category = {
       id,
       name,
       slug,
       type,
-    })
+      subCategories: [],
+      imageUrl: imageUrl || '',
+    }
+
+    set((state) => ({ categories: [...state.categories, newCat] }))
+
+    const insertData: any = { id, name, slug, type }
+    if (imageUrl) insertData.image_url = imageUrl
+
+    await supabase.from('categories').insert(insertData)
   },
   removeCategory: async (id) => {
     set((state) => ({
@@ -292,16 +315,25 @@ export const useCategoryStore = create<CategoryState>((set) => ({
     }))
     await supabase.from('categories').delete().eq('id', id)
   },
-  updateCategory: async (id, name, type) => {
+  updateCategory: async (id, name, type, imageUrl) => {
     const slug = createSlug(name)
     set((state) => ({
       categories: state.categories.map((c) =>
-        c.id === id ? { ...c, name, slug, type: type || c.type } : c,
+        c.id === id
+          ? {
+              ...c,
+              name,
+              slug,
+              type: type || c.type,
+              imageUrl: imageUrl !== undefined ? imageUrl : c.imageUrl,
+            }
+          : c,
       ),
     }))
 
     const updateData: any = { name, slug }
     if (type) updateData.type = type
+    if (imageUrl !== undefined) updateData.image_url = imageUrl
     await supabase.from('categories').update(updateData).eq('id', id)
   },
   addSubCategory: async (categoryId, name) => {

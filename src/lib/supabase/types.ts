@@ -133,6 +133,7 @@ export type Database = {
           billing_cycle: string
           complexity: string | null
           created_at: string
+          currency: string | null
           description: string | null
           early_access_hours: number | null
           features: Json | null
@@ -158,6 +159,7 @@ export type Database = {
           billing_cycle?: string
           complexity?: string | null
           created_at?: string
+          currency?: string | null
           description?: string | null
           early_access_hours?: number | null
           features?: Json | null
@@ -183,6 +185,7 @@ export type Database = {
           billing_cycle?: string
           complexity?: string | null
           created_at?: string
+          currency?: string | null
           description?: string | null
           early_access_hours?: number | null
           features?: Json | null
@@ -1243,7 +1246,7 @@ export const Constants = {
 //   description: text (nullable)
 //   created_at: timestamp with time zone (nullable, default: now())
 //   status: text (nullable, default: 'pending'::text)
-//   currency: text (nullable, default: 'BRL'::text)
+//   currency: text (nullable, default: 'USD'::text)
 // Table: categories
 //   id: text (not null)
 //   name: text (not null)
@@ -1275,6 +1278,7 @@ export const Constants = {
 //   skill_matching_rule: text (nullable, default: 'flexible'::text)
 //   skill_weight: integer (nullable, default: 1)
 //   popular: boolean (nullable, default: false)
+//   currency: text (nullable, default: 'USD'::text)
 // Table: equipment
 //   id: uuid (not null, default: gen_random_uuid())
 //   name: text (not null)
@@ -1297,7 +1301,7 @@ export const Constants = {
 //   payer_id: uuid (nullable)
 //   receiver_id: uuid (nullable)
 //   amount: numeric (not null, default: 0)
-//   currency: text (nullable, default: 'BRL'::text)
+//   currency: text (nullable, default: 'USD'::text)
 //   status: text (nullable, default: 'pending'::text)
 //   description: text (nullable)
 //   type: text (nullable, default: 'service'::text)
@@ -1338,7 +1342,7 @@ export const Constants = {
 //   completion_photos: jsonb (nullable, default: '[]'::jsonb)
 //   completion_comments: text (nullable)
 //   is_demo: boolean (not null, default: false)
-//   currency: text (nullable, default: 'BRL'::text)
+//   currency: text (nullable, default: 'USD'::text)
 // Table: marketing_content
 //   id: uuid (not null, default: gen_random_uuid())
 //   key: text (not null)
