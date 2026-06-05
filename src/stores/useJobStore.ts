@@ -89,11 +89,21 @@ export const useJobStore = create<JobState>((set, get) => ({
   loading: false,
   fetchJobs: async () => {
     set({ loading: true })
+
+    const isProd =
+      typeof window !== 'undefined' &&
+      window.location.hostname === 'opporjob.com'
+
     // Explicitly specify the relationship (bids!bids_job_id_fkey) to avoid PostgREST HTTP 300 Ambiguity errors (PGRST201)
-    const { data: jobsData, error } = await supabase
-      .from('jobs')
-      .select('*, bids!bids_job_id_fkey(*)')
-      .order('created_at', { ascending: false })
+    let query = supabase.from('jobs').select('*, bids!bids_job_id_fkey(*)')
+
+    if (isProd) {
+      query = query.eq('is_demo', false)
+    }
+
+    const { data: jobsData, error } = await query.order('created_at', {
+      ascending: false,
+    })
 
     if (!error && jobsData) {
       const formattedJobs = jobsData.map((d: any) => ({

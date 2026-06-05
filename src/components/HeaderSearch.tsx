@@ -75,7 +75,11 @@ export function HeaderSearch({
 
   const suggestions = [
     { icon: Wrench, label: 'Encanador', category: 'Serviços' },
-    { icon: Briefcase, label: 'Desenvolvedor React', category: 'Vagas' },
+    {
+      icon: Briefcase,
+      label: 'Desenvolvedor React',
+      category: 'Oportunidades',
+    },
     { icon: Building, label: 'Reforma de Fachada', category: 'Construção' },
   ]
 

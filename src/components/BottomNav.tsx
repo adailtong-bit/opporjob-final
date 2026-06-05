@@ -41,7 +41,9 @@ export function BottomNav() {
           )}
         >
           <Search className="h-5 w-5" />
-          <span className="text-[10px] font-medium">Buscar</span>
+          <span className="text-[10px] font-medium max-w-[64px] truncate text-center">
+            {t('nav.find_jobs')}
+          </span>
         </Link>
 
         <Link
