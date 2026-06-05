@@ -95,9 +95,24 @@ export function MyAdsDashboard() {
               .replace('post.type.', '')
               .replace('.label', '')
 
-            const translatedType = isLiteralServiceLabel
+            let translatedType = isLiteralServiceLabel
               ? t('post.type.service.label')
-              : t(`post.type.${rawType}.label`) || ad.listingType
+              : t(`post.type.${rawType}.label`)
+
+            if (
+              !translatedType ||
+              translatedType === `post.type.${rawType}.label`
+            ) {
+              if (
+                ad.listingType &&
+                ad.listingType.toLowerCase().includes('post.type')
+              ) {
+                const parts = ad.listingType.split('.')
+                translatedType = parts.length > 2 ? parts[2] : ad.listingType
+              } else {
+                translatedType = ad.listingType || 'Vaga'
+              }
+            }
 
             const views = ad.viewsCount || 0
             const impressions = ad.impressionsCount || 0

@@ -1970,6 +1970,8 @@ export const Constants = {
 //   audit_projects: CREATE TRIGGER audit_projects AFTER INSERT OR DELETE OR UPDATE ON public.projects FOR EACH ROW EXECUTE FUNCTION log_audit_event()
 
 // --- INDEXES ---
+// Table: categories
+//   CREATE UNIQUE INDEX categories_slug_key ON public.categories USING btree (slug)
 // Table: favorites
 //   CREATE UNIQUE INDEX favorites_user_id_vendor_id_key ON public.favorites USING btree (user_id, vendor_id)
 // Table: invoices

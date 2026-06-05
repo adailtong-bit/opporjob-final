@@ -90,6 +90,16 @@ const PageTracker = () => {
     if (match) {
       const jobId = match[1]
       useJobStore.getState().incrementView(jobId)
+
+      const trackJobView = async () => {
+        try {
+          await supabase.rpc('increment_job_view', { job_id_param: jobId })
+        } catch (error) {
+          console.error('Error tracking job view:', error)
+        }
+      }
+
+      trackJobView()
     }
   }, [location.pathname])
 
