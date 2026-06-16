@@ -99,13 +99,22 @@ export default function UserProfile() {
           .eq('target_id', id)
           .order('created_at', { ascending: false })
 
-        const calculatedReputation =
-          reviewsData && reviewsData.length > 0
-            ? (
-                reviewsData.reduce((acc, r) => acc + Number(r.rating), 0) /
-                reviewsData.length
-              ).toFixed(1)
-            : '5.0'
+        const { data: globalAvgData } = await supabase.rpc(
+          'get_global_rating_average' as any,
+        )
+        const globalAvg = (globalAvgData as number) || 5.0
+
+        let calculatedReputation = '5.0'
+        if (reviewsData && reviewsData.length > 0) {
+          const v = reviewsData.length
+          const s_base =
+            reviewsData.reduce((acc, r) => acc + Number(r.rating), 0) / v
+          const k = 10
+          const bayesianRating = (v * s_base + k * globalAvg) / (v + k)
+          calculatedReputation = bayesianRating.toFixed(1)
+        } else {
+          calculatedReputation = globalAvg.toFixed(1)
+        }
 
         setTargetUser({
           id: data.id,
@@ -166,13 +175,22 @@ export default function UserProfile() {
         .eq('target_id', id)
         .order('created_at', { ascending: false })
 
-      const calculatedReputation =
-        reviewsData && reviewsData.length > 0
-          ? (
-              reviewsData.reduce((acc, r) => acc + Number(r.rating), 0) /
-              reviewsData.length
-            ).toFixed(1)
-          : '5.0'
+      const { data: globalAvgData } = await supabase.rpc(
+        'get_global_rating_average' as any,
+      )
+      const globalAvg = (globalAvgData as number) || 5.0
+
+      let calculatedReputation = '5.0'
+      if (reviewsData && reviewsData.length > 0) {
+        const v = reviewsData.length
+        const s_base =
+          reviewsData.reduce((acc, r) => acc + Number(r.rating), 0) / v
+        const k = 10
+        const bayesianRating = (v * s_base + k * globalAvg) / (v + k)
+        calculatedReputation = bayesianRating.toFixed(1)
+      } else {
+        calculatedReputation = globalAvg.toFixed(1)
+      }
 
       setTargetUser((prev: any) => ({
         ...prev,

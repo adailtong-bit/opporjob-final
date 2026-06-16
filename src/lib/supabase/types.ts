@@ -653,6 +653,7 @@ export type Database = {
           priced_services: Json | null
           role: string | null
           state: string | null
+          state_registration: string | null
           status: string | null
           street: string | null
           subscription_end_date: string | null
@@ -685,6 +686,7 @@ export type Database = {
           priced_services?: Json | null
           role?: string | null
           state?: string | null
+          state_registration?: string | null
           status?: string | null
           street?: string | null
           subscription_end_date?: string | null
@@ -717,6 +719,7 @@ export type Database = {
           priced_services?: Json | null
           role?: string | null
           state?: string | null
+          state_registration?: string | null
           status?: string | null
           street?: string | null
           subscription_end_date?: string | null
@@ -1563,6 +1566,7 @@ export const Constants = {
 //   plan_id: uuid (nullable)
 //   subscription_status: text (nullable, default: 'inactive'::text)
 //   subscription_end_date: timestamp with time zone (nullable)
+//   state_registration: text (nullable)
 // Table: project_budgets
 //   id: uuid (not null, default: gen_random_uuid())
 //   project_id: uuid (not null)
@@ -1776,7 +1780,7 @@ export const Constants = {
 //   Policy "public_read_advertising_campaigns" (SELECT, PERMISSIVE) roles={public}
 //     USING: (status = 'active'::text)
 // Table: audit_logs
-//   Policy "audit_logs_select" (SELECT, PERMISSIVE) roles={public}
+//   Policy "audit_logs_select" (SELECT, PERMISSIVE) roles={authenticated}
 //     USING: is_admin()
 // Table: bids
 //   Policy "auth_insert_bids" (INSERT, PERMISSIVE) roles={public}

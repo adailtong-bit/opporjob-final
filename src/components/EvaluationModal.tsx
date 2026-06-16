@@ -34,26 +34,15 @@ export function EvaluationModal({ open }: EvaluationModalProps) {
 
   const isContractorToExecutor = type === 'contractor_to_executor'
 
-  // Categories based strictly on Acceptance Criteria
-  const contractorCriteria = [
-    { key: 'punctuality', label: 'Pontualidade' },
-    { key: 'execution', label: 'Execução' },
-    { key: 'time', label: 'Tempo' },
-    { key: 'cleanliness', label: 'Limpeza' },
-    { key: 'service', label: 'Atendimento' },
-    { key: 'quality', label: 'Qualidade' },
+  // Weighted Categories based on Acceptance Criteria
+  const criteria = [
+    { key: 'quality', label: 'Qualidade', weight: 0.25 },
+    { key: 'execution', label: 'Execução', weight: 0.25 },
+    { key: 'punctuality', label: 'Pontualidade', weight: 0.2 },
+    { key: 'time', label: 'Tempo', weight: 0.2 },
+    { key: 'cleanliness', label: 'Limpeza', weight: 0.05 },
+    { key: 'service', label: 'Atendimento', weight: 0.05 },
   ]
-
-  const executorCriteria = [
-    { key: 'jobDescription', label: 'Descrição da Vaga' },
-    { key: 'conditions', label: 'Condições de Execução' },
-    { key: 'service', label: 'Atendimento' },
-    { key: 'punctuality', label: 'Pontualidade' },
-  ]
-
-  const criteria = isContractorToExecutor
-    ? contractorCriteria
-    : executorCriteria
 
   const handleScoreChange = (key: string, value: number[]) => {
     setScores((prev) => ({ ...prev, [key]: value[0] }))
@@ -80,11 +69,10 @@ export function EvaluationModal({ open }: EvaluationModalProps) {
       return
     }
 
-    const currentScores = Object.values(scores)
-    const avgScore10 =
-      currentScores.length > 0
-        ? currentScores.reduce((a, b) => a + b, 0) / currentScores.length
-        : 5
+    const avgScore10 = criteria.reduce(
+      (acc, c) => acc + (scores[c.key] || 0) * c.weight,
+      0,
+    )
     const finalRating = Math.max(1, Math.min(5, Math.round(avgScore10 / 2)))
 
     if ((user?.pendingEvaluation as any)?.targetId) {
@@ -109,13 +97,9 @@ export function EvaluationModal({ open }: EvaluationModalProps) {
   }
 
   // Calculate average
-  const currentScores = Object.values(scores)
-  const average =
-    currentScores.length > 0
-      ? (
-          currentScores.reduce((a, b) => a + b, 0) / currentScores.length
-        ).toFixed(1)
-      : '0.0'
+  const average = criteria
+    .reduce((acc, c) => acc + (scores[c.key] || 0) * c.weight, 0)
+    .toFixed(1)
 
   return (
     <Dialog open={open} onOpenChange={() => {}}>
