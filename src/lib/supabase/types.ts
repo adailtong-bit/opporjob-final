@@ -1100,6 +1100,44 @@ export type Database = {
           },
         ]
       }
+      vendor_contacts: {
+        Row: {
+          created_at: string
+          email: string | null
+          id: string
+          name: string
+          phone: string | null
+          role: string
+          vendor_id: string
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          name: string
+          phone?: string | null
+          role?: string
+          vendor_id: string
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          name?: string
+          phone?: string | null
+          role?: string
+          vendor_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'vendor_contacts_vendor_id_fkey'
+            columns: ['vendor_id']
+            isOneToOne: false
+            referencedRelation: 'vendors'
+            referencedColumns: ['id']
+          },
+        ]
+      }
       vendors: {
         Row: {
           bank_data: Json | null
@@ -1110,6 +1148,7 @@ export type Database = {
           created_at: string
           document: string | null
           email: string | null
+          entity_type: string | null
           financial_email: string | null
           id: string
           job_title: string | null
@@ -1136,6 +1175,7 @@ export type Database = {
           created_at?: string
           document?: string | null
           email?: string | null
+          entity_type?: string | null
           financial_email?: string | null
           id?: string
           job_title?: string | null
@@ -1162,6 +1202,7 @@ export type Database = {
           created_at?: string
           document?: string | null
           email?: string | null
+          entity_type?: string | null
           financial_email?: string | null
           id?: string
           job_title?: string | null
@@ -1598,6 +1639,14 @@ export const Constants = {
 //   slug: text (not null)
 //   translation_key: text (nullable)
 //   created_at: timestamp with time zone (not null, default: now())
+// Table: vendor_contacts
+//   id: uuid (not null, default: gen_random_uuid())
+//   vendor_id: uuid (not null)
+//   name: text (not null)
+//   email: text (nullable)
+//   phone: text (nullable)
+//   role: text (not null, default: 'Others'::text)
+//   created_at: timestamp with time zone (not null, default: now())
 // Table: vendors
 //   id: uuid (not null, default: gen_random_uuid())
 //   name: text (not null)
@@ -1623,6 +1672,7 @@ export const Constants = {
 //   tax_id: text (nullable)
 //   job_title: text (nullable)
 //   complement: text (nullable)
+//   entity_type: text (nullable, default: 'pj'::text)
 
 // --- CONSTRAINTS ---
 // Table: advertising_campaigns
@@ -1712,6 +1762,9 @@ export const Constants = {
 // Table: subcategories
 //   FOREIGN KEY subcategories_category_id_fkey: FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE CASCADE
 //   PRIMARY KEY subcategories_pkey: PRIMARY KEY (id)
+// Table: vendor_contacts
+//   PRIMARY KEY vendor_contacts_pkey: PRIMARY KEY (id)
+//   FOREIGN KEY vendor_contacts_vendor_id_fkey: FOREIGN KEY (vendor_id) REFERENCES vendors(id) ON DELETE CASCADE
 // Table: vendors
 //   FOREIGN KEY vendors_owner_id_fkey: FOREIGN KEY (owner_id) REFERENCES auth.users(id)
 //   PRIMARY KEY vendors_pkey: PRIMARY KEY (id)
@@ -1862,6 +1915,15 @@ export const Constants = {
 //     USING: (is_admin() = true)
 //   Policy "public_read_subcategories" (SELECT, PERMISSIVE) roles={public}
 //     USING: true
+// Table: vendor_contacts
+//   Policy "vendors_contacts_delete" (DELETE, PERMISSIVE) roles={authenticated}
+//     USING: (EXISTS ( SELECT 1    FROM vendors v   WHERE ((v.id = vendor_contacts.vendor_id) AND ((v.owner_id = auth.uid()) OR is_admin()))))
+//   Policy "vendors_contacts_insert" (INSERT, PERMISSIVE) roles={authenticated}
+//     WITH CHECK: (EXISTS ( SELECT 1    FROM vendors v   WHERE ((v.id = vendor_contacts.vendor_id) AND ((v.owner_id = auth.uid()) OR is_admin()))))
+//   Policy "vendors_contacts_select" (SELECT, PERMISSIVE) roles={authenticated}
+//     USING: (EXISTS ( SELECT 1    FROM vendors v   WHERE ((v.id = vendor_contacts.vendor_id) AND ((v.owner_id = auth.uid()) OR is_admin()))))
+//   Policy "vendors_contacts_update" (UPDATE, PERMISSIVE) roles={authenticated}
+//     USING: (EXISTS ( SELECT 1    FROM vendors v   WHERE ((v.id = vendor_contacts.vendor_id) AND ((v.owner_id = auth.uid()) OR is_admin()))))
 // Table: vendors
 //   Policy "vendors_delete" (DELETE, PERMISSIVE) roles={authenticated}
 //     USING: ((owner_id = auth.uid()) OR is_admin())

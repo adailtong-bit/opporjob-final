@@ -29,7 +29,7 @@ Deno.serve(async (req: Request) => {
 
     const { data: inv, error: invErr } = await supabaseClient
       .from('invoices')
-      .select('*, vendor:vendors(*)')
+      .select('*, vendor:vendors(*, vendor_contacts(*))')
       .eq('id', invoiceId)
       .single()
 
@@ -38,7 +38,10 @@ Deno.serve(async (req: Request) => {
     }
 
     const vendor = inv.vendor
-    const emailTo = vendor?.financial_email || vendor?.email
+    const contacts = vendor?.vendor_contacts || []
+    const financeContact = contacts.find((c: any) => c.role === 'Financeiro')
+    const emailTo =
+      financeContact?.email || vendor?.financial_email || vendor?.email
 
     if (!emailTo) {
       return new Response(

@@ -1,13 +1,5 @@
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase/client'
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
 import {
   Table,
   TableBody,
@@ -16,7 +8,10 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { useToast } from '@/hooks/use-toast'
+import { Shield, User, Mail } from 'lucide-react'
 import {
   Dialog,
   DialogContent,
@@ -24,7 +19,6 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog'
-import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import {
   Select,
@@ -33,336 +27,168 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Edit2, KeyRound, Search, ShieldAlert } from 'lucide-react'
-import { useToast } from '@/hooks/use-toast'
-import { useAuth } from '@/hooks/use-auth'
+import { useAuthStore } from '@/stores/useAuthStore'
 
 export default function ManageUsers() {
   const [users, setUsers] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
-  const [searchTerm, setSearchTerm] = useState('')
+  const [editOpen, setEditOpen] = useState(false)
+  const [selectedUser, setSelectedUser] = useState<any>(null)
+  const [newRole, setNewRole] = useState('')
   const { toast } = useToast()
-  const { user } = useAuth()
 
-  const [editUser, setEditUser] = useState<any | null>(null)
-  const [isSaving, setIsSaving] = useState(false)
-
-  const fetchUsers = async () => {
-    setLoading(true)
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('*')
-      .order('created_at', { ascending: false })
-    if (error) {
-      toast({
-        variant: 'destructive',
-        title: 'Error loading users',
-        description: error.message,
-      })
-    } else {
-      setUsers(data || [])
-    }
-    setLoading(false)
-  }
+  const { user: currentUser } = useAuthStore()
 
   useEffect(() => {
     fetchUsers()
   }, [])
 
-  const handleSave = async () => {
-    if (!editUser) return
-    setIsSaving(true)
+  const fetchUsers = async () => {
+    setLoading(true)
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('id, name, email, role, is_admin, created_at')
+      .order('created_at', { ascending: false })
 
+    if (!error && data) {
+      setUsers(data)
+    }
+    setLoading(false)
+  }
+
+  const handleEdit = (u: any) => {
+    setSelectedUser(u)
+    setNewRole(u.role || 'contractor')
+    setEditOpen(true)
+  }
+
+  const handleSaveRole = async () => {
+    if (!selectedUser) return
+
+    const isAdmin = newRole === 'admin'
     const { error } = await supabase
       .from('profiles')
-      .update({
-        name: editUser.name,
-        role: editUser.role,
-        is_admin: editUser.is_admin,
-        status: editUser.status,
-        entity_type: editUser.entity_type,
-        company_name: editUser.company_name,
-      } as any)
-      .eq('id', editUser.id)
+      .update({ role: newRole, is_admin: isAdmin })
+      .eq('id', selectedUser.id)
 
     if (error) {
       toast({
-        variant: 'destructive',
-        title: 'Error updating',
+        title: 'Error updating user',
         description: error.message,
+        variant: 'destructive',
       })
     } else {
-      toast({ title: 'User updated successfully' })
+      toast({ title: 'User role updated successfully' })
+      setEditOpen(false)
       fetchUsers()
-      setEditUser(null)
-    }
-    setIsSaving(false)
-  }
-
-  const handleResetPassword = async (email: string) => {
-    const { error } = await supabase.auth.resetPasswordForEmail(email)
-    if (error) {
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: error.message,
-      })
-    } else {
-      toast({
-        title: 'Link sent',
-        description: `A password reset email has been sent to ${email}.`,
-      })
     }
   }
 
-  const filteredUsers = users.filter(
-    (u) =>
-      u.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      u.email?.toLowerCase().includes(searchTerm.toLowerCase()),
-  )
+  const canSetAdmin = currentUser?.isPremium
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">User Management</h1>
-          <p className="text-muted-foreground mt-1">
-            Manage profiles, permissions, and access.
-          </p>
-        </div>
+    <div className="space-y-6 max-w-7xl mx-auto pb-10">
+      <div>
+        <h1 className="text-3xl font-bold tracking-tight">Manage Users</h1>
+        <p className="text-muted-foreground">
+          Administer platform users and roles.
+        </p>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Registered Users</CardTitle>
-          <CardDescription>
-            View and edit information for all platform users.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center gap-2 mb-4">
-            <Search className="w-5 h-5 text-muted-foreground" />
-            <Input
-              placeholder="Search by name or email..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="max-w-md"
-            />
-          </div>
-
-          <div className="border rounded-md">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Role / Type</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {loading ? (
-                  <TableRow>
-                    <TableCell colSpan={5} className="text-center py-8">
-                      Loading...
-                    </TableCell>
-                  </TableRow>
-                ) : filteredUsers.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={5} className="text-center py-8">
-                      No users found.
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  filteredUsers.map((user) => (
-                    <TableRow key={user.id}>
-                      <TableCell className="font-medium">
-                        {user.name || 'No Name'}
-                        {user.is_admin && (
-                          <Badge variant="destructive" className="ml-2">
-                            Admin
-                          </Badge>
-                        )}
-                      </TableCell>
-                      <TableCell>{user.email}</TableCell>
-                      <TableCell className="capitalize">
-                        {user.role || 'contractor'}{' '}
-                        <span className="text-muted-foreground text-xs uppercase ml-1">
-                          ({user.entity_type || 'pf'})
-                        </span>
-                      </TableCell>
-                      <TableCell>
-                        <Badge
-                          variant={
-                            user.status === 'inactive' ? 'secondary' : 'default'
-                          }
-                          className={
-                            user.status === 'active'
-                              ? 'bg-green-500 hover:bg-green-600'
-                              : ''
-                          }
-                        >
-                          {user.status === 'inactive' ? 'Inactive' : 'Active'}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex justify-end gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleResetPassword(user.email)}
-                            title="Reset Password"
-                          >
-                            <KeyRound className="w-4 h-4" />
-                          </Button>
-                          <Button
-                            variant="secondary"
-                            size="sm"
-                            onClick={() => setEditUser({ ...user })}
-                            title="Edit User"
-                          >
-                            <Edit2 className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </div>
-        </CardContent>
-      </Card>
-
-      <Dialog
-        open={!!editUser}
-        onOpenChange={(open) => !open && setEditUser(null)}
-      >
-        <DialogContent className="sm:max-w-[500px]">
-          <DialogHeader>
-            <DialogTitle>Edit User</DialogTitle>
-          </DialogHeader>
-          {editUser && (
-            <div className="grid gap-4 py-4">
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label className="text-right">Email</Label>
-                <Input
-                  value={editUser.email}
-                  disabled
-                  className="col-span-3 bg-muted"
-                />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label className="text-right">Name</Label>
-                <Input
-                  value={editUser.name || ''}
-                  onChange={(e) =>
-                    setEditUser({ ...editUser, name: e.target.value })
-                  }
-                  className="col-span-3"
-                />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label className="text-right">Entity Type</Label>
-                <div className="col-span-3">
-                  <Select
-                    value={editUser.entity_type || 'pf'}
-                    onValueChange={(val) =>
-                      setEditUser({ ...editUser, entity_type: val })
-                    }
+      <div className="rounded-md border bg-card overflow-hidden">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>User</TableHead>
+              <TableHead>Email</TableHead>
+              <TableHead>Role</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {users.map((u) => (
+              <TableRow key={u.id}>
+                <TableCell className="font-medium">
+                  <div className="flex items-center gap-2">
+                    {u.is_admin ? (
+                      <Shield className="w-4 h-4 text-primary" />
+                    ) : (
+                      <User className="w-4 h-4 text-muted-foreground" />
+                    )}
+                    {u.name || 'Unnamed'}
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <div className="flex items-center gap-2 text-muted-foreground">
+                    <Mail className="w-4 h-4" />
+                    {u.email}
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <Badge
+                    variant={u.is_admin ? 'default' : 'secondary'}
+                    className="capitalize"
                   >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="pf">Individual (PF)</SelectItem>
-                      <SelectItem value="pj">Company (PJ)</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              {editUser.entity_type === 'pj' && (
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label className="text-right">Company</Label>
-                  <Input
-                    value={editUser.company_name || ''}
-                    onChange={(e) =>
-                      setEditUser({ ...editUser, company_name: e.target.value })
-                    }
-                    className="col-span-3"
-                  />
-                </div>
-              )}
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label className="text-right">Role</Label>
-                <div className="col-span-3">
-                  <Select
-                    value={editUser.role || 'contractor'}
-                    onValueChange={(val) =>
-                      setEditUser({ ...editUser, role: val })
-                    }
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="contractor">Contractor</SelectItem>
-                      <SelectItem value="executor">Executor</SelectItem>
-                      <SelectItem value="partner">Partner</SelectItem>
-                      <SelectItem value="admin">Administrator</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label className="text-right">Status</Label>
-                <div className="col-span-3">
-                  <Select
-                    value={editUser.status || 'active'}
-                    onValueChange={(val) =>
-                      setEditUser({ ...editUser, status: val })
-                    }
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="active">Active</SelectItem>
-                      <SelectItem value="inactive">Inactive</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label className="text-right">Root Access</Label>
-                <div className="col-span-3 flex items-center gap-2">
+                    {u.role || 'contractor'}
+                  </Badge>
+                </TableCell>
+                <TableCell className="text-right">
                   <Button
-                    type="button"
-                    variant={editUser.is_admin ? 'default' : 'outline'}
-                    onClick={() =>
-                      setEditUser({ ...editUser, is_admin: !editUser.is_admin })
-                    }
-                    className={
-                      editUser.is_admin
-                        ? 'bg-destructive hover:bg-destructive/90 text-destructive-foreground'
-                        : ''
-                    }
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleEdit(u)}
                   >
-                    <ShieldAlert className="w-4 h-4 mr-2" />
-                    {editUser.is_admin ? 'Admin Enabled' : 'Make Admin'}
+                    Edit Role
                   </Button>
-                </div>
-              </div>
+                </TableCell>
+              </TableRow>
+            ))}
+            {users.length === 0 && !loading && (
+              <TableRow>
+                <TableCell
+                  colSpan={4}
+                  className="text-center py-8 text-muted-foreground"
+                >
+                  No users found.
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </div>
+
+      <Dialog open={editOpen} onOpenChange={setEditOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit User Role</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label>Select Role for {selectedUser?.name}</Label>
+              <Select value={newRole} onValueChange={setNewRole}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a role" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="contractor">Contractor</SelectItem>
+                  <SelectItem value="executor">Executor</SelectItem>
+                  {canSetAdmin && (
+                    <SelectItem value="admin">Administrator</SelectItem>
+                  )}
+                </SelectContent>
+              </Select>
             </div>
-          )}
+            {newRole === 'admin' && (
+              <p className="text-xs text-yellow-600 bg-yellow-50 p-2 rounded border border-yellow-200">
+                Warning: Assigning Administrator role grants full system access.
+              </p>
+            )}
+          </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setEditUser(null)}>
+            <Button variant="ghost" onClick={() => setEditOpen(false)}>
               Cancel
             </Button>
-            <Button onClick={handleSave} disabled={isSaving}>
-              {isSaving ? 'Saving...' : 'Save Changes'}
-            </Button>
+            <Button onClick={handleSaveRole}>Save Changes</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

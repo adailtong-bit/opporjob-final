@@ -32,6 +32,7 @@ export interface Vendor {
   financial_email: string | null
   job_title: string | null
   complement?: string | null
+  entity_type?: string | null
   created_at: string
   vendor_contacts?: VendorContact[]
 }

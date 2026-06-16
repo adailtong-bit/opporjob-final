@@ -70,6 +70,7 @@ import UserProfile from '@/pages/UserProfile'
 import ApprovalDashboard from '@/pages/approvals/ApprovalDashboard'
 import ManageUsers from '@/pages/admin/ManageUsers'
 import AuditLogs from '@/pages/admin/AuditLogs'
+import ManageTeam from '@/pages/admin/ManageTeam'
 import PushNotifications from '@/pages/admin/PushNotifications'
 import ManageIntegrations from '@/pages/admin/ManageIntegrations'
 import FinancialControl from '@/pages/admin/FinancialControl'
@@ -768,6 +769,22 @@ const App = () => {
                   element={
                     <AdminRoute>
                       <ManageUsers />
+                    </AdminRoute>
+                  }
+                />
+                <Route
+                  path="/admin/team"
+                  element={
+                    <AdminRoute>
+                      <ManageTeam />
+                    </AdminRoute>
+                  }
+                />
+                <Route
+                  path="/admin/logs"
+                  element={
+                    <AdminRoute>
+                      <AuditLogs />
                     </AdminRoute>
                   }
                 />

@@ -37,10 +37,10 @@
     "vite.config.ts"
   ],
   "deployment": {
-    "lastDevBuildRef": "37c87e1",
-    "lastProdBuildRef": "37c87e1",
-    "publishedAt": "2026-06-05T18:46:27.578Z",
-    "lastPublishedRef": "37c87e1"
+    "lastDevBuildRef": "fdd081d",
+    "lastProdBuildRef": "fdd081d",
+    "publishedAt": "2026-06-05T19:35:28.199Z",
+    "lastPublishedRef": "fdd081d"
   },
   "migrations": {
     "applied": [

@@ -50,7 +50,10 @@ export function VendorsTabContent() {
   const [editingVendor, setEditingVendor] = useState<Vendor | null>(null)
 
   const defaultFormData = {
+    entity_type: 'pj',
     name: '',
+    company_name: '',
+    tax_id: '',
     document: '',
     email: '',
     phone: '',
@@ -65,6 +68,7 @@ export function VendorsTabContent() {
     pix_key: '',
     job_title: '',
     bank_data: { bank: '', agency: '', account: '', accountType: '' },
+    vendor_contacts: [] as any[],
   }
 
   const [formData, setFormData] = useState(defaultFormData)
@@ -114,6 +118,10 @@ export function VendorsTabContent() {
       pix_key: vendor.pix_key || '',
       job_title: vendor.job_title || '',
       bank_data: vendor.bank_data || defaultFormData.bank_data,
+      entity_type: vendor.entity_type || 'pj',
+      company_name: vendor.company_name || '',
+      tax_id: vendor.tax_id || '',
+      vendor_contacts: vendor.vendor_contacts || [],
     })
     setIsModalOpen(true)
   }
@@ -201,9 +209,9 @@ export function VendorsTabContent() {
                           vendor.category
                         : t('vendor.general')}
                     </Badge>
-                    {vendor.document && (
-                      <span className="text-xs">
-                        {t('vendor.cnpj').replace('{doc}', vendor.document)}
+                    {(vendor.tax_id || vendor.document) && (
+                      <span className="text-xs font-mono text-muted-foreground">
+                        Doc: {vendor.tax_id || vendor.document}
                       </span>
                     )}
                   </CardDescription>
@@ -282,7 +290,7 @@ export function VendorsTabContent() {
 
           <div className="flex-1 overflow-y-auto p-6">
             <Tabs defaultValue="geral" className="w-full">
-              <TabsList className="grid w-full grid-cols-3 mb-6">
+              <TabsList className="grid w-full grid-cols-4 mb-6">
                 <TabsTrigger value="geral">
                   <Building2 className="w-4 h-4 mr-2" />{' '}
                   {t('vendor.modal.tab.general')}
@@ -295,16 +303,65 @@ export function VendorsTabContent() {
                   <CreditCard className="w-4 h-4 mr-2" />{' '}
                   {t('vendor.modal.tab.finance')}
                 </TabsTrigger>
+                <TabsTrigger value="contatos">
+                  <Phone className="w-4 h-4 mr-2" /> Contatos
+                </TabsTrigger>
               </TabsList>
 
               <TabsContent
                 value="geral"
                 className="space-y-4 animate-in fade-in-50"
               >
+                <div className="flex gap-4 mb-4 items-center">
+                  <Label>Tipo de Entidade:</Label>
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="radio"
+                      id="pf"
+                      checked={formData.entity_type === 'pf'}
+                      onChange={() =>
+                        setFormData({ ...formData, entity_type: 'pf' })
+                      }
+                    />
+                    <Label htmlFor="pf">Pessoa Física (PF)</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="radio"
+                      id="pj"
+                      checked={formData.entity_type === 'pj'}
+                      onChange={() =>
+                        setFormData({ ...formData, entity_type: 'pj' })
+                      }
+                    />
+                    <Label htmlFor="pj">Pessoa Jurídica (PJ)</Label>
+                  </div>
+                </div>
+
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {formData.entity_type === 'pj' && (
+                    <div className="space-y-2 sm:col-span-2">
+                      <Label>
+                        Razão Social <span className="text-destructive">*</span>
+                      </Label>
+                      <Input
+                        value={formData.company_name}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            company_name: e.target.value,
+                            name: formData.name || e.target.value,
+                          })
+                        }
+                        placeholder="Razão Social"
+                      />
+                    </div>
+                  )}
                   <div className="space-y-2 sm:col-span-2">
                     <Label>
-                      {t('vendor.modal.name')}{' '}
+                      {formData.entity_type === 'pj'
+                        ? 'Nome Fantasia / Contato'
+                        : 'Nome Completo'}{' '}
                       <span className="text-destructive">*</span>
                     </Label>
                     <Input
@@ -316,15 +373,33 @@ export function VendorsTabContent() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label>{t('vendor.modal.doc')}</Label>
+                    <Label>
+                      {formData.entity_type === 'pj' ? 'CNPJ' : 'CPF'}
+                    </Label>
                     <Input
-                      value={formData.document}
+                      value={formData.tax_id}
                       onChange={(e) =>
-                        setFormData({ ...formData, document: e.target.value })
+                        setFormData({ ...formData, tax_id: e.target.value })
                       }
-                      placeholder={t('vendor.modal.doc_placeholder')}
+                      placeholder={
+                        formData.entity_type === 'pj'
+                          ? '00.000.000/0000-00'
+                          : '000.000.000-00'
+                      }
                     />
                   </div>
+                  {formData.entity_type === 'pj' && (
+                    <div className="space-y-2">
+                      <Label>Inscrição Estadual</Label>
+                      <Input
+                        value={formData.document}
+                        onChange={(e) =>
+                          setFormData({ ...formData, document: e.target.value })
+                        }
+                        placeholder="Inscrição Estadual"
+                      />
+                    </div>
+                  )}
                   <div className="space-y-2">
                     <Label>{t('vendor.modal.category')}</Label>
                     <Input
@@ -536,6 +611,123 @@ export function VendorsTabContent() {
                     />
                   </div>
                 </div>
+              </TabsContent>
+
+              <TabsContent
+                value="contatos"
+                className="space-y-4 animate-in fade-in-50"
+              >
+                <div className="flex justify-between items-center mb-4">
+                  <p className="text-sm text-muted-foreground">
+                    Adicione os contatos relacionados a este fornecedor.
+                  </p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() =>
+                      setFormData({
+                        ...formData,
+                        vendor_contacts: [
+                          ...formData.vendor_contacts,
+                          { name: '', email: '', phone: '', role: 'Outros' },
+                        ],
+                      })
+                    }
+                  >
+                    <Plus className="w-4 h-4 mr-2" /> Adicionar Contato
+                  </Button>
+                </div>
+                {formData.vendor_contacts.map((contact, index) => (
+                  <div
+                    key={index}
+                    className="grid grid-cols-1 sm:grid-cols-5 gap-3 items-end border p-3 rounded-lg bg-muted/20 relative group"
+                  >
+                    <div className="sm:col-span-1 space-y-1">
+                      <Label className="text-xs">Role</Label>
+                      <select
+                        className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm"
+                        value={contact.role}
+                        onChange={(e) => {
+                          const newContacts = [...formData.vendor_contacts]
+                          newContacts[index].role = e.target.value
+                          setFormData({
+                            ...formData,
+                            vendor_contacts: newContacts,
+                          })
+                        }}
+                      >
+                        <option value="Financeiro">Financeiro</option>
+                        <option value="Gerente">Gerente</option>
+                        <option value="Dono">Dono</option>
+                        <option value="Marketing">Marketing</option>
+                        <option value="Outros">Outros</option>
+                      </select>
+                    </div>
+                    <div className="sm:col-span-2 space-y-1">
+                      <Label className="text-xs">Nome</Label>
+                      <Input
+                        value={contact.name}
+                        onChange={(e) => {
+                          const newContacts = [...formData.vendor_contacts]
+                          newContacts[index].name = e.target.value
+                          setFormData({
+                            ...formData,
+                            vendor_contacts: newContacts,
+                          })
+                        }}
+                        placeholder="Nome do contato"
+                      />
+                    </div>
+                    <div className="sm:col-span-1 space-y-1">
+                      <Label className="text-xs">Email</Label>
+                      <Input
+                        value={contact.email}
+                        onChange={(e) => {
+                          const newContacts = [...formData.vendor_contacts]
+                          newContacts[index].email = e.target.value
+                          setFormData({
+                            ...formData,
+                            vendor_contacts: newContacts,
+                          })
+                        }}
+                        placeholder="Email"
+                      />
+                    </div>
+                    <div className="sm:col-span-1 flex gap-2">
+                      <div className="flex-1 space-y-1">
+                        <Label className="text-xs">Telefone</Label>
+                        <Input
+                          value={contact.phone}
+                          onChange={(e) => {
+                            const newContacts = [...formData.vendor_contacts]
+                            newContacts[index].phone = e.target.value
+                            setFormData({
+                              ...formData,
+                              vendor_contacts: newContacts,
+                            })
+                          }}
+                          placeholder="Telefone"
+                        />
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-9 w-9 text-destructive shrink-0 mt-auto"
+                        onClick={() => {
+                          const newContacts = formData.vendor_contacts.filter(
+                            (_, i) => i !== index,
+                          )
+                          setFormData({
+                            ...formData,
+                            vendor_contacts: newContacts,
+                          })
+                        }}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
               </TabsContent>
             </Tabs>
           </div>

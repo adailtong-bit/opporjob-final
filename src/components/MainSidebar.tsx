@@ -29,6 +29,8 @@ import {
   Database,
   DollarSign,
   ShieldCheck,
+  UserCog,
+  ClipboardList,
 } from 'lucide-react'
 import {
   Sidebar,
@@ -137,6 +139,8 @@ export function MainSidebar() {
         className: 'text-destructive font-bold',
         items: [
           { title: t('sidebar.users'), url: '/admin/users', icon: Users },
+          { title: 'Admin Team', url: '/admin/team', icon: UserCog },
+          { title: 'Audit Logs', url: '/admin/logs', icon: ClipboardList },
           {
             title: t('nav.plan_mgmt'),
             url: '/admin/plans',
