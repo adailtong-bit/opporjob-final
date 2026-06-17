@@ -31,6 +31,8 @@ import {
   ArrowLeft,
   Plus,
   X,
+  Minus,
+  Info,
 } from 'lucide-react'
 import { useLanguageStore } from '@/stores/useLanguageStore'
 import { useNavigate } from 'react-router-dom'
@@ -45,6 +47,7 @@ import {
 } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { useToast } from '@/hooks/use-toast'
+import { ToastAction } from '@/components/ui/toast'
 import { z } from 'zod'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -137,11 +140,21 @@ export default function MaterialsMarketplace() {
   useEffect(() => {
     fetchData()
     fetchCategoriesList()
-    fetchProjects()
   }, [])
 
+  useEffect(() => {
+    if (user) {
+      fetchProjects()
+    }
+  }, [user])
+
   const fetchProjects = async () => {
-    const { data } = await supabase.from('projects').select('id, name')
+    if (!user) return
+    const { data } = await supabase
+      .from('projects')
+      .select('id, name')
+      .eq('owner_id', user.id)
+
     if (data) {
       setProjects(data)
       const params = new URLSearchParams(window.location.search)
@@ -316,15 +329,15 @@ export default function MaterialsMarketplace() {
     })
   }
 
-  const updateCartItem = (
-    id: string,
-    field: 'quantity' | 'unitPrice',
-    value: number,
-  ) => {
+  const updateQuantity = (id: string, delta: number) => {
     setCart((prev) =>
-      prev.map((item) =>
-        item.material.id === id ? { ...item, [field]: value } : item,
-      ),
+      prev.map((item) => {
+        if (item.material.id === id) {
+          const newQty = Math.max(1, item.quantity + delta)
+          return { ...item, quantity: newQty }
+        }
+        return item
+      }),
     )
   }
 
@@ -355,7 +368,7 @@ export default function MaterialsMarketplace() {
         .insert({
           requester_id: user.id,
           project_id: selectedProjectId,
-          status: 'ordered',
+          status: 'pending_manager',
           total_amount: cartTotal,
         })
         .select()
@@ -378,8 +391,18 @@ export default function MaterialsMarketplace() {
       if (itemsError) throw itemsError
 
       toast({
-        title: 'Sucesso',
-        description: 'Pedido de compra finalizado com sucesso!',
+        title: 'Pedido Finalizado',
+        description: 'Seu pedido foi registrado para o projeto selecionado.',
+        action: (
+          <ToastAction
+            altText="Ver Projeto"
+            onClick={() =>
+              navigate(`/construction/projects/${selectedProjectId}`)
+            }
+          >
+            Ver Projeto
+          </ToastAction>
+        ),
       })
       setCart([])
       setIsCartOpen(false)
@@ -397,31 +420,50 @@ export default function MaterialsMarketplace() {
 
   return (
     <div className="space-y-6 relative">
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={() => navigate('/construction/dashboard')}
-        className="-mb-2"
-      >
-        <ArrowLeft className="h-4 w-4 mr-2" />
-        {t('back')}
-      </Button>
-
-      <div className="flex flex-col md:flex-row items-start justify-between gap-4">
+      <div className="sticky top-[64px] z-30 bg-background/95 backdrop-blur-md py-4 border-b flex flex-col md:flex-row items-start md:items-center justify-between gap-4 -mx-4 px-4 md:-mx-8 md:px-8 shadow-sm">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">
+          <div className="flex items-center gap-2 mb-1">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate('/construction/dashboard')}
+              className="-ml-3 h-8 text-muted-foreground hover:text-foreground"
+            >
+              <ArrowLeft className="h-4 w-4 mr-1.5" />
+              {t('back')}
+            </Button>
+          </div>
+          <h1 className="text-3xl font-bold tracking-tight leading-none">
             {t('market.list.title')}
           </h1>
-          <p className="text-muted-foreground">{t('market.list.desc')}</p>
         </div>
-        {isAdmin && (
-          <Button onClick={openAddModal}>
-            <Plus className="h-4 w-4 mr-2" /> Novo Material
+        <div className="flex flex-row items-center gap-3 w-full md:w-auto mt-2 md:mt-0">
+          {isAdmin && (
+            <Button
+              onClick={openAddModal}
+              variant="outline"
+              className="flex-1 md:flex-none"
+            >
+              <Plus className="h-4 w-4 mr-2" /> Material
+            </Button>
+          )}
+          <Button
+            className="relative flex-1 md:flex-none shadow-md hover:shadow-lg transition-all duration-300"
+            size="lg"
+            onClick={() => setIsCartOpen(true)}
+          >
+            <ShoppingCart className="h-5 w-5 mr-2" />
+            Ver Carrinho
+            {cart.length > 0 && (
+              <span className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground h-6 min-w-[24px] px-1.5 rounded-full flex items-center justify-center text-xs font-bold shadow-sm animate-in zoom-in">
+                {cart.length}
+              </span>
+            )}
           </Button>
-        )}
+        </div>
       </div>
 
-      <div className="flex flex-col sm:flex-row gap-4 p-4 bg-card rounded-xl border shadow-sm">
+      <div className="flex flex-col sm:flex-row gap-4 p-4 bg-card rounded-xl border shadow-sm mx-0">
         <div className="relative flex-1">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
@@ -446,7 +488,7 @@ export default function MaterialsMarketplace() {
         </Select>
       </div>
 
-      <div className="border rounded-lg bg-card overflow-x-auto">
+      <div className="border rounded-lg bg-card overflow-x-auto shadow-sm">
         <Table className="min-w-[800px]">
           <TableHeader className="bg-muted/50">
             <TableRow>
@@ -690,125 +732,161 @@ export default function MaterialsMarketplace() {
         </DialogContent>
       </Dialog>
 
-      {cart.length > 0 && (
-        <Button
-          className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg z-50 flex items-center justify-center animate-fade-in-up hover:scale-105 transition-transform"
-          onClick={() => setIsCartOpen(true)}
-        >
-          <ShoppingCart className="h-6 w-6" />
-          <span className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground h-6 w-6 rounded-full flex items-center justify-center text-xs font-bold shadow-sm">
-            {cart.length}
-          </span>
-        </Button>
-      )}
-
       <Sheet open={isCartOpen} onOpenChange={setIsCartOpen}>
-        <SheetContent className="w-full sm:max-w-md flex flex-col bg-card border-l">
-          <SheetHeader>
-            <SheetTitle>Carrinho de Compras</SheetTitle>
+        <SheetContent className="w-full sm:max-w-lg flex flex-col bg-card border-l p-0 shadow-2xl z-[100]">
+          <SheetHeader className="p-6 border-b bg-muted/30">
+            <SheetTitle className="text-xl flex items-center gap-2">
+              <ShoppingCart className="h-5 w-5 text-primary" />
+              Carrinho de Compras
+            </SheetTitle>
           </SheetHeader>
-          <div className="flex-1 overflow-y-auto py-4 space-y-4 pr-2">
+
+          <div className="flex-1 overflow-y-auto p-6 space-y-4">
             {cart.map((item) => (
               <div
                 key={item.material.id}
-                className="flex flex-col gap-3 p-3 border bg-background rounded-lg shadow-sm"
+                className="flex gap-4 p-4 border bg-background rounded-xl shadow-sm relative group transition-colors hover:border-primary/30"
               >
-                <div className="flex justify-between items-start">
-                  <span className="font-semibold text-sm leading-tight pr-4">
-                    {item.material.name}
-                  </span>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-6 w-6 text-muted-foreground -mt-1 -mr-1"
-                    onClick={() => removeCartItem(item.material.id)}
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
+                <div className="h-20 w-20 rounded-md bg-muted border overflow-hidden shrink-0 flex items-center justify-center">
+                  <img
+                    src={`https://img.usecurling.com/p/100/100?q=${encodeURIComponent(item.material.category || 'building material')}`}
+                    alt={item.material.name}
+                    className="h-full w-full object-cover"
+                  />
                 </div>
-                <div className="flex gap-4">
-                  <div className="space-y-1.5 flex-1">
-                    <Label className="text-xs text-muted-foreground">
-                      Quantidade
-                    </Label>
-                    <Input
-                      type="number"
-                      min="1"
-                      value={item.quantity}
-                      onChange={(e) =>
-                        updateCartItem(
-                          item.material.id,
-                          'quantity',
-                          Number(e.target.value),
-                        )
-                      }
-                      className="h-8"
-                    />
+                <div className="flex flex-col flex-1 justify-between py-1">
+                  <div className="flex justify-between items-start gap-2">
+                    <div>
+                      <h4 className="font-semibold text-sm leading-tight text-foreground/90">
+                        {item.material.name}
+                      </h4>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Est. {formatCurrency(item.unitPrice)} /{' '}
+                        {item.material.unit || 'un'}
+                      </p>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-7 w-7 text-muted-foreground hover:text-destructive -mt-1 -mr-2"
+                      onClick={() => removeCartItem(item.material.id)}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
                   </div>
-                  <div className="space-y-1.5 flex-1">
-                    <Label className="text-xs text-muted-foreground">
-                      Preço Unit. Estimado
-                    </Label>
-                    <Input
-                      type="number"
-                      min="0"
-                      step="0.01"
-                      value={item.unitPrice}
-                      onChange={(e) =>
-                        updateCartItem(
-                          item.material.id,
-                          'unitPrice',
-                          Number(e.target.value),
-                        )
-                      }
-                      className="h-8"
-                    />
+
+                  <div className="flex items-center justify-between mt-3">
+                    <div className="flex items-center border rounded-lg h-8 bg-muted/50">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-full w-8 rounded-none rounded-l-lg hover:bg-background"
+                        onClick={() => updateQuantity(item.material.id, -1)}
+                      >
+                        <Minus className="h-3 w-3" />
+                      </Button>
+                      <div className="w-10 text-center text-xs font-semibold bg-background h-full flex items-center justify-center border-x">
+                        {item.quantity}
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-full w-8 rounded-none rounded-r-lg hover:bg-background"
+                        onClick={() => updateQuantity(item.material.id, 1)}
+                      >
+                        <Plus className="h-3 w-3" />
+                      </Button>
+                    </div>
+                    <div className="text-right text-sm font-bold text-primary">
+                      {formatCurrency(item.quantity * item.unitPrice)}
+                    </div>
                   </div>
-                </div>
-                <div className="text-right text-sm font-medium mt-1 text-primary">
-                  Total: {formatCurrency(item.quantity * item.unitPrice)}
                 </div>
               </div>
             ))}
             {cart.length === 0 && (
-              <div className="text-center py-8 text-muted-foreground flex flex-col items-center">
-                <ShoppingCart className="h-12 w-12 text-muted-foreground/30 mb-3" />
-                <p>Seu carrinho está vazio.</p>
+              <div className="text-center py-16 flex flex-col items-center justify-center h-full">
+                <div className="h-20 w-20 bg-muted/50 rounded-full flex items-center justify-center mb-6">
+                  <ShoppingCart className="h-10 w-10 text-muted-foreground/40" />
+                </div>
+                <h3 className="text-lg font-medium text-foreground">
+                  Carrinho Vazio
+                </h3>
+                <p className="text-sm text-muted-foreground mt-2 max-w-[250px]">
+                  Adicione materiais do catálogo para iniciar um pedido de
+                  compra.
+                </p>
+                <Button
+                  variant="outline"
+                  className="mt-6"
+                  onClick={() => setIsCartOpen(false)}
+                >
+                  Explorar Materiais
+                </Button>
               </div>
             )}
           </div>
-          <div className="space-y-4 pt-4 border-t mt-auto pb-4 sm:pb-0">
-            <div className="space-y-2">
-              <Label>Vincular a um Projeto</Label>
-              <Select
-                value={selectedProjectId}
-                onValueChange={setSelectedProjectId}
+
+          {cart.length > 0 && (
+            <div className="p-6 border-t bg-muted/20 space-y-5">
+              <div className="p-3.5 bg-blue-50 dark:bg-blue-950/30 text-blue-800 dark:text-blue-300 rounded-lg text-xs flex items-start gap-3 shadow-inner">
+                <Info className="h-5 w-5 shrink-0 mt-0.5 text-blue-600 dark:text-blue-400" />
+                <p className="leading-relaxed">
+                  <strong>Fluxo Multi-Projetos:</strong> Você pode comprar para
+                  um projeto por vez. Para alocar em múltiplos projetos,
+                  finalize este pedido e inicie um novo em seguida.
+                </p>
+              </div>
+              <div className="space-y-3">
+                <Label className="text-sm font-semibold flex items-center justify-between">
+                  Projeto de Destino
+                  {projects.length === 0 && (
+                    <span className="text-xs font-normal text-destructive">
+                      Nenhum projeto ativo
+                    </span>
+                  )}
+                </Label>
+                <Select
+                  value={selectedProjectId}
+                  onValueChange={setSelectedProjectId}
+                  disabled={projects.length === 0}
+                >
+                  <SelectTrigger className="w-full bg-background h-11 border-input hover:border-primary/50 transition-colors">
+                    <SelectValue placeholder="Selecione um projeto" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {projects.map((p) => (
+                      <SelectItem
+                        key={p.id}
+                        value={p.id}
+                        className="cursor-pointer"
+                      >
+                        {p.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex justify-between items-center text-lg font-bold pt-2 border-t border-border/50">
+                <span className="text-foreground/80">Total Estimado</span>
+                <span className="text-primary text-xl">
+                  {formatCurrency(cartTotal)}
+                </span>
+              </div>
+              <Button
+                className="w-full h-12 text-base font-bold shadow-lg hover:shadow-xl transition-all"
+                size="lg"
+                disabled={
+                  purchaseLoading || cart.length === 0 || !selectedProjectId
+                }
+                onClick={handleCheckout}
               >
-                <SelectTrigger className="w-full bg-background">
-                  <SelectValue placeholder="Selecione um projeto" />
-                </SelectTrigger>
-                <SelectContent>
-                  {projects.map((p) => (
-                    <SelectItem key={p.id} value={p.id}>
-                      {p.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                {purchaseLoading
+                  ? 'Processando...'
+                  : 'Finalizar Pedido de Compra'}
+              </Button>
             </div>
-            <div className="flex justify-between items-center text-lg font-bold bg-muted/50 p-3 rounded-lg">
-              <span>Total Estimado:</span>
-              <span className="text-primary">{formatCurrency(cartTotal)}</span>
-            </div>
-            <Button
-              className="w-full shadow-sm"
-              size="lg"
-              disabled={purchaseLoading || cart.length === 0}
-              onClick={handleCheckout}
-            >
-              {purchaseLoading ? 'Processando...' : 'Finalizar Pedido'}
-            </Button>
-          </div>
+          )}
         </SheetContent>
       </Sheet>
     </div>
