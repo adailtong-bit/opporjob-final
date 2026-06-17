@@ -39,20 +39,25 @@ export interface Order {
   total: number
   freightCost?: number
   status:
-    | 'pending'
+    | 'pending_manager'
+    | 'pending_finance'
+    | 'ordered'
     | 'delivered'
     | 'cancelled'
-    | 'pending_approval'
-    | 'approved'
     | 'rejected'
   date: Date
   arrivalDate?: Date
   requesterId?: string
   requesterName?: string
-  approvedBy?: string
-  approvedAt?: Date
+  managerId?: string
+  managerName?: string
+  managerApprovedAt?: Date
+  financeId?: string
+  financeName?: string
+  financeApprovedAt?: Date
   rejectedBy?: string
   rejectedAt?: Date
+  receiptUrl?: string
 }
 
 interface MaterialState {
@@ -68,6 +73,7 @@ interface MaterialState {
     status: Order['status'],
     actorName?: string,
   ) => void
+  updateOrderReceipt: (id: string, receiptUrl: string) => void
   importMaterialList: (
     file: File,
   ) => Promise<{ success: boolean; count: number }>
@@ -148,7 +154,7 @@ export const useMaterialStore = create<MaterialState>((set, get) => ({
       projectId: 'proj-1',
       vendorName: 'ConstruMix',
       total: 1645.0,
-      status: 'pending_approval',
+      status: 'pending_manager',
       date: new Date(Date.now() - 86400000),
       requesterName: 'Ana Gerente',
       items: [
@@ -188,11 +194,13 @@ export const useMaterialStore = create<MaterialState>((set, get) => ({
       orders: state.orders.map((o) => {
         if (o.id === id) {
           const updates: Partial<Order> = { status }
-          if (status === 'approved') {
-            updates.approvedBy = actorName
-            updates.approvedAt = new Date()
-          }
-          if (status === 'rejected') {
+          if (status === 'pending_finance') {
+            updates.managerName = actorName
+            updates.managerApprovedAt = new Date()
+          } else if (status === 'ordered') {
+            updates.financeName = actorName
+            updates.financeApprovedAt = new Date()
+          } else if (status === 'rejected') {
             updates.rejectedBy = actorName
             updates.rejectedAt = new Date()
           }
@@ -200,6 +208,10 @@ export const useMaterialStore = create<MaterialState>((set, get) => ({
         }
         return o
       }),
+    })),
+  updateOrderReceipt: (id, receiptUrl) =>
+    set((state) => ({
+      orders: state.orders.map((o) => (o.id === id ? { ...o, receiptUrl } : o)),
     })),
   importMaterialList: async (file) => {
     await new Promise((resolve) => setTimeout(resolve, 1000))

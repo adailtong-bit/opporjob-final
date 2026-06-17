@@ -52,7 +52,7 @@ import { ProjectQuotes } from '@/components/construction/ProjectQuotes'
 import { ProjectChat } from '@/components/construction/ProjectChat'
 import { ProjectCompliance } from '@/components/construction/ProjectCompliance'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-import { ShieldAlert, Store, ShoppingCart } from 'lucide-react'
+import { ShieldAlert, Store, ShoppingCart, Percent } from 'lucide-react'
 import { useMaterialStore } from '@/stores/useMaterialStore'
 import {
   Select,
@@ -66,8 +66,12 @@ import { ProjectUpdates } from '@/components/construction/ProjectUpdates'
 
 export default function ProjectDetail() {
   const { id } = useParams<{ id: string }>()
-  const { getProject, setProjectSqFt, updateProjectPreferredVendor } =
-    useProjectStore()
+  const {
+    getProject,
+    setProjectSqFt,
+    updateProjectPreferredVendor,
+    updateProject,
+  } = useProjectStore()
   const { vendors } = useMaterialStore()
   const { toast } = useToast()
   const { t, formatDate, currentLanguage } = useLanguageStore()
@@ -315,6 +319,26 @@ export default function ProjectDetail() {
               {formatDate(project.startDate, 'P')} -{' '}
               {formatDate(project.endDate, 'P')}
             </span>
+
+            <div className="flex items-center gap-1.5 bg-purple-50/50 text-purple-700 dark:bg-purple-900/20 dark:text-purple-300 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full border border-purple-100 dark:border-purple-800 text-[11px] sm:text-xs md:text-sm">
+              <Percent className="h-3 w-3 sm:h-3.5 sm:w-3.5 shrink-0" />
+              <span className="font-medium mr-1 hidden sm:inline">
+                Retenção Contratual:
+              </span>
+              <Input
+                type="number"
+                min={0}
+                max={100}
+                className="h-6 w-14 text-xs bg-transparent border-purple-200 dark:border-purple-700 text-right"
+                value={project.retentionPercentage || 0}
+                onChange={(e) =>
+                  updateProject(project.id, {
+                    retentionPercentage: Number(e.target.value),
+                  })
+                }
+              />
+              <span className="text-[10px]">%</span>
+            </div>
 
             <div className="flex items-center gap-1.5 bg-blue-50/50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full border border-blue-100 dark:border-blue-800 text-[11px] sm:text-xs md:text-sm max-w-full">
               <Store className="h-3 w-3 sm:h-3.5 sm:w-3.5 shrink-0" />

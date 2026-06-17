@@ -63,24 +63,51 @@ export default function ConstructionDashboard() {
 
       const { data } = await supabase
         .from('projects')
-        .select('*')
+        .select(
+          '*, project_budgets(estimated_amount, actual_amount), project_stages(status)',
+        )
         .eq('owner_id', user.id)
 
       if (data) {
-        const mapped = data.map((p: any) => ({
-          id: p.id,
-          name: p.name,
-          description: p.description,
-          status: p.status,
-          totalBudget: p.total_budget || 0,
-          totalSpent: 0,
-          progress: p.progress || 0,
-          is_demo: p.is_demo,
-          startDate: p.created_at ? new Date(p.created_at) : new Date(),
-          endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-          location: 'Site',
-          stages: [],
-        }))
+        const mapped = data.map((p: any) => {
+          const totalBudget =
+            p.project_budgets?.reduce(
+              (acc: number, b: any) => acc + (b.estimated_amount || 0),
+              0,
+            ) ||
+            p.total_budget ||
+            0
+          const totalSpent =
+            p.project_budgets?.reduce(
+              (acc: number, b: any) => acc + (b.actual_amount || 0),
+              0,
+            ) || 0
+
+          // Calculate stage progress
+          const totalStages = p.project_stages?.length || 0
+          const completedStages =
+            p.project_stages?.filter((s: any) => s.status === 'completed')
+              .length || 0
+          const stageProgress =
+            totalStages > 0
+              ? (completedStages / totalStages) * 100
+              : p.progress || 0
+
+          return {
+            id: p.id,
+            name: p.name,
+            description: p.description,
+            status: p.status,
+            totalBudget,
+            totalSpent,
+            progress: stageProgress,
+            is_demo: p.is_demo,
+            startDate: p.created_at ? new Date(p.created_at) : new Date(),
+            endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+            location: 'Site',
+            stages: p.project_stages || [],
+          }
+        })
         setDbProjects(mapped)
       }
     }
@@ -89,9 +116,7 @@ export default function ConstructionDashboard() {
 
   const allProjects = [
     ...projects.filter((p) => !(p as any).is_demo),
-    ...dbProjects.filter(
-      (dp) => !projects.some((p) => p.id === dp.id) && !dp.is_demo,
-    ),
+    ...dbProjects.filter((dp) => !projects.some((p) => p.id === dp.id)),
   ]
   const activeProjects = allProjects.filter((p) => p.status === 'in_progress')
   const completedProjects = allProjects.filter((p) => p.status === 'completed')
@@ -430,28 +455,42 @@ export default function ConstructionDashboard() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="flex-1 space-y-4">
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">
-                        {t('construction.financial_progress')}
-                      </span>
-                      <span className="font-medium">
-                        {project.totalBudget > 0
-                          ? (
-                              (project.totalSpent / project.totalBudget) *
-                              100
-                            ).toFixed(0)
-                          : 0}
-                        %
-                      </span>
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">
+                          {t('construction.progress') || 'Progress'}
+                        </span>
+                        <span className="font-medium">
+                          {Math.round(project.progress || 0)}%
+                        </span>
+                      </div>
+                      <Progress value={project.progress || 0} />
                     </div>
-                    <Progress
-                      value={
-                        project.totalBudget > 0
-                          ? (project.totalSpent / project.totalBudget) * 100
-                          : 0
-                      }
-                    />
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">
+                          {t('construction.financial_progress')}
+                        </span>
+                        <span className="font-medium">
+                          {project.totalBudget > 0
+                            ? (
+                                (project.totalSpent / project.totalBudget) *
+                                100
+                              ).toFixed(0)
+                            : 0}
+                          %
+                        </span>
+                      </div>
+                      <Progress
+                        value={
+                          project.totalBudget > 0
+                            ? (project.totalSpent / project.totalBudget) * 100
+                            : 0
+                        }
+                        className="bg-emerald-100 [&>div]:bg-emerald-500"
+                      />
+                    </div>
                   </div>
                   <div className="grid grid-cols-2 gap-2 text-sm">
                     <div>

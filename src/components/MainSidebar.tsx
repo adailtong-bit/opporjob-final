@@ -173,6 +173,11 @@ export function MainSidebar() {
             url: '/admin/finance',
             icon: DollarSign,
           },
+          {
+            title: 'Manage Jobs',
+            url: '/admin/jobs',
+            icon: Briefcase,
+          },
         ],
       })
     }

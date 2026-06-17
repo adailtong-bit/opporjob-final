@@ -12,6 +12,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { Link2 } from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -102,6 +103,12 @@ export function ProjectScheduleTable({
   } | null>(null)
   const [deleteStep, setDeleteStep] = useState(0)
 
+  // Dependency State
+  const [dependencyData, setDependencyData] = useState<{
+    stageId: string
+  } | null>(null)
+  const [selectedDependency, setSelectedDependency] = useState<string>('none')
+
   // Assignment State
   const [assignData, setAssignData] = useState<{
     stageId: string
@@ -134,6 +141,19 @@ export function ProjectScheduleTable({
     subStageId: string | null,
     value: number,
   ) => {
+    const stage = stages.find((s) => s.id === stageId)
+    if (stage?.dependencyId && value > 0) {
+      const depStage = stages.find((s) => s.id === stage.dependencyId)
+      if (depStage && depStage.status !== 'completed') {
+        toast({
+          variant: 'destructive',
+          title: 'Etapa Bloqueada',
+          description: `A dependência "${t(depStage.name)}" precisa ser concluída primeiro.`,
+        })
+        return
+      }
+    }
+
     const clamped = Math.max(0, Math.min(100, value))
     const status =
       clamped === 100 ? 'completed' : clamped > 0 ? 'in_progress' : 'pending'
@@ -150,6 +170,20 @@ export function ProjectScheduleTable({
 
   const handleToggleStatus = (stageId: string, subStageId: string) => {
     const stage = stages.find((s) => s.id === stageId)
+
+    // Check stage dependency logic
+    if (stage?.dependencyId) {
+      const depStage = stages.find((s) => s.id === stage.dependencyId)
+      if (depStage && depStage.status !== 'completed') {
+        toast({
+          variant: 'destructive',
+          title: 'Etapa Bloqueada',
+          description: `A dependência "${t(depStage.name)}" precisa ser concluída primeiro.`,
+        })
+        return
+      }
+    }
+
     const sub = stage?.subStages.find((ss) => ss.id === subStageId)
     if (!sub) return
 
@@ -201,6 +235,21 @@ export function ProjectScheduleTable({
       deleteSubStage(projectId, deleteData.stageId, deleteData.subStageId)
       setDeleteData(null)
       setDeleteStep(0)
+    }
+  }
+
+  const handleSetDependency = () => {
+    if (dependencyData) {
+      updateStage(projectId, dependencyData.stageId, {
+        dependencyId:
+          selectedDependency === 'none' ? undefined : selectedDependency,
+      })
+      toast({
+        title: 'Dependência Atualizada',
+        description: 'A regra de caminho crítico foi salva.',
+      })
+      setDependencyData(null)
+      setSelectedDependency('none')
     }
   }
 
@@ -284,9 +333,21 @@ export function ProjectScheduleTable({
                         <ChevronRight className="h-4 w-4" />
                       )}
                     </Button>
-                    <span className="truncate" title={stage.name}>
-                      {t(stage.name)}
-                    </span>
+                    <div className="flex flex-col">
+                      <span className="truncate" title={stage.name}>
+                        {t(stage.name)}
+                      </span>
+                      {stage.dependencyId && (
+                        <span className="text-[10px] text-orange-600 flex items-center mt-0.5">
+                          <Link2 className="h-3 w-3 mr-1" />
+                          Depende de:{' '}
+                          {t(
+                            stages.find((s) => s.id === stage.dependencyId)
+                              ?.name || '',
+                          )}
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </TableCell>
                 <TableCell>{formatDate(stage.startDate, 'P')}</TableCell>
@@ -304,7 +365,24 @@ export function ProjectScheduleTable({
                   </div>
                 </TableCell>
                 <TableCell>
-                  <Badge variant="outline">{t(`status.${stage.status}`)}</Badge>
+                  <div className="flex flex-col gap-1 items-start">
+                    <Badge variant="outline">
+                      {t(`status.${stage.status}`)}
+                    </Badge>
+                    {stage.approvalStatus &&
+                      stage.approvalStatus !== 'pending' && (
+                        <Badge
+                          variant="secondary"
+                          className="text-[10px] bg-blue-50 text-blue-700"
+                        >
+                          {stage.approvalStatus === 'tech_approved'
+                            ? 'Técnico OK'
+                            : stage.approvalStatus === 'finance_approved'
+                              ? 'Financeiro OK'
+                              : 'Aprovado'}
+                        </Badge>
+                      )}
+                  </div>
                 </TableCell>
                 <TableCell>
                   {!isPartnerView && (
@@ -322,6 +400,15 @@ export function ProjectScheduleTable({
                         >
                           <Plus className="mr-2 h-4 w-4" />
                           {t('sched.add_activity')}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => {
+                            setDependencyData({ stageId: stage.id })
+                            setSelectedDependency(stage.dependencyId || 'none')
+                          }}
+                        >
+                          <Link2 className="mr-2 h-4 w-4" />
+                          Definir Dependência
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
@@ -608,6 +695,50 @@ export function ProjectScheduleTable({
           </div>
           <DialogFooter>
             <Button onClick={handleAssign}>{t('save')}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dependency Dialog */}
+      <Dialog
+        open={!!dependencyData}
+        onOpenChange={() => setDependencyData(null)}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Definir Caminho Crítico (Dependência)</DialogTitle>
+            <DialogDescription>
+              A etapa selecionada só poderá ser iniciada/concluída após a etapa
+              dependente estar 100% concluída.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label>Etapa Anterior Obrigatória</Label>
+              <Select
+                value={selectedDependency}
+                onValueChange={setSelectedDependency}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione uma etapa..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">
+                    Nenhuma (Início Imediato)
+                  </SelectItem>
+                  {safeStages
+                    .filter((s) => s.id !== dependencyData?.stageId)
+                    .map((s) => (
+                      <SelectItem key={s.id} value={s.id}>
+                        {t(s.name)}
+                      </SelectItem>
+                    ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button onClick={handleSetDependency}>{t('save')}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

@@ -31,17 +31,39 @@ export default function ApprovalDashboard() {
   const { toast } = useToast()
   const { formatCurrency, formatDate } = useLanguageStore()
 
-  const pendingOrders = orders.filter((o) => o.status === 'pending_approval')
+  const isManager = user?.role === 'project_manager' || user?.role === 'admin'
+  const isFinance =
+    user?.role === 'accountant' ||
+    user?.role === 'admin' ||
+    user?.role === 'finance'
+
+  const pendingOrders = orders.filter((o) => {
+    if (o.status === 'pending_manager' && isManager) return true
+    if (o.status === 'pending_finance' && isFinance) return true
+    return false
+  })
+
   const actionedOrders = orders
-    .filter((o) => o.status === 'approved' || o.status === 'rejected')
+    .filter(
+      (o) =>
+        o.status === 'ordered' ||
+        o.status === 'rejected' ||
+        o.status === 'delivered',
+    )
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
 
   const handleAction = (order: Order, action: 'approved' | 'rejected') => {
     if (!user) return
 
-    updateOrderStatus(order.id, action, user.name)
-
+    let nextStatus: Order['status'] = 'rejected'
     if (action === 'approved') {
+      nextStatus =
+        order.status === 'pending_manager' ? 'pending_finance' : 'ordered'
+    }
+
+    updateOrderStatus(order.id, nextStatus, user.name)
+
+    if (nextStatus === 'ordered') {
       addAllocatedCost(order.projectId, {
         description: `Compra: ${order.vendorName} (${order.items.length} itens)`,
         amount: order.total,
@@ -62,8 +84,14 @@ export default function ApprovalDashboard() {
       }
 
       toast({
-        title: 'Pedido Aprovado',
-        description: 'O custo foi alocado ao projeto com sucesso.',
+        title: 'Pedido Aprovado pelo Financeiro',
+        description:
+          'O custo foi alocado ao projeto e o pedido enviado ao fornecedor.',
+      })
+    } else if (nextStatus === 'pending_finance') {
+      toast({
+        title: 'Aprovado pelo Gerente',
+        description: 'Enviado para aprovação financeira.',
       })
     } else {
       toast({ title: 'Pedido Rejeitado', variant: 'destructive' })
@@ -157,6 +185,11 @@ export default function ApprovalDashboard() {
                           </TableCell>
                           <TableCell className="text-right font-bold text-primary">
                             {formatCurrency(order.total)}
+                            <div className="text-[10px] text-muted-foreground mt-1 uppercase">
+                              {order.status === 'pending_manager'
+                                ? 'Aprovação Gerente'
+                                : 'Aprovação Finanças'}
+                            </div>
                           </TableCell>
                           <TableCell className="text-right">
                             <div className="flex justify-end gap-2">
@@ -218,13 +251,13 @@ export default function ApprovalDashboard() {
                         (p) => p.id === order.projectId,
                       )
                       const actionDate =
-                        order.status === 'approved'
-                          ? order.approvedAt
-                          : order.rejectedAt
+                        order.status === 'rejected'
+                          ? order.rejectedAt
+                          : order.financeApprovedAt || order.managerApprovedAt
                       const actionUser =
-                        order.status === 'approved'
-                          ? order.approvedBy
-                          : order.rejectedBy
+                        order.status === 'rejected'
+                          ? order.rejectedBy
+                          : order.financeName || order.managerName
 
                       return (
                         <TableRow key={order.id}>
@@ -244,9 +277,10 @@ export default function ApprovalDashboard() {
                             {formatCurrency(order.total)}
                           </TableCell>
                           <TableCell>
-                            {order.status === 'approved' ? (
+                            {order.status === 'ordered' ||
+                            order.status === 'delivered' ? (
                               <Badge className="bg-green-100 text-green-800 hover:bg-green-100">
-                                Aprovado
+                                Aprovado / Solicitado
                               </Badge>
                             ) : (
                               <Badge variant="destructive">Rejeitado</Badge>

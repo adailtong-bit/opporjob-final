@@ -138,6 +138,12 @@ export interface Stage {
   id: string
   name: string
   status: 'pending' | 'in_progress' | 'completed' | 'delayed'
+  approvalStatus?:
+    | 'pending'
+    | 'tech_approved'
+    | 'finance_approved'
+    | 'completed'
+  dependencyId?: string
   startDate: Date
   endDate: Date
   actualStartDate?: Date
@@ -236,6 +242,8 @@ export interface ProjectInvoice {
   partnerName: string
   description: string
   totalAmount: number
+  retentionAmount?: number
+  isRetentionRelease?: boolean
   date: Date
   status: 'generated' | 'paid'
 }
@@ -316,6 +324,7 @@ export interface Project {
   partners: ProjectPartner[]
   totalBudget: number
   purchaseApprovalThreshold?: number
+  retentionPercentage?: number
   totalSpent: number
   budgetItems: BudgetItem[]
   approvalLogs: ApprovalLog[]

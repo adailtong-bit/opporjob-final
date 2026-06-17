@@ -13,12 +13,18 @@ import { Badge } from '@/components/ui/badge'
 import { Link } from 'react-router-dom'
 import { ShoppingCart, Store, PackageOpen, FileText } from 'lucide-react'
 import { useLanguageStore } from '@/stores/useLanguageStore'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { supabase } from '@/lib/supabase/client'
+import { useToast } from '@/hooks/use-toast'
+import { Upload } from 'lucide-react'
 
 export function ProjectPurchasing({ projectId }: { projectId: string }) {
-  const { getOrdersByProject } = useMaterialStore()
+  const { getOrdersByProject, updateOrderStatus, updateOrderReceipt } =
+    useMaterialStore()
   const { formatCurrency, formatDate } = useLanguageStore()
+  const { toast } = useToast()
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null)
 
   const orders = getOrdersByProject(projectId)
   const [dbInvoices, setDbInvoices] = useState<any[]>([])
@@ -38,6 +44,28 @@ export function ProjectPurchasing({ projectId }: { projectId: string }) {
       style: 'currency',
       currency: currency || 'USD',
     }).format(amount)
+  }
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!selectedOrderId) return
+    const file = e.target.files?.[0]
+    if (file) {
+      // Mock upload
+      updateOrderReceipt(selectedOrderId, URL.createObjectURL(file))
+      toast({
+        title: 'Recibo Anexado',
+        description: 'O documento foi salvo com sucesso.',
+      })
+    }
+    setSelectedOrderId(null)
+  }
+
+  const markAsDelivered = (orderId: string) => {
+    updateOrderStatus(orderId, 'delivered')
+    toast({
+      title: 'Pedido Entregue',
+      description: 'Estoque atualizado e entrega confirmada.',
+    })
   }
 
   return (
@@ -144,18 +172,66 @@ export function ProjectPurchasing({ projectId }: { projectId: string }) {
                         </TableCell>
                         <TableCell className="text-center align-top pt-4">
                           <div className="flex flex-col items-center gap-2">
-                            <Badge
-                              variant="secondary"
-                              className="bg-green-100 text-green-800 hover:bg-green-100 border-green-200"
-                            >
-                              Pedido Confirmado
-                            </Badge>
-                            <Badge
-                              variant="outline"
-                              className="text-[10px] text-muted-foreground"
-                            >
-                              Lançado no CAPEX
-                            </Badge>
+                            {order.status === 'pending_manager' && (
+                              <Badge
+                                variant="outline"
+                                className="text-yellow-600 border-yellow-300 bg-yellow-50"
+                              >
+                                Pendente Gerente
+                              </Badge>
+                            )}
+                            {order.status === 'pending_finance' && (
+                              <Badge
+                                variant="outline"
+                                className="text-yellow-600 border-yellow-300 bg-yellow-50"
+                              >
+                                Pendente Finanças
+                              </Badge>
+                            )}
+                            {order.status === 'ordered' && (
+                              <>
+                                <Badge
+                                  variant="secondary"
+                                  className="bg-blue-100 text-blue-800 border-blue-200"
+                                >
+                                  Aprovado / Comprado
+                                </Badge>
+                                {!order.receiptUrl ? (
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className="h-7 text-xs w-full"
+                                    onClick={() => {
+                                      setSelectedOrderId(order.id)
+                                      fileInputRef.current?.click()
+                                    }}
+                                  >
+                                    <Upload className="h-3 w-3 mr-1" /> Anexar
+                                    Nota
+                                  </Button>
+                                ) : (
+                                  <Button
+                                    size="sm"
+                                    variant="default"
+                                    className="h-7 text-xs w-full bg-green-600 hover:bg-green-700"
+                                    onClick={() => markAsDelivered(order.id)}
+                                  >
+                                    Confirmar Entrega
+                                  </Button>
+                                )}
+                              </>
+                            )}
+                            {order.status === 'delivered' && (
+                              <Badge
+                                variant="secondary"
+                                className="bg-green-100 text-green-800 border-green-200"
+                              >
+                                Entregue
+                              </Badge>
+                            )}
+                            {order.status === 'rejected' && (
+                              <Badge variant="destructive">Rejeitado</Badge>
+                            )}
                           </div>
                         </TableCell>
                       </TableRow>
@@ -240,6 +316,13 @@ export function ProjectPurchasing({ projectId }: { projectId: string }) {
           </Table>
         </CardContent>
       </Card>
+      <input
+        type="file"
+        ref={fileInputRef}
+        className="hidden"
+        onChange={handleFileUpload}
+        accept="image/*,.pdf"
+      />
     </div>
   )
 }

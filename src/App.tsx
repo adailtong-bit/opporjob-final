@@ -74,6 +74,7 @@ import ManageTeam from '@/pages/admin/ManageTeam'
 import PushNotifications from '@/pages/admin/PushNotifications'
 import ManageIntegrations from '@/pages/admin/ManageIntegrations'
 import FinancialControl from '@/pages/admin/FinancialControl'
+import ManageJobs from '@/pages/admin/ManageJobs'
 import { useAuthStore } from '@/stores/useAuthStore'
 import { useNotificationStore } from '@/stores/useNotificationStore'
 import { supabase } from '@/lib/supabase/client'
@@ -101,17 +102,21 @@ const PageTracker = () => {
         const checkJob = async () => {
           const { data } = await supabase
             .from('jobs')
-            .select('is_demo')
+            .select('is_demo, owner_id')
             .eq('id', jobId)
             .single()
           if (data?.is_demo) {
-            window.location.replace('/')
-            return
+            const {
+              data: { user },
+            } = await supabase.auth.getUser()
+            if (!user || user.id !== data.owner_id) {
+              window.location.replace('/')
+              return
+            }
           }
         }
         checkJob()
       }
-
       useJobStore.getState().incrementView(jobId)
 
       const trackJobView = async () => {
@@ -137,12 +142,18 @@ const PageTracker = () => {
         const checkProject = async () => {
           const { data } = await supabase
             .from('projects')
-            .select('is_demo')
+            .select('is_demo, owner_id')
             .eq('id', projectId)
             .single()
+
           if (data?.is_demo) {
-            window.location.replace('/')
-            return
+            const {
+              data: { user },
+            } = await supabase.auth.getUser()
+            if (!user || user.id !== data.owner_id) {
+              window.location.replace('/')
+              return
+            }
           }
         }
         checkProject()
@@ -336,11 +347,21 @@ const AdminRoute = ({ children }: { children: JSX.Element }) => {
         .select('is_admin')
         .eq('id', user.id)
         .single()
-        .then(({ data }) => {
+        .then(({ data, error }) => {
+          if (error) {
+            console.error('AdminRoute error:', error)
+          }
           setIsAdmin(
             !!data?.is_admin ||
               user.email === 'adailtong@gmail.com' ||
-              !!user.email?.includes('admin'),
+              !!(user.email && user.email.includes('admin')),
+          )
+        })
+        .catch((err) => {
+          console.error('AdminRoute exception:', err)
+          setIsAdmin(
+            user.email === 'adailtong@gmail.com' ||
+              !!(user.email && user.email.includes('admin')),
           )
         })
     } else if (!loading && !user) {
@@ -809,6 +830,14 @@ const App = () => {
                   element={
                     <AdminRoute>
                       <FinancialControl />
+                    </AdminRoute>
+                  }
+                />
+                <Route
+                  path="/admin/jobs"
+                  element={
+                    <AdminRoute>
+                      <ManageJobs />
                     </AdminRoute>
                   }
                 />

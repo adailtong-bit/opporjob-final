@@ -77,6 +77,7 @@ export function ProjectInvoices({ projectId }: { projectId: string }) {
                 <TableHead>Type</TableHead>
                 <TableHead>Due Date</TableHead>
                 <TableHead className="text-right">Amount</TableHead>
+                <TableHead className="text-right">Retained</TableHead>
                 <TableHead>Status</TableHead>
               </TableRow>
             </TableHeader>
@@ -86,6 +87,14 @@ export function ProjectInvoices({ projectId }: { projectId: string }) {
                     <TableRow key={inv.id}>
                       <TableCell className="font-medium">
                         {inv.description || 'Invoice'}
+                        {inv.is_retention_release && (
+                          <Badge
+                            variant="outline"
+                            className="ml-2 text-[10px] border-orange-200 text-orange-700 bg-orange-50"
+                          >
+                            Liberação de Retenção
+                          </Badge>
+                        )}
                       </TableCell>
                       <TableCell className="capitalize">{inv.type}</TableCell>
                       <TableCell>
@@ -95,6 +104,14 @@ export function ProjectInvoices({ projectId }: { projectId: string }) {
                       </TableCell>
                       <TableCell className="text-right font-bold">
                         {formatCurrencyValue(inv.amount, inv.currency || 'USD')}
+                      </TableCell>
+                      <TableCell className="text-right text-orange-600">
+                        {inv.retention_amount > 0
+                          ? formatCurrencyValue(
+                              inv.retention_amount,
+                              inv.currency || 'USD',
+                            )
+                          : '-'}
                       </TableCell>
                       <TableCell>
                         <Badge
