@@ -1,38 +1,6 @@
-import { useState, useRef, useEffect } from 'react'
-import { useSearchParams, useNavigate } from 'react-router-dom'
-import { useMaterialStore, Material } from '@/stores/useMaterialStore'
-import { useProjectStore } from '@/stores/useProjectStore'
-import { useAuthStore } from '@/stores/useAuthStore'
-import { useVendorStore } from '@/stores/useVendorStore'
-import { useInventoryStore } from '@/stores/useInventoryStore'
+import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase/client'
-import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-  DialogDescription,
-} from '@/components/ui/dialog'
 import {
   Table,
   TableBody,
@@ -42,91 +10,90 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import {
-  ShoppingCart,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import {
   Search,
-  ArrowLeft,
+  Zap,
+  Droplets,
+  PaintRoller,
+  Hammer,
+  BrickWall,
+  Package,
   ExternalLink,
-  Upload,
-  Lock,
-  Trash2,
-  Store,
-  Plus,
-  ShieldCheck,
+  ShoppingCart,
 } from 'lucide-react'
-import { useToast } from '@/hooks/use-toast'
 import { useLanguageStore } from '@/stores/useLanguageStore'
-import { Progress } from '@/components/ui/progress'
 
-interface CartItem {
+interface Material {
   id: string
-  material: Material
-  quantity: number
-  unitPrice: number
-  brand?: string
-  color?: string
+  name: string
+  category: string | null
+  price: number | null
+  unit: string | null
+  stock: number | null
+}
+
+interface AdCampaign {
+  id: string
+  title: string
+  media_url: string | null
+  target_url: string | null
+  specifications: Record<string, any> | null
+  advertiser: {
+    name: string
+  } | null
 }
 
 export default function MaterialsMarketplace() {
-  const [searchParams] = useSearchParams()
-  const urlProjectId = searchParams.get('projectId')
-  const urlStageId = searchParams.get('stageId')
-
-  const navigate = useNavigate()
-  const { materials, importMaterialList } = useMaterialStore()
-  const { projects, addAllocatedCost, updateStageActuals } = useProjectStore()
-  const { vendors, fetchVendors, addVendor: addGlobalVendor } = useVendorStore()
-  const { user } = useAuthStore()
-  const { toast } = useToast()
   const { t, formatCurrency } = useLanguageStore()
-
-  const [cart, setCart] = useState<CartItem[]>([])
+  const [materials, setMaterials] = useState<Material[]>([])
+  const [campaigns, setCampaigns] = useState<AdCampaign[]>([])
+  const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [categoryFilter, setCategoryFilter] = useState('all')
-  const [vendorFilter, setVendorFilter] = useState('all')
-  const fileInputRef = useRef<HTMLInputElement>(null)
-
-  // Configure Item State
-  const [configuringMaterial, setConfiguringMaterial] =
-    useState<Material | null>(null)
-  const [configBrand, setConfigBrand] = useState('')
-  const [configColor, setConfigColor] = useState('')
-  const [configQuantity, setConfigQuantity] = useState(1)
-
-  // Checkout State
-  const [isCheckoutOpen, setIsCheckoutOpen] = useState(false)
-  const [checkoutProjectId, setCheckoutProjectId] = useState<string>(
-    urlProjectId || '',
-  )
-  const [checkoutStageId, setCheckoutStageId] = useState<string>(
-    urlStageId || 'none',
-  )
-  const [checkoutVendorId, setCheckoutVendorId] = useState<string>('')
-  const [paymentType, setPaymentType] = useState<'instant' | 'invoice'>(
-    'instant',
-  )
-
-  // New Vendor State
-  const [isNewVendorOpen, setIsNewVendorOpen] = useState(false)
-  const [newVendorName, setNewVendorName] = useState('')
-
-  // Custom Material State
-  const [isCustomMaterialOpen, setIsCustomMaterialOpen] = useState(false)
-  const [customMaterial, setCustomMaterial] = useState({
-    name: '',
-    price: 0,
-    unit: 'un',
-    quantity: 1,
-    category: 'Diversos',
-  })
 
   useEffect(() => {
-    fetchVendors()
-  }, [fetchVendors])
+    fetchData()
+  }, [])
 
-  useEffect(() => {
-    if (urlProjectId) setCheckoutProjectId(urlProjectId)
-    if (urlStageId) setCheckoutStageId(urlStageId)
-  }, [urlProjectId, urlStageId])
+  const fetchData = async () => {
+    setLoading(true)
+    const [materialsRes, campaignsRes] = await Promise.all([
+      supabase.from('materials').select('*').order('name'),
+      supabase
+        .from('advertising_campaigns')
+        .select(
+          `
+          id, title, media_url, target_url, specifications,
+          vendors(name)
+        `,
+        )
+        .eq('status', 'active')
+        .lte('start_date', new Date().toISOString())
+        .gte('end_date', new Date().toISOString()),
+    ])
+
+    if (materialsRes.data) {
+      setMaterials(materialsRes.data)
+    }
+
+    if (campaignsRes.data) {
+      const mappedCampaigns = campaignsRes.data.map((c) => ({
+        ...c,
+        advertiser: Array.isArray(c.vendors) ? c.vendors[0] : c.vendors,
+      }))
+      setCampaigns(mappedCampaigns as any)
+    }
+
+    setLoading(false)
+  }
 
   const filteredMaterials = materials.filter((m) => {
     const matchesSearch = m.name
@@ -134,1019 +101,221 @@ export default function MaterialsMarketplace() {
       .includes(searchTerm.toLowerCase())
     const matchesCategory =
       categoryFilter === 'all' || m.category === categoryFilter
-    const matchesVendor = vendorFilter === 'all' || m.supplier === vendorFilter
-    return matchesSearch && matchesCategory && matchesVendor
+    return matchesSearch && matchesCategory
   })
 
-  const canPurchase = (material: Material) => {
-    if (!material.purchasePermissions) return true
-    if (!user) return false
-    if (user.role === 'admin' || user.teamRole === 'Admin') return true
-    return material.purchasePermissions.includes(user.teamRole || '')
-  }
-
-  const openConfigModal = (material: Material) => {
-    if (!canPurchase(material)) {
-      toast({
-        variant: 'destructive',
-        title: t('error') || 'Error',
-        description: 'Permission denied',
-      })
-      return
-    }
-    setConfiguringMaterial(material)
-    setConfigBrand('')
-    setConfigColor('')
-    setConfigQuantity(1)
-  }
-
-  const confirmAddToCart = () => {
-    if (
-      !configuringMaterial ||
-      configQuantity <= 0 ||
-      configuringMaterial.price < 0
+  const getAdForCategory = (category: string | null) => {
+    if (!category) return null
+    const specificAd = campaigns.find(
+      (c) => c.specifications?.category === category,
     )
-      return
+    if (specificAd) return specificAd
 
-    setCart((prev) => [
-      ...prev,
-      {
-        id: Math.random().toString(36).substring(2),
-        material: configuringMaterial,
-        quantity: configQuantity,
-        unitPrice: Math.max(0, configuringMaterial.price),
-        brand: configBrand.trim(),
-        color: configColor.trim(),
-      },
-    ])
-    toast({ title: 'Added to cart' })
-    setConfiguringMaterial(null)
+    // Fallback to any random active campaign
+    return campaigns.length > 0
+      ? campaigns[Math.floor(Math.random() * campaigns.length)]
+      : null
   }
 
-  const updateCartItem = (
-    id: string,
-    field: 'quantity' | 'unitPrice',
-    value: number,
-  ) => {
-    setCart((prev) =>
-      prev
-        .map((item) => {
-          if (item.id === id) {
-            return {
-              ...item,
-              [field]:
-                field === 'quantity' ? Math.max(0, value) : Math.max(0, value),
-            }
-          }
-          return item
-        })
-        .filter((i) => i.quantity > 0),
-    )
-  }
-
-  const removeFromCart = (id: string) => {
-    setCart((prev) => prev.filter((i) => i.id !== id))
-  }
-
-  const cartTotal = cart.reduce(
-    (acc, item) => acc + item.unitPrice * item.quantity,
-    0,
-  )
-
-  const handleAddNewVendor = async () => {
-    if (!newVendorName.trim()) return
-    const v = await addGlobalVendor({ name: newVendorName, status: 'active' })
-    if (v) {
-      setCheckoutVendorId(v.id)
-      setIsNewVendorOpen(false)
-      setNewVendorName('')
-      toast({ title: 'Fornecedor registrado com sucesso!' })
+  const getCategoryIcon = (category: string | null) => {
+    switch (category) {
+      case 'Elétrica':
+      case 'Electrical':
+        return <Zap className="h-4 w-4 text-yellow-500" />
+      case 'Hidráulica':
+      case 'Hydraulic':
+        return <Droplets className="h-4 w-4 text-blue-500" />
+      case 'Pintura':
+      case 'Painting':
+        return <PaintRoller className="h-4 w-4 text-purple-500" />
+      case 'Ferramentas':
+      case 'Tools':
+        return <Hammer className="h-4 w-4 text-gray-500" />
+      case 'Alvenaria':
+      case 'Masonry':
+        return <BrickWall className="h-4 w-4 text-orange-500" />
+      default:
+        return <Package className="h-4 w-4 text-muted-foreground" />
     }
   }
 
-  const handleAddCustomMaterial = () => {
-    if (
-      !customMaterial.name ||
-      customMaterial.price < 0 ||
-      customMaterial.quantity <= 0
-    )
-      return
-
-    const newMat: Material = {
-      id: 'custom-' + Math.random().toString(36).substr(2, 9),
-      name: customMaterial.name,
-      category: customMaterial.category,
-      price: customMaterial.price,
-      unit: customMaterial.unit,
-      imageUrl: 'https://img.usecurling.com/p/300/300?q=box&color=gray',
-      supplier: checkoutVendorId
-        ? vendors.find((v) => v.id === checkoutVendorId)?.name ||
-          'Fornecedor Local'
-        : 'Avulso',
-      stock: 999,
-      description: 'Item adicionado sob demanda para a obra',
-    }
-
-    setCart((prev) => [
-      ...prev,
-      {
-        id: Math.random().toString(36).substring(2),
-        material: newMat,
-        quantity: customMaterial.quantity,
-        unitPrice: customMaterial.price,
-        brand: 'Sob Demanda',
-        color: '',
-      },
-    ])
-
-    toast({ title: 'Item avulso adicionado ao carrinho!' })
-    setIsCustomMaterialOpen(false)
-    setCustomMaterial({
-      name: '',
-      price: 0,
-      unit: 'un',
-      quantity: 1,
-      category: 'Diversos',
-    })
-  }
-
-  const handleCheckoutSubmit = async () => {
-    if (!checkoutProjectId) {
-      toast({
-        variant: 'destructive',
-        title: 'Allocation Required',
-        description: 'Select the destination project for this purchase.',
-      })
-      return
-    }
-    if (!checkoutVendorId) {
-      toast({
-        variant: 'destructive',
-        title: 'Vendor Required',
-        description: 'Select or register the vendor/store.',
-      })
-      return
-    }
-
-    const selectedVendor = vendors.find((v) => v.id === checkoutVendorId)
-    const selectedProject = projects.find((p) => p.id === checkoutProjectId)
-    const status = paymentType === 'instant' ? 'paid' : 'pending'
-
-    // Register in Supabase invoices (Payables)
-    const { error: invoiceError } = await supabase
-      .from('invoices')
-      .insert({
-        project_id: checkoutProjectId,
-        task_id: checkoutStageId !== 'none' ? checkoutStageId : null,
-        payer_id: user?.id,
-        vendor_id: checkoutVendorId,
-        amount: cartTotal,
-        status: status,
-        description: `Pedido de Materiais - ${selectedVendor?.name || 'Diversos'}`,
-        type: 'material',
-        due_date:
-          paymentType === 'invoice'
-            ? new Date(Date.now() + 30 * 86400000).toISOString()
-            : null,
-        payment_date:
-          paymentType === 'instant' ? new Date().toISOString() : null,
-      })
-      .select()
-      .single()
-
-    if (invoiceError) {
-      toast({
-        variant: 'destructive',
-        title: 'Erro',
-        description: 'Falha ao registrar fatura. ' + invoiceError.message,
-      })
-      return
-    }
-
-    // Update Inventory via InventoryStore
-    const projectItems = useInventoryStore
-      .getState()
-      .getItemsByProject(checkoutProjectId)
-    cart.forEach((item) => {
-      const existing = projectItems.find(
-        (i) => i.materialName === item.material.name,
-      )
-      if (existing) {
-        useInventoryStore
-          .getState()
-          .updateQuantity(existing.id, existing.quantity + item.quantity)
-      } else {
-        useInventoryStore.getState().addItem({
-          projectId: checkoutProjectId,
-          materialName: item.material.name,
-          quantity: item.quantity,
-          unit: item.material.unit,
-          minStock: 10,
-          location: `Obra - ${selectedProject?.name || 'Local'}`,
-        })
-      }
-    })
-
-    // Update Project Finance Budget/Cost
-    addAllocatedCost(checkoutProjectId, {
-      description: `Pedido de Materiais: ${selectedVendor?.name || 'Diversos'}`,
-      amount: cartTotal,
-      type: paymentType === 'instant' ? 'actual' : 'estimated',
-      category: 'material',
-      costClass: 'capex',
-      date: new Date(),
-      stageId: checkoutStageId !== 'none' ? checkoutStageId : undefined,
-    })
-
-    if (paymentType === 'instant' && checkoutStageId !== 'none') {
-      updateStageActuals(
-        checkoutProjectId,
-        checkoutStageId,
-        'material',
-        cartTotal,
-      )
-    }
-
-    toast({
-      title: 'Pedido Registrado',
-      description:
-        paymentType === 'instant'
-          ? 'Compra liquidada, orçamento atualizado e itens no estoque.'
-          : 'Itens no estoque. Fatura pendente enviada para Contas a Pagar.',
-    })
-
-    setCart([])
-    setIsCheckoutOpen(false)
-    navigate(`/construction/projects/${checkoutProjectId}?tab=purchasing`)
-  }
-
-  const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const result = await importMaterialList(e.target.files[0])
-      if (result.success) {
-        toast({
-          title: t('success') || 'Success',
-          description: `${result.count} items imported.`,
-        })
-      }
+  const getCategoryTranslation = (cat: string | null) => {
+    switch (cat) {
+      case 'Elétrica':
+        return t('market.category.electrical')
+      case 'Hidráulica':
+        return t('market.category.hydraulic')
+      case 'Alvenaria':
+        return t('market.category.masonry')
+      case 'Pintura':
+        return t('market.category.painting')
+      case 'Ferramentas':
+        return t('market.category.tools')
+      default:
+        return cat || 'Geral'
     }
   }
 
-  const selectedProject = projects.find((p) => p.id === checkoutProjectId)
-  const selectedProjectStages = selectedProject?.stages || []
-
-  // Effect to automatically filter by preferred vendor
-  useEffect(() => {
-    if (selectedProject?.preferredVendorId) {
-      const preferredVendor = vendors.find(
-        (v) => v.id === selectedProject.preferredVendorId,
-      )
-      if (preferredVendor) {
-        setVendorFilter(preferredVendor.name)
-        setCheckoutVendorId(preferredVendor.id)
-      }
-    } else {
-      setVendorFilter('all')
-    }
-  }, [checkoutProjectId, selectedProject?.preferredVendorId, vendors])
-
-  const isCartValid = cart.length > 0 && cart.every((i) => i.quantity > 0)
-  const isAllocationValid = !!checkoutProjectId
-
-  const activeProjects = projects.filter((p) => p.status === 'in_progress')
-
-  const totalBudget = selectedProject ? selectedProject.totalBudget : 0
-  const budgetUsed = selectedProject ? selectedProject.totalSpent : 0
-  const budgetRemaining = totalBudget - budgetUsed
-  const willExceedBudget =
-    selectedProject && budgetUsed + cartTotal > totalBudget
+  const uniqueCategories = Array.from(
+    new Set(materials.map((m) => m.category).filter(Boolean)),
+  ) as string[]
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-        <div className="flex items-center gap-4">
-          {urlProjectId && (
-            <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
-          )}
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">
-              {t('market.title')}
-            </h1>
-            <p className="text-muted-foreground">{t('market.desc')}</p>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-4 w-full md:w-auto justify-between md:justify-end">
-          <div className="text-right hidden md:block">
-            <p className="text-sm text-muted-foreground">
-              {t('market.cart.total')}
-            </p>
-            <p className="font-bold text-lg text-primary">
-              {formatCurrency(cartTotal)}
-            </p>
-          </div>
-          <Button
-            onClick={() => setIsCheckoutOpen(true)}
-            disabled={cart.length === 0}
-            className="relative bg-primary hover:bg-primary/90"
-          >
-            <ShoppingCart className="mr-2 h-4 w-4" /> {t('market.checkout')}
-            {cart.length > 0 && (
-              <span className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs shadow-md">
-                {cart.length}
-              </span>
-            )}
-          </Button>
+      <div className="flex flex-col md:flex-row items-start justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">
+            {t('market.list.title')}
+          </h1>
+          <p className="text-muted-foreground">{t('market.list.desc')}</p>
         </div>
       </div>
 
-      <div className="flex flex-col md:flex-row gap-4 p-4 bg-card rounded-xl border shadow-sm">
+      <div className="flex flex-col sm:flex-row gap-4 p-4 bg-card rounded-xl border shadow-sm">
         <div className="relative flex-1">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Search by product, brand or code..."
+            placeholder={t('general.search')}
             className="pl-9 bg-background"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
         <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-          <SelectTrigger className="w-[180px] bg-background">
-            <SelectValue placeholder={t('market.category')} />
+          <SelectTrigger className="w-full sm:w-[220px] bg-background">
+            <SelectValue placeholder={t('market.column.category')} />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">{t('market.all_categories')}</SelectItem>
-            <SelectItem value="Estrutura">Structure</SelectItem>
-            <SelectItem value="Alvenaria">Masonry</SelectItem>
-            <SelectItem value="Acabamento">Finishing</SelectItem>
-          </SelectContent>
-        </Select>
-        <Select value={vendorFilter} onValueChange={setVendorFilter}>
-          <SelectTrigger className="w-[180px] bg-background">
-            <SelectValue placeholder={t('proj.vendor_short')} />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All</SelectItem>
-            {Array.from(
-              new Set([
-                ...materials.map((m) => m.supplier),
-                ...vendors.map((v) => v.name),
-              ]),
-            ).map((sup) => (
-              <SelectItem key={sup} value={sup}>
-                {sup}{' '}
-                {selectedProject?.preferredVendorId &&
-                vendors.find((v) => v.id === selectedProject.preferredVendorId)
-                  ?.name === sup
-                  ? ' (Preferencial)'
-                  : ''}
+            {uniqueCategories.map((cat) => (
+              <SelectItem key={cat} value={cat}>
+                {getCategoryTranslation(cat)}
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
-        <Button
-          variant="outline"
-          onClick={() => setIsCustomMaterialOpen(true)}
-          title="Adicionar item fora do catálogo"
-          className="bg-primary/5 text-primary border-primary/20 hover:bg-primary/10"
-        >
-          <Plus className="mr-2 h-4 w-4" /> Item Avulso
-        </Button>
-        <Button
-          variant="outline"
-          onClick={() => fileInputRef.current?.click()}
-          title="Import product list"
-          className="hidden sm:flex"
-        >
-          <Upload className="mr-2 h-4 w-4" /> Importar
-        </Button>
-        <input
-          type="file"
-          ref={fileInputRef}
-          className="hidden"
-          onChange={handleImport}
-          accept=".csv,.xlsx"
-        />
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        {filteredMaterials.map((material) => {
-          const allowed = canPurchase(material)
-          const totalInCart = cart
-            .filter((i) => i.material.id === material.id)
-            .reduce((acc, item) => acc + item.quantity, 0)
-
-          return (
-            <Card
-              key={material.id}
-              className={`flex flex-col overflow-hidden hover:shadow-md transition-shadow ${!allowed ? 'opacity-70 grayscale-[30%]' : ''}`}
-            >
-              <div className="aspect-[4/3] relative bg-muted group">
-                <img
-                  src={material.imageUrl}
-                  alt={material.name}
-                  className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-500"
-                />
-                <Badge className="absolute top-2 right-2 shadow-sm">
-                  {material.category === 'Estrutura'
-                    ? 'Structure'
-                    : material.category === 'Alvenaria'
-                      ? 'Masonry'
-                      : material.category === 'Acabamento'
-                        ? 'Finishing'
-                        : material.category}
-                </Badge>
-                {!allowed && (
-                  <div className="absolute inset-0 bg-black/40 flex items-center justify-center backdrop-blur-[2px]">
-                    <Badge variant="destructive" className="flex gap-1">
-                      <Lock className="h-3 w-3" /> Locked (Permission)
-                    </Badge>
-                  </div>
-                )}
-              </div>
-              <CardHeader className="p-4 pb-2">
-                <CardTitle className="text-base leading-tight line-clamp-2 min-h-[2.5rem]">
-                  {material.name}
-                </CardTitle>
-                <div className="flex items-center justify-between mt-2">
-                  <p className="text-xs font-medium text-muted-foreground flex items-center gap-1">
-                    <Store className="h-3 w-3" /> {material.supplier}
-                  </p>
-                  {material.supplierWebsite && (
-                    <a
-                      href={material.supplierWebsite}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-xs text-blue-600 hover:underline flex items-center gap-0.5"
-                    >
-                      Site <ExternalLink className="h-2 w-2" />
-                    </a>
-                  )}
-                </div>
-              </CardHeader>
-              <CardContent className="p-4 pt-0 flex-1 flex flex-col justify-end">
-                <div className="text-xl font-bold text-primary">
-                  {formatCurrency(material.price)}{' '}
-                  <span className="text-xs font-normal text-muted-foreground">
-                    / {material.unit}
-                  </span>
-                </div>
-              </CardContent>
-              <CardFooter className="p-4 pt-0 bg-muted/20 border-t mt-2 flex-col gap-2">
-                <Button
-                  className="w-full mt-2"
-                  onClick={() => openConfigModal(material)}
-                  disabled={!allowed}
-                  variant={totalInCart > 0 ? 'outline' : 'secondary'}
+      <div className="border rounded-lg bg-card overflow-x-auto">
+        <Table className="min-w-[600px]">
+          <TableHeader className="bg-muted/50">
+            <TableRow>
+              <TableHead className="w-[50px]"></TableHead>
+              <TableHead>{t('market.column.material')}</TableHead>
+              <TableHead>{t('market.column.category')}</TableHead>
+              <TableHead className="text-right">
+                {t('market.column.estimate')}
+              </TableHead>
+              <TableHead className="w-[300px]">
+                {t('market.column.whereToBuy')}
+              </TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {loading ? (
+              <TableRow>
+                <TableCell
+                  colSpan={5}
+                  className="text-center py-8 text-muted-foreground"
                 >
-                  {totalInCart > 0
-                    ? `Add More (${totalInCart} in cart)`
-                    : 'Add to Cart'}
-                </Button>
-              </CardFooter>
-            </Card>
-          )
-        })}
-      </div>
-
-      {/* Item Configuration Dialog */}
-      <Dialog
-        open={!!configuringMaterial}
-        onOpenChange={(open) => !open && setConfiguringMaterial(null)}
-      >
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Product Specifications</DialogTitle>
-            <DialogDescription>
-              Define details, brand, and variations for{' '}
-              {configuringMaterial?.name}
-            </DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="grid gap-2">
-                <Label>Brand</Label>
-                <Input
-                  placeholder="Ex: Tigre, Votorantim..."
-                  value={configBrand}
-                  onChange={(e) => setConfigBrand(e.target.value)}
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label>Color/Variation</Label>
-                <Input
-                  placeholder="Ex: White, Gray..."
-                  value={configColor}
-                  onChange={(e) => setConfigColor(e.target.value)}
-                />
-              </div>
-            </div>
-            <div className="grid gap-2">
-              <Label>Quantity ({configuringMaterial?.unit})</Label>
-              <Input
-                type="number"
-                min="1"
-                value={configQuantity}
-                onChange={(e) =>
-                  setConfigQuantity(parseInt(e.target.value) || 0)
-                }
-              />
-            </div>
-            <div className="bg-muted p-3 rounded-md text-right mt-2 border">
-              <p className="text-sm text-muted-foreground">
-                Estimated Subtotal
-              </p>
-              <p className="text-2xl font-bold text-primary">
-                {formatCurrency(
-                  (configuringMaterial?.price || 0) * configQuantity,
-                )}
-              </p>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setConfiguringMaterial(null)}
-            >
-              Cancel
-            </Button>
-            <Button onClick={confirmAddToCart} disabled={configQuantity <= 0}>
-              Add to Cart
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Checkout Dialog */}
-      <Dialog open={isCheckoutOpen} onOpenChange={setIsCheckoutOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="text-2xl">Checkout</DialogTitle>
-            <DialogDescription>
-              Review the amounts, units, and allocate for financial approval.
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="grid gap-6 py-4">
-            {/* Allocation Section */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-muted/30 p-4 rounded-lg border">
-              <div className="space-y-2">
-                <Label className="text-sm font-semibold flex items-center gap-1">
-                  Destination Project <span className="text-red-500">*</span>
-                </Label>
-                <Select
-                  value={checkoutProjectId}
-                  onValueChange={setCheckoutProjectId}
+                  {t('loading')}
+                </TableCell>
+              </TableRow>
+            ) : filteredMaterials.length === 0 ? (
+              <TableRow>
+                <TableCell
+                  colSpan={5}
+                  className="text-center py-8 text-muted-foreground"
                 >
-                  <SelectTrigger
-                    className={`bg-background ${!checkoutProjectId ? 'border-red-300' : ''}`}
+                  {t('market.empty')}
+                </TableCell>
+              </TableRow>
+            ) : (
+              filteredMaterials.map((material) => {
+                const ad = getAdForCategory(material.category)
+                return (
+                  <TableRow
+                    key={material.id}
+                    className="hover:bg-muted/50 transition-colors group"
                   >
-                    <SelectValue placeholder="Select destination project" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {activeProjects.map((p) => (
-                      <SelectItem key={p.id} value={p.id}>
-                        {p.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {!checkoutProjectId && (
-                  <p className="text-xs text-red-500">
-                    Project selection is required for budget control.
-                  </p>
-                )}
-              </div>
-              <div className="space-y-2">
-                <Label className="text-sm font-semibold">
-                  Schedule Stage (Optional)
-                </Label>
-                <Select
-                  value={checkoutStageId}
-                  onValueChange={setCheckoutStageId}
-                  disabled={!checkoutProjectId}
-                >
-                  <SelectTrigger className="bg-background">
-                    <SelectValue placeholder="General (No specific stage)" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">
-                      General (No specific stage)
-                    </SelectItem>
-                    {selectedProjectStages.map((s) => (
-                      <SelectItem key={s.id} value={s.id}>
-                        {s.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            {/* Budget Integrity Section */}
-            {selectedProject && (
-              <div className="bg-card p-4 rounded-lg border space-y-3">
-                <div className="flex justify-between items-center">
-                  <Label className="text-sm font-semibold flex items-center gap-2">
-                    <ShieldCheck className="h-4 w-4 text-primary" /> Integridade
-                    do Orçamento
-                  </Label>
-                  <Badge
-                    variant={willExceedBudget ? 'destructive' : 'outline'}
-                    className={
-                      !willExceedBudget
-                        ? 'text-emerald-600 border-emerald-200 bg-emerald-50'
-                        : ''
-                    }
-                  >
-                    {willExceedBudget
-                      ? 'Excede Orçamento'
-                      : 'Dentro do Orçamento'}
-                  </Badge>
-                </div>
-                <div className="space-y-1">
-                  <div className="flex justify-between text-xs text-muted-foreground">
-                    <span>Disponível: {formatCurrency(budgetRemaining)}</span>
-                    <span>Total: {formatCurrency(totalBudget)}</span>
-                  </div>
-                  <Progress
-                    value={Math.min(
-                      100,
-                      ((budgetUsed + cartTotal) / (totalBudget || 1)) * 100,
-                    )}
-                    className="h-2"
-                  />
-                </div>
-                {willExceedBudget && (
-                  <p className="text-xs text-red-500 font-medium">
-                    Aviso: Esta compra ultrapassará o saldo do orçamento
-                    aprovado (Falta{' '}
-                    {formatCurrency(budgetUsed + cartTotal - totalBudget)}).
-                  </p>
-                )}
-              </div>
-            )}
-
-            {/* Vendor Section */}
-            <div className="bg-blue-50/50 p-4 rounded-lg border border-blue-100 space-y-4">
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
-                <div className="space-y-2 flex-1 w-full">
-                  <Label className="text-sm font-semibold flex items-center gap-1">
-                    Loja / Fornecedor <span className="text-red-500">*</span>
-                  </Label>
-                  <Select
-                    value={checkoutVendorId}
-                    onValueChange={setCheckoutVendorId}
-                  >
-                    <SelectTrigger className="bg-background border-blue-200">
-                      <SelectValue placeholder="Onde você está comprando?" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {vendors.map((v) => (
-                        <SelectItem key={v.id} value={v.id}>
-                          {v.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <Button
-                  variant="outline"
-                  onClick={() => setIsNewVendorOpen(!isNewVendorOpen)}
-                  className="bg-background border-blue-200 hover:bg-blue-100"
-                >
-                  <Store className="mr-2 h-4 w-4 text-blue-600" /> Nova Loja
-                </Button>
-              </div>
-
-              {/* Inline New Vendor Form */}
-              {isNewVendorOpen && (
-                <div className="flex items-center gap-2 pt-2 border-t border-blue-200">
-                  <Input
-                    placeholder="New Vendor Name..."
-                    value={newVendorName}
-                    onChange={(e) => setNewVendorName(e.target.value)}
-                    className="bg-background"
-                    autoFocus
-                  />
-                  <Button
-                    onClick={handleAddNewVendor}
-                    disabled={!newVendorName.trim()}
-                  >
-                    Save Vendor
-                  </Button>
-                </div>
-              )}
-            </div>
-
-            {/* Items Table */}
-            <div className="border rounded-md overflow-hidden">
-              <Table>
-                <TableHeader className="bg-muted/50">
-                  <TableRow>
-                    <TableHead className="w-[40%]">Specified Product</TableHead>
-                    <TableHead>Unit Price</TableHead>
-                    <TableHead className="w-[120px]">Qty / Unit</TableHead>
-                    <TableHead className="text-right">Item Total</TableHead>
-                    <TableHead className="w-[50px]"></TableHead>
+                    <TableCell>
+                      <div className="w-8 h-8 bg-muted rounded-md flex items-center justify-center shrink-0 shadow-sm border border-border/50">
+                        {getCategoryIcon(material.category)}
+                      </div>
+                    </TableCell>
+                    <TableCell className="font-medium">
+                      {material.name}
+                    </TableCell>
+                    <TableCell>
+                      <Badge
+                        variant="secondary"
+                        className="font-normal whitespace-nowrap shadow-sm"
+                      >
+                        {getCategoryTranslation(material.category)}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-right text-muted-foreground whitespace-nowrap">
+                      {material.price ? formatCurrency(material.price) : 'N/A'}{' '}
+                      {material.unit && `/ ${material.unit}`}
+                    </TableCell>
+                    <TableCell>
+                      {ad ? (
+                        <div className="flex items-center justify-between gap-3 p-2 rounded-lg border bg-background/50 hover:bg-background transition-colors">
+                          <div className="flex items-center gap-3 overflow-hidden">
+                            {ad.media_url ? (
+                              <div className="w-8 h-8 rounded bg-white border flex items-center justify-center p-0.5 shrink-0 overflow-hidden shadow-sm">
+                                <img
+                                  src={ad.media_url}
+                                  alt={ad.advertiser?.name || ad.title}
+                                  className="w-full h-full object-contain"
+                                />
+                              </div>
+                            ) : (
+                              <div className="w-8 h-8 rounded bg-muted flex items-center justify-center shrink-0 shadow-sm">
+                                <ShoppingCart className="h-4 w-4 text-muted-foreground" />
+                              </div>
+                            )}
+                            <div className="flex flex-col overflow-hidden">
+                              <span
+                                className="text-xs font-medium truncate"
+                                title={ad.advertiser?.name || ad.title}
+                              >
+                                {ad.advertiser?.name || ad.title}
+                              </span>
+                              <span className="text-[10px] text-muted-foreground flex items-center gap-1">
+                                {t('market.sponsored')}
+                              </span>
+                            </div>
+                          </div>
+                          <Button
+                            size="sm"
+                            variant="default"
+                            className="h-7 text-xs px-3 shrink-0 shadow-sm"
+                            asChild
+                          >
+                            <a
+                              href={ad.target_url || '#'}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              {t('market.buy_now')}{' '}
+                              <ExternalLink className="ml-1 h-3 w-3" />
+                            </a>
+                          </Button>
+                        </div>
+                      ) : (
+                        <div className="text-sm text-muted-foreground italic flex items-center h-full px-2">
+                          {t('market.no_partners')}
+                        </div>
+                      )}
+                    </TableCell>
                   </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {cart.map((item) => (
-                    <TableRow key={item.id}>
-                      <TableCell className="font-medium">
-                        {item.material.name}
-                        <div className="text-[10px] text-muted-foreground mt-0.5 flex flex-wrap gap-x-2 gap-y-1">
-                          {item.brand && (
-                            <Badge
-                              variant="secondary"
-                              className="text-[10px] h-4"
-                            >
-                              Brand: {item.brand}
-                            </Badge>
-                          )}
-                          {item.color && (
-                            <Badge
-                              variant="outline"
-                              className="text-[10px] h-4"
-                            >
-                              Color: {item.color}
-                            </Badge>
-                          )}
-                          {checkoutProjectId && (
-                            <Badge
-                              variant="outline"
-                              className="text-[10px] h-4 text-primary border-primary/30"
-                            >
-                              Project:{' '}
-                              {
-                                projects.find((p) => p.id === checkoutProjectId)
-                                  ?.name
-                              }
-                            </Badge>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-1">
-                          <span className="text-muted-foreground text-xs">
-                            $
-                          </span>
-                          <Input
-                            type="number"
-                            min="0"
-                            step="0.01"
-                            className="h-8 w-24 text-right"
-                            value={item.unitPrice}
-                            onChange={(e) =>
-                              updateCartItem(
-                                item.id,
-                                'unitPrice',
-                                parseFloat(e.target.value) || 0,
-                              )
-                            }
-                          />
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <Input
-                            type="number"
-                            min="1"
-                            className="h-8 w-16 text-center"
-                            value={item.quantity}
-                            onChange={(e) =>
-                              updateCartItem(
-                                item.id,
-                                'quantity',
-                                parseInt(e.target.value) || 1,
-                              )
-                            }
-                          />
-                          <span className="text-xs text-muted-foreground whitespace-nowrap">
-                            {item.material.unit}
-                          </span>
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-right font-semibold text-primary">
-                        {formatCurrency(item.quantity * item.unitPrice)}
-                      </TableCell>
-                      <TableCell>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => removeFromCart(item.id)}
-                          className="text-destructive hover:bg-destructive/10 h-8 w-8"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-
-            <div className="space-y-4 pt-4 border-t mt-4">
-              <Label className="text-sm font-semibold">
-                Forma de Pagamento / Lançamento Financeiro
-              </Label>
-              <RadioGroup
-                value={paymentType}
-                onValueChange={(v) =>
-                  setPaymentType(v as 'instant' | 'invoice')
-                }
-                className="grid grid-cols-1 sm:grid-cols-2 gap-4"
-              >
-                <div className="flex items-start space-x-3 border p-4 rounded-lg cursor-pointer hover:bg-muted/50 transition-colors">
-                  <RadioGroupItem
-                    value="instant"
-                    id="instant"
-                    className="mt-1"
-                  />
-                  <div className="grid gap-1 w-full">
-                    <Label
-                      htmlFor="instant"
-                      className="cursor-pointer font-medium w-full text-base"
-                    >
-                      Pagar Agora (Caixa/Cartão)
-                    </Label>
-                    <p className="text-xs text-muted-foreground leading-relaxed">
-                      Liquidação imediata. O valor será descontado diretamente
-                      do saldo e orçamento atualizado.
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-start space-x-3 border p-4 rounded-lg cursor-pointer hover:bg-muted/50 transition-colors">
-                  <RadioGroupItem
-                    value="invoice"
-                    id="invoice"
-                    className="mt-1"
-                  />
-                  <div className="grid gap-1 w-full">
-                    <Label
-                      htmlFor="invoice"
-                      className="cursor-pointer font-medium w-full text-base"
-                    >
-                      Faturar (Boleto/A Prazo)
-                    </Label>
-                    <p className="text-xs text-muted-foreground leading-relaxed">
-                      Gerar um lançamento no Contas a Pagar aguardando
-                      conciliação da conta corrente.
-                    </p>
-                  </div>
-                </div>
-              </RadioGroup>
-            </div>
-          </div>
-
-          <DialogFooter className="flex-col sm:flex-row items-center justify-between border-t pt-4 gap-4">
-            <div className="text-left w-full sm:w-auto">
-              <p className="text-sm text-muted-foreground">Order Total</p>
-              <p className="text-3xl font-bold text-primary">
-                {formatCurrency(cartTotal)}
-              </p>
-            </div>
-            <div className="flex gap-2 w-full sm:w-auto">
-              <Button
-                variant="outline"
-                onClick={() => setIsCheckoutOpen(false)}
-                className="w-full sm:w-auto"
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={handleCheckoutSubmit}
-                disabled={
-                  !isCartValid ||
-                  !isAllocationValid ||
-                  (willExceedBudget && paymentType === 'instant')
-                }
-                className="w-full sm:w-auto"
-              >
-                {willExceedBudget && paymentType === 'instant'
-                  ? 'Orçamento Insuficiente'
-                  : 'Confirmar e Integrar'}
-              </Button>
-            </div>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Custom Material Dialog */}
-      <Dialog
-        open={isCustomMaterialOpen}
-        onOpenChange={setIsCustomMaterialOpen}
-      >
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Item Fora do Catálogo</DialogTitle>
-            <DialogDescription>
-              Adicione materiais avulsos que você vai comprar diretamente na
-              loja para esta obra.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid gap-2">
-              <Label>Nome do Produto</Label>
-              <Input
-                placeholder="Ex: Cimento, Prego, Tubo PVC..."
-                value={customMaterial.name}
-                onChange={(e) =>
-                  setCustomMaterial({ ...customMaterial, name: e.target.value })
-                }
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="grid gap-2">
-                <Label>Preço Unitário</Label>
-                <div className="relative">
-                  <span className="absolute left-3 top-2.5 text-muted-foreground text-sm">
-                    $
-                  </span>
-                  <Input
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    className="pl-7"
-                    value={customMaterial.price}
-                    onChange={(e) =>
-                      setCustomMaterial({
-                        ...customMaterial,
-                        price: parseFloat(e.target.value) || 0,
-                      })
-                    }
-                  />
-                </div>
-              </div>
-              <div className="grid gap-2">
-                <Label>Quantidade</Label>
-                <Input
-                  type="number"
-                  min="1"
-                  value={customMaterial.quantity}
-                  onChange={(e) =>
-                    setCustomMaterial({
-                      ...customMaterial,
-                      quantity: parseInt(e.target.value) || 1,
-                    })
-                  }
-                />
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="grid gap-2">
-                <Label>Unidade de Medida</Label>
-                <Input
-                  placeholder="Ex: un, kg, m³..."
-                  value={customMaterial.unit}
-                  onChange={(e) =>
-                    setCustomMaterial({
-                      ...customMaterial,
-                      unit: e.target.value,
-                    })
-                  }
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label>Categoria</Label>
-                <Select
-                  value={customMaterial.category}
-                  onValueChange={(val) =>
-                    setCustomMaterial({ ...customMaterial, category: val })
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Estrutura">Estrutura</SelectItem>
-                    <SelectItem value="Alvenaria">Alvenaria</SelectItem>
-                    <SelectItem value="Acabamento">Acabamento</SelectItem>
-                    <SelectItem value="Diversos">Diversos</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setIsCustomMaterialOpen(false)}
-            >
-              Cancelar
-            </Button>
-            <Button
-              onClick={handleAddCustomMaterial}
-              disabled={!customMaterial.name || customMaterial.price <= 0}
-            >
-              Adicionar ao Carrinho
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+                )
+              })
+            )}
+          </TableBody>
+        </Table>
+      </div>
     </div>
   )
 }
