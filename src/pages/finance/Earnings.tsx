@@ -19,7 +19,7 @@ import { formatCurrencyValue } from '@/lib/utils'
 
 export default function Earnings() {
   const { user } = useAuth()
-  const { t } = useLanguageStore()
+  const { t, formatDate } = useLanguageStore()
   const [invoices, setInvoices] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -55,12 +55,18 @@ export default function Earnings() {
 
   const downloadCSV = () => {
     if (invoices.length === 0) return
-    const headers = ['Date', 'Description', 'Amount', 'Status', 'Type']
+    const headers = [
+      t('earnings.invoice_date'),
+      t('earnings.description'),
+      t('earnings.amount'),
+      t('earnings.status'),
+      'Type',
+    ]
     const rows = invoices.map((inv) => [
-      format(new Date(inv.created_at), 'MM/dd/yyyy'),
+      formatDate(inv.created_at, 'P'),
       `"${(inv.description || '').replace(/"/g, '""')}"`,
       `"${formatCurrencyValue(Number(inv.amount), inv.currency || 'USD')}"`,
-      inv.status,
+      t(`status.${inv.status}`) || inv.status,
       inv.type || 'service',
     ])
     const csvContent = [
@@ -70,21 +76,25 @@ export default function Earnings() {
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
     const link = document.createElement('a')
     link.href = URL.createObjectURL(blob)
-    link.download = `earnings_export_${format(new Date(), 'yyyyMMdd')}.csv`
+    link.download = `earnings_export_${formatDate(new Date(), 'yyyyMMdd')}.csv`
     link.click()
   }
 
   if (loading)
     return (
-      <div className="p-8 text-center text-muted-foreground">Loading...</div>
+      <div className="p-8 text-center text-muted-foreground">
+        {t('loading')}
+      </div>
     )
 
   return (
     <div className="container mx-auto p-4 md:p-8 max-w-6xl space-y-6 animate-fade-in">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <h1 className="text-3xl font-bold tracking-tight">Earnings History</h1>
+        <h1 className="text-3xl font-bold tracking-tight">
+          {t('earnings.page_title')}
+        </h1>
         <Button onClick={downloadCSV} variant="outline" className="gap-2">
-          <Download className="w-4 h-4" /> Download CSV
+          <Download className="w-4 h-4" /> {t('earnings.download_csv')}
         </Button>
       </div>
 
@@ -92,7 +102,7 @@ export default function Earnings() {
         <Card className="border-emerald-200 bg-emerald-50/30">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-emerald-800">
-              Total Revenue
+              {t('earnings.total_revenue')}
             </CardTitle>
             <CheckCircle className="h-4 w-4 text-emerald-500" />
           </CardHeader>
@@ -105,7 +115,7 @@ export default function Earnings() {
         <Card className="border-amber-200 bg-amber-50/30">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-amber-800">
-              Pending Payouts
+              {t('earnings.pending_payouts')}
             </CardTitle>
             <Clock className="h-4 w-4 text-amber-500" />
           </CardHeader>
@@ -119,29 +129,29 @@ export default function Earnings() {
 
       <Card>
         <CardHeader>
-          <CardTitle>History</CardTitle>
+          <CardTitle>{t('earnings.history')}</CardTitle>
         </CardHeader>
         <CardContent>
           {invoices.length === 0 ? (
             <div className="text-center py-10 text-muted-foreground border-2 border-dashed rounded-lg">
-              No financial records found.
+              {t('earnings.empty')}
             </div>
           ) : (
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Invoice Date</TableHead>
-                    <TableHead>Description</TableHead>
-                    <TableHead>Amount</TableHead>
-                    <TableHead>Status</TableHead>
+                    <TableHead>{t('earnings.invoice_date')}</TableHead>
+                    <TableHead>{t('earnings.description')}</TableHead>
+                    <TableHead>{t('earnings.amount')}</TableHead>
+                    <TableHead>{t('earnings.status')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {invoices.map((inv) => (
                     <TableRow key={inv.id}>
                       <TableCell className="whitespace-nowrap">
-                        {format(new Date(inv.created_at), 'MM/dd/yyyy')}
+                        {formatDate(inv.created_at, 'P')}
                       </TableCell>
                       <TableCell>{inv.description || '-'}</TableCell>
                       <TableCell className="font-medium">
@@ -161,7 +171,7 @@ export default function Earnings() {
                               : ''
                           }
                         >
-                          {inv.status}
+                          {t(`status.${inv.status}`) || inv.status}
                         </Badge>
                       </TableCell>
                     </TableRow>
