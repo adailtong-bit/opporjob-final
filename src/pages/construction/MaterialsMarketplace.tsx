@@ -30,6 +30,7 @@ import {
   ShoppingCart,
   ArrowLeft,
   Plus,
+  X,
 } from 'lucide-react'
 import { useLanguageStore } from '@/stores/useLanguageStore'
 import { useNavigate } from 'react-router-dom'
@@ -55,6 +56,12 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form'
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from '@/components/ui/sheet'
 
 interface Material {
   id: string
@@ -74,6 +81,12 @@ interface AdCampaign {
   advertiser: {
     name: string
   } | null
+}
+
+interface CartItem {
+  material: Material
+  quantity: number
+  unitPrice: number
 }
 
 const materialSchema = z.object({
@@ -101,10 +114,11 @@ export default function MaterialsMarketplace() {
   const [allCategories, setAllCategories] = useState<string[]>([])
 
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
-  const [purchaseMaterial, setPurchaseMaterial] = useState<Material | null>(
-    null,
-  )
-  const [purchaseQuantity, setPurchaseQuantity] = useState(1)
+
+  const [cart, setCart] = useState<CartItem[]>([])
+  const [isCartOpen, setIsCartOpen] = useState(false)
+  const [projects, setProjects] = useState<{ id: string; name: string }[]>([])
+  const [selectedProjectId, setSelectedProjectId] = useState<string>('')
   const [purchaseLoading, setPurchaseLoading] = useState(false)
 
   const isAdmin = domainUser?.isPremium || domainUser?.role === 'admin'
@@ -123,7 +137,22 @@ export default function MaterialsMarketplace() {
   useEffect(() => {
     fetchData()
     fetchCategoriesList()
+    fetchProjects()
   }, [])
+
+  const fetchProjects = async () => {
+    const { data } = await supabase.from('projects').select('id, name')
+    if (data) {
+      setProjects(data)
+      const params = new URLSearchParams(window.location.search)
+      const pId = params.get('projectId')
+      if (pId && data.some((p) => p.id === pId)) {
+        setSelectedProjectId(pId)
+      } else if (data.length > 0) {
+        setSelectedProjectId(data[0].id)
+      }
+    }
+  }
 
   const fetchCategoriesList = async () => {
     const { data } = await supabase
@@ -184,7 +213,6 @@ export default function MaterialsMarketplace() {
     )
     if (specificAd) return specificAd
 
-    // Fallback to any random active campaign
     return campaigns.length > 0
       ? campaigns[Math.floor(Math.random() * campaigns.length)]
       : null
@@ -267,43 +295,96 @@ export default function MaterialsMarketplace() {
     }
   }
 
-  const openPurchaseDialog = (material: Material) => {
-    setPurchaseQuantity(1)
-    setPurchaseMaterial(material)
+  const addToCart = (material: Material) => {
+    setCart((prev) => {
+      const existing = prev.find((item) => item.material.id === material.id)
+      if (existing) {
+        return prev.map((item) =>
+          item.material.id === material.id
+            ? { ...item, quantity: item.quantity + 1 }
+            : item,
+        )
+      }
+      return [
+        ...prev,
+        { material, quantity: 1, unitPrice: material.price || 0 },
+      ]
+    })
+    toast({
+      title: 'Adicionado',
+      description: `${material.name} foi adicionado ao carrinho.`,
+    })
   }
 
-  const submitPurchase = async () => {
-    if (!purchaseMaterial || !user) return
+  const updateCartItem = (
+    id: string,
+    field: 'quantity' | 'unitPrice',
+    value: number,
+  ) => {
+    setCart((prev) =>
+      prev.map((item) =>
+        item.material.id === id ? { ...item, [field]: value } : item,
+      ),
+    )
+  }
+
+  const removeCartItem = (id: string) => {
+    setCart((prev) => prev.filter((item) => item.material.id !== id))
+  }
+
+  const cartTotal = cart.reduce(
+    (sum, item) => sum + item.quantity * item.unitPrice,
+    0,
+  )
+
+  const handleCheckout = async () => {
+    if (!selectedProjectId) {
+      toast({
+        title: 'Erro',
+        description: 'Selecione um projeto para continuar.',
+        variant: 'destructive',
+      })
+      return
+    }
+    if (cart.length === 0 || !user) return
+
     setPurchaseLoading(true)
     try {
       const { data: po, error: poError } = await supabase
         .from('purchase_orders')
         .insert({
           requester_id: user.id,
-          status: 'pending',
-          total_amount: (purchaseMaterial.price || 0) * purchaseQuantity,
+          project_id: selectedProjectId,
+          status: 'ordered',
+          total_amount: cartTotal,
         })
         .select()
         .single()
 
       if (poError) throw poError
 
-      await supabase.from('purchase_order_items').insert({
+      const itemsToInsert = cart.map((item) => ({
         purchase_order_id: po.id,
-        material_id: purchaseMaterial.id,
-        material_name: purchaseMaterial.name,
-        quantity: purchaseQuantity,
-        unit_price: purchaseMaterial.price || 0,
-        total_price: (purchaseMaterial.price || 0) * purchaseQuantity,
-      })
+        material_id: item.material.id,
+        material_name: item.material.name,
+        quantity: item.quantity,
+        unit_price: item.unitPrice,
+        total_price: item.quantity * item.unitPrice,
+      }))
+
+      const { error: itemsError } = await supabase
+        .from('purchase_order_items')
+        .insert(itemsToInsert)
+      if (itemsError) throw itemsError
 
       toast({
-        title: 'Pedido Efetuado',
-        description: `Adicionado ${purchaseQuantity} un. de ${
-          purchaseMaterial.name
-        } ao pedido #${po.id.slice(0, 8)}.`,
+        title: 'Sucesso',
+        description: 'Pedido de compra finalizado com sucesso!',
       })
+      setCart([])
+      setIsCartOpen(false)
     } catch (error) {
+      console.error(error)
       toast({
         title: 'Erro',
         description: 'Falha ao processar o pedido de compra.',
@@ -311,12 +392,11 @@ export default function MaterialsMarketplace() {
       })
     } finally {
       setPurchaseLoading(false)
-      setPurchaseMaterial(null)
     }
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 relative">
       <Button
         variant="ghost"
         size="sm"
@@ -490,10 +570,10 @@ export default function MaterialsMarketplace() {
                         size="sm"
                         variant="default"
                         className="h-8 shadow-sm"
-                        onClick={() => openPurchaseDialog(material)}
+                        onClick={() => addToCart(material)}
                       >
-                        <ShoppingCart className="h-3.5 w-3.5 mr-1.5" />
-                        {t('market.buy_now')}
+                        <Plus className="h-3.5 w-3.5 mr-1.5" />
+                        Adicionar
                       </Button>
                     </TableCell>
                   </TableRow>
@@ -610,56 +690,127 @@ export default function MaterialsMarketplace() {
         </DialogContent>
       </Dialog>
 
-      <Dialog
-        open={!!purchaseMaterial}
-        onOpenChange={(open) => !open && setPurchaseMaterial(null)}
-      >
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Adicionar ao Pedido de Compra</DialogTitle>
-          </DialogHeader>
-          <div className="py-4 space-y-4">
-            <p>
-              Item:{' '}
-              <span className="font-medium">{purchaseMaterial?.name}</span>
-            </p>
-            <p>
-              Preço Unitário:{' '}
-              <span className="font-medium">
-                {purchaseMaterial?.price
-                  ? formatCurrency(purchaseMaterial.price)
-                  : 'N/A'}
-              </span>
-            </p>
+      {cart.length > 0 && (
+        <Button
+          className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg z-50 flex items-center justify-center animate-fade-in-up hover:scale-105 transition-transform"
+          onClick={() => setIsCartOpen(true)}
+        >
+          <ShoppingCart className="h-6 w-6" />
+          <span className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground h-6 w-6 rounded-full flex items-center justify-center text-xs font-bold shadow-sm">
+            {cart.length}
+          </span>
+        </Button>
+      )}
 
-            <div className="space-y-2">
-              <Label>Quantidade a Comprar</Label>
-              <Input
-                type="number"
-                min="1"
-                value={purchaseQuantity}
-                onChange={(e) => setPurchaseQuantity(Number(e.target.value))}
-              />
-            </div>
-            <div className="text-right text-lg">
-              Total Estimado:{' '}
-              <span className="font-bold text-primary">
-                {purchaseMaterial?.price
-                  ? formatCurrency(purchaseMaterial.price * purchaseQuantity)
-                  : 'N/A'}
-              </span>
-            </div>
+      <Sheet open={isCartOpen} onOpenChange={setIsCartOpen}>
+        <SheetContent className="w-full sm:max-w-md flex flex-col bg-card border-l">
+          <SheetHeader>
+            <SheetTitle>Carrinho de Compras</SheetTitle>
+          </SheetHeader>
+          <div className="flex-1 overflow-y-auto py-4 space-y-4 pr-2">
+            {cart.map((item) => (
+              <div
+                key={item.material.id}
+                className="flex flex-col gap-3 p-3 border bg-background rounded-lg shadow-sm"
+              >
+                <div className="flex justify-between items-start">
+                  <span className="font-semibold text-sm leading-tight pr-4">
+                    {item.material.name}
+                  </span>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6 text-muted-foreground -mt-1 -mr-1"
+                    onClick={() => removeCartItem(item.material.id)}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+                <div className="flex gap-4">
+                  <div className="space-y-1.5 flex-1">
+                    <Label className="text-xs text-muted-foreground">
+                      Quantidade
+                    </Label>
+                    <Input
+                      type="number"
+                      min="1"
+                      value={item.quantity}
+                      onChange={(e) =>
+                        updateCartItem(
+                          item.material.id,
+                          'quantity',
+                          Number(e.target.value),
+                        )
+                      }
+                      className="h-8"
+                    />
+                  </div>
+                  <div className="space-y-1.5 flex-1">
+                    <Label className="text-xs text-muted-foreground">
+                      Preço Unit. Estimado
+                    </Label>
+                    <Input
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      value={item.unitPrice}
+                      onChange={(e) =>
+                        updateCartItem(
+                          item.material.id,
+                          'unitPrice',
+                          Number(e.target.value),
+                        )
+                      }
+                      className="h-8"
+                    />
+                  </div>
+                </div>
+                <div className="text-right text-sm font-medium mt-1 text-primary">
+                  Total: {formatCurrency(item.quantity * item.unitPrice)}
+                </div>
+              </div>
+            ))}
+            {cart.length === 0 && (
+              <div className="text-center py-8 text-muted-foreground flex flex-col items-center">
+                <ShoppingCart className="h-12 w-12 text-muted-foreground/30 mb-3" />
+                <p>Seu carrinho está vazio.</p>
+              </div>
+            )}
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setPurchaseMaterial(null)}>
-              {t('cancel')}
+          <div className="space-y-4 pt-4 border-t mt-auto pb-4 sm:pb-0">
+            <div className="space-y-2">
+              <Label>Vincular a um Projeto</Label>
+              <Select
+                value={selectedProjectId}
+                onValueChange={setSelectedProjectId}
+              >
+                <SelectTrigger className="w-full bg-background">
+                  <SelectValue placeholder="Selecione um projeto" />
+                </SelectTrigger>
+                <SelectContent>
+                  {projects.map((p) => (
+                    <SelectItem key={p.id} value={p.id}>
+                      {p.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex justify-between items-center text-lg font-bold bg-muted/50 p-3 rounded-lg">
+              <span>Total Estimado:</span>
+              <span className="text-primary">{formatCurrency(cartTotal)}</span>
+            </div>
+            <Button
+              className="w-full shadow-sm"
+              size="lg"
+              disabled={purchaseLoading || cart.length === 0}
+              onClick={handleCheckout}
+            >
+              {purchaseLoading ? 'Processando...' : 'Finalizar Pedido'}
             </Button>
-            <Button disabled={purchaseLoading} onClick={submitPurchase}>
-              {purchaseLoading ? 'Processando...' : 'Adicionar ao Pedido'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </div>
+        </SheetContent>
+      </Sheet>
     </div>
   )
 }

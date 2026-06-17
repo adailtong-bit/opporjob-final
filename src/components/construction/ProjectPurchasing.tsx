@@ -1,4 +1,3 @@
-import { useMaterialStore } from '@/stores/useMaterialStore'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import {
@@ -11,29 +10,57 @@ import {
 } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
 import { Link } from 'react-router-dom'
-import { ShoppingCart, Store, PackageOpen, FileText } from 'lucide-react'
+import {
+  ShoppingCart,
+  Store,
+  PackageOpen,
+  FileText,
+  Upload,
+} from 'lucide-react'
 import { useLanguageStore } from '@/stores/useLanguageStore'
 import { useState, useEffect, useRef } from 'react'
 import { supabase } from '@/lib/supabase/client'
 import { useToast } from '@/hooks/use-toast'
-import { Upload } from 'lucide-react'
 
 export function ProjectPurchasing({ projectId }: { projectId: string }) {
-  const { getOrdersByProject, updateOrderStatus, updateOrderReceipt } =
-    useMaterialStore()
   const { formatCurrency, formatDate } = useLanguageStore()
   const { toast } = useToast()
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null)
+  const [uploadingOrderId, setUploadingOrderId] = useState<string | null>(null)
 
-  const orders = getOrdersByProject(projectId)
+  const [orders, setOrders] = useState<any[]>([])
   const [dbInvoices, setDbInvoices] = useState<any[]>([])
 
+  const fetchOrders = async () => {
+    const { data } = await supabase
+      .from('purchase_orders')
+      .select('*, vendors(name), purchase_order_items(*)')
+      .eq('project_id', projectId)
+      .order('created_at', { ascending: false })
+
+    if (data) {
+      setOrders(
+        data.map((d) => ({
+          ...d,
+          vendorName: d.vendors?.name || 'Mercado Geral',
+          items: d.purchase_order_items || [],
+          date: d.created_at,
+          total: d.total_amount,
+          receiptUrl: d.receipt_url,
+        })),
+      )
+    }
+  }
+
   useEffect(() => {
+    fetchOrders()
+
     supabase
       .from('invoices')
       .select('*, vendors(name)')
       .eq('project_id', projectId)
+      .neq('type', 'material_purchase')
       .then(({ data }) => {
         if (data) setDbInvoices(data)
       })
@@ -46,26 +73,71 @@ export function ProjectPurchasing({ projectId }: { projectId: string }) {
     }).format(amount)
   }
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!selectedOrderId) return
     const file = e.target.files?.[0]
     if (file) {
-      // Mock upload
-      updateOrderReceipt(selectedOrderId, URL.createObjectURL(file))
-      toast({
-        title: 'Recibo Anexado',
-        description: 'O documento foi salvo com sucesso.',
-      })
+      setUploadingOrderId(selectedOrderId)
+      try {
+        const ext = file.name.split('.').pop()
+        const fileName = `${selectedOrderId}-${Date.now()}.${ext}`
+
+        const { error: uploadError } = await supabase.storage
+          .from('purchase_receipts')
+          .upload(fileName, file)
+
+        if (uploadError) throw uploadError
+
+        const { data: urlData } = supabase.storage
+          .from('purchase_receipts')
+          .getPublicUrl(fileName)
+
+        const { error: updateError } = await supabase
+          .from('purchase_orders')
+          .update({ receipt_url: urlData.publicUrl })
+          .eq('id', selectedOrderId)
+
+        if (updateError) throw updateError
+
+        toast({
+          title: 'Recibo Anexado',
+          description: 'O documento foi salvo com sucesso.',
+        })
+        fetchOrders()
+      } catch (err) {
+        console.error(err)
+        toast({
+          title: 'Erro',
+          description: 'Não foi possível anexar o recibo.',
+          variant: 'destructive',
+        })
+      } finally {
+        setUploadingOrderId(null)
+        setSelectedOrderId(null)
+        if (fileInputRef.current) fileInputRef.current.value = ''
+      }
     }
-    setSelectedOrderId(null)
   }
 
-  const markAsDelivered = (orderId: string) => {
-    updateOrderStatus(orderId, 'delivered')
-    toast({
-      title: 'Pedido Entregue',
-      description: 'Estoque atualizado e entrega confirmada.',
-    })
+  const markAsDelivered = async (orderId: string) => {
+    try {
+      const { error } = await supabase.rpc('confirm_purchase_delivery', {
+        p_order_id: orderId,
+      })
+      if (error) throw error
+      toast({
+        title: 'Pedido Entregue',
+        description: 'Estoque atualizado e entrega confirmada.',
+      })
+      fetchOrders()
+    } catch (err) {
+      console.error(err)
+      toast({
+        title: 'Erro',
+        description: 'Não foi possível confirmar a entrega.',
+        variant: 'destructive',
+      })
+    }
   }
 
   return (
@@ -110,132 +182,134 @@ export function ProjectPurchasing({ projectId }: { projectId: string }) {
             </TableHeader>
             <TableBody>
               {orders.length > 0
-                ? orders
-                    .sort(
-                      (a, b) =>
-                        new Date(b.date).getTime() - new Date(a.date).getTime(),
-                    )
-                    .map((order) => (
-                      <TableRow key={order.id} className="group">
-                        <TableCell className="text-sm text-muted-foreground align-top pt-4">
-                          {formatDate(order.date, 'dd/MM/yyyy')}
-                          <div className="text-[10px] mt-1">
-                            Ref: #{order.id.substring(0, 5).toUpperCase()}
-                          </div>
-                        </TableCell>
-                        <TableCell className="align-top pt-4">
-                          <div className="font-medium flex items-center gap-1.5">
-                            <Store className="h-4 w-4 text-blue-500" />
-                            {order.vendorName || 'Diversos'}
-                          </div>
-                        </TableCell>
-                        <TableCell className="align-top pt-4">
-                          <ul className="space-y-1.5">
-                            {order.items.map((item, idx) => (
-                              <li
-                                key={idx}
-                                className="text-sm flex items-start gap-2 bg-muted/20 p-1.5 rounded"
-                              >
-                                <PackageOpen className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
-                                <div className="flex-1">
-                                  <span className="font-medium">
-                                    {item.material.name}
-                                  </span>
-                                  <div className="text-xs text-muted-foreground flex flex-col gap-0.5 mt-0.5">
-                                    <div className="flex items-center gap-2">
-                                      <span>
-                                        {item.quantity} {item.material.unit} x{' '}
-                                        {formatCurrency(item.unitPrice)}
-                                      </span>
-                                      <span className="font-semibold text-foreground">
-                                        {formatCurrency(item.total)}
-                                      </span>
-                                    </div>
-                                    {(item.brand || item.color) && (
-                                      <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
-                                        {item.brand && (
-                                          <span>Marca: {item.brand}</span>
-                                        )}
-                                        {item.color && (
-                                          <span>Cor: {item.color}</span>
-                                        )}
-                                      </div>
-                                    )}
+                ? orders.map((order) => (
+                    <TableRow key={order.id} className="group">
+                      <TableCell className="text-sm text-muted-foreground align-top pt-4">
+                        {formatDate(order.date, 'dd/MM/yyyy')}
+                        <div className="text-[10px] mt-1">
+                          Ref: #{order.id.substring(0, 5).toUpperCase()}
+                        </div>
+                      </TableCell>
+                      <TableCell className="align-top pt-4">
+                        <div className="font-medium flex items-center gap-1.5">
+                          <Store className="h-4 w-4 text-blue-500" />
+                          {order.vendorName || 'Diversos'}
+                        </div>
+                      </TableCell>
+                      <TableCell className="align-top pt-4">
+                        <ul className="space-y-1.5">
+                          {order.items.map((item: any, idx: number) => (
+                            <li
+                              key={idx}
+                              className="text-sm flex items-start gap-2 bg-muted/20 p-1.5 rounded"
+                            >
+                              <PackageOpen className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
+                              <div className="flex-1">
+                                <span className="font-medium">
+                                  {item.material_name || item.material?.name}
+                                </span>
+                                <div className="text-xs text-muted-foreground flex flex-col gap-0.5 mt-0.5">
+                                  <div className="flex items-center gap-2">
+                                    <span>
+                                      {item.quantity} un. x{' '}
+                                      {formatCurrency(
+                                        item.unit_price || item.unitPrice,
+                                      )}
+                                    </span>
+                                    <span className="font-semibold text-foreground">
+                                      {formatCurrency(
+                                        item.total_price || item.total,
+                                      )}
+                                    </span>
                                   </div>
+                                  {(item.brand || item.color) && (
+                                    <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
+                                      {item.brand && (
+                                        <span>Marca: {item.brand}</span>
+                                      )}
+                                      {item.color && (
+                                        <span>Cor: {item.color}</span>
+                                      )}
+                                    </div>
+                                  )}
                                 </div>
-                              </li>
-                            ))}
-                          </ul>
-                        </TableCell>
-                        <TableCell className="font-bold text-primary text-right align-top pt-4 text-base">
-                          {formatCurrency(order.total)}
-                        </TableCell>
-                        <TableCell className="text-center align-top pt-4">
-                          <div className="flex flex-col items-center gap-2">
-                            {order.status === 'pending_manager' && (
-                              <Badge
-                                variant="outline"
-                                className="text-yellow-600 border-yellow-300 bg-yellow-50"
-                              >
-                                Pendente Gerente
-                              </Badge>
-                            )}
-                            {order.status === 'pending_finance' && (
-                              <Badge
-                                variant="outline"
-                                className="text-yellow-600 border-yellow-300 bg-yellow-50"
-                              >
-                                Pendente Finanças
-                              </Badge>
-                            )}
-                            {order.status === 'ordered' && (
-                              <>
-                                <Badge
-                                  variant="secondary"
-                                  className="bg-blue-100 text-blue-800 border-blue-200"
-                                >
-                                  Aprovado / Comprado
-                                </Badge>
-                                {!order.receiptUrl ? (
-                                  <Button
-                                    size="sm"
-                                    variant="outline"
-                                    className="h-7 text-xs w-full"
-                                    onClick={() => {
-                                      setSelectedOrderId(order.id)
-                                      fileInputRef.current?.click()
-                                    }}
-                                  >
-                                    <Upload className="h-3 w-3 mr-1" /> Anexar
-                                    Nota
-                                  </Button>
-                                ) : (
-                                  <Button
-                                    size="sm"
-                                    variant="default"
-                                    className="h-7 text-xs w-full bg-green-600 hover:bg-green-700"
-                                    onClick={() => markAsDelivered(order.id)}
-                                  >
-                                    Confirmar Entrega
-                                  </Button>
-                                )}
-                              </>
-                            )}
-                            {order.status === 'delivered' && (
+                              </div>
+                            </li>
+                          ))}
+                        </ul>
+                      </TableCell>
+                      <TableCell className="font-bold text-primary text-right align-top pt-4 text-base">
+                        {formatCurrency(order.total)}
+                      </TableCell>
+                      <TableCell className="text-center align-top pt-4">
+                        <div className="flex flex-col items-center gap-2">
+                          {order.status === 'pending_manager' && (
+                            <Badge
+                              variant="outline"
+                              className="text-yellow-600 border-yellow-300 bg-yellow-50"
+                            >
+                              Pendente Gerente
+                            </Badge>
+                          )}
+                          {order.status === 'pending_finance' && (
+                            <Badge
+                              variant="outline"
+                              className="text-yellow-600 border-yellow-300 bg-yellow-50"
+                            >
+                              Pendente Finanças
+                            </Badge>
+                          )}
+                          {order.status === 'ordered' && (
+                            <>
                               <Badge
                                 variant="secondary"
-                                className="bg-green-100 text-green-800 border-green-200"
+                                className="bg-blue-100 text-blue-800 border-blue-200"
                               >
-                                Entregue
+                                Aprovado / Comprado
                               </Badge>
-                            )}
-                            {order.status === 'rejected' && (
-                              <Badge variant="destructive">Rejeitado</Badge>
-                            )}
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))
+                              {!order.receiptUrl ? (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="h-7 text-xs w-full"
+                                  disabled={uploadingOrderId === order.id}
+                                  onClick={() => {
+                                    setSelectedOrderId(order.id)
+                                    fileInputRef.current?.click()
+                                  }}
+                                >
+                                  <Upload className="h-3 w-3 mr-1" />
+                                  {uploadingOrderId === order.id
+                                    ? 'Anexando...'
+                                    : 'Anexar Nota'}
+                                </Button>
+                              ) : (
+                                <Button
+                                  size="sm"
+                                  variant="default"
+                                  className="h-7 text-xs w-full bg-green-600 hover:bg-green-700"
+                                  onClick={() => markAsDelivered(order.id)}
+                                >
+                                  Confirmar Entrega
+                                </Button>
+                              )}
+                            </>
+                          )}
+                          {order.status === 'delivered' && (
+                            <Badge
+                              variant="secondary"
+                              className="bg-green-100 text-green-800 border-green-200"
+                            >
+                              Entregue
+                            </Badge>
+                          )}
+                          {order.status === 'rejected' && (
+                            <Badge variant="destructive">Rejeitado</Badge>
+                          )}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
                 : null}
 
               {dbInvoices.length > 0 &&
