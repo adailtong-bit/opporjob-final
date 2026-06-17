@@ -11,7 +11,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: '14.5'
+    PostgrestVersion: "14.5"
   }
   public: {
     Tables: {
@@ -63,11 +63,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'advertising_campaigns_advertiser_id_fkey'
-            columns: ['advertiser_id']
+            foreignKeyName: "advertising_campaigns_advertiser_id_fkey"
+            columns: ["advertiser_id"]
             isOneToOne: false
-            referencedRelation: 'vendors'
-            referencedColumns: ['id']
+            referencedRelation: "vendors"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -104,11 +104,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'audit_logs_user_id_fkey'
-            columns: ['user_id']
+            foreignKeyName: "audit_logs_user_id_fkey"
+            columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: 'profiles'
-            referencedColumns: ['id']
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -148,11 +148,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'bids_job_id_fkey'
-            columns: ['job_id']
+            foreignKeyName: "bids_job_id_fkey"
+            columns: ["job_id"]
             isOneToOne: false
-            referencedRelation: 'jobs'
-            referencedColumns: ['id']
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -303,11 +303,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'equipment_project_id_fkey'
-            columns: ['project_id']
+            foreignKeyName: "equipment_project_id_fkey"
+            columns: ["project_id"]
             isOneToOne: false
-            referencedRelation: 'projects'
-            referencedColumns: ['id']
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -332,11 +332,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'favorites_vendor_id_fkey'
-            columns: ['vendor_id']
+            foreignKeyName: "favorites_vendor_id_fkey"
+            columns: ["vendor_id"]
             isOneToOne: false
-            referencedRelation: 'vendors'
-            referencedColumns: ['id']
+            referencedRelation: "vendors"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -412,25 +412,25 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'invoices_payer_id_fkey'
-            columns: ['payer_id']
+            foreignKeyName: "invoices_payer_id_fkey"
+            columns: ["payer_id"]
             isOneToOne: false
-            referencedRelation: 'profiles'
-            referencedColumns: ['id']
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'invoices_receiver_id_fkey'
-            columns: ['receiver_id']
+            foreignKeyName: "invoices_receiver_id_fkey"
+            columns: ["receiver_id"]
             isOneToOne: false
-            referencedRelation: 'profiles'
-            referencedColumns: ['id']
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'invoices_vendor_id_fkey'
-            columns: ['vendor_id']
+            foreignKeyName: "invoices_vendor_id_fkey"
+            columns: ["vendor_id"]
             isOneToOne: false
-            referencedRelation: 'vendors'
-            referencedColumns: ['id']
+            referencedRelation: "vendors"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -458,18 +458,18 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'job_messages_job_id_fkey'
-            columns: ['job_id']
+            foreignKeyName: "job_messages_job_id_fkey"
+            columns: ["job_id"]
             isOneToOne: false
-            referencedRelation: 'jobs'
-            referencedColumns: ['id']
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'job_messages_sender_id_fkey'
-            columns: ['sender_id']
+            foreignKeyName: "job_messages_sender_id_fkey"
+            columns: ["sender_id"]
             isOneToOne: false
-            referencedRelation: 'profiles'
-            referencedColumns: ['id']
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -563,11 +563,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'jobs_accepted_bid_id_fkey'
-            columns: ['accepted_bid_id']
+            foreignKeyName: "jobs_accepted_bid_id_fkey"
+            columns: ["accepted_bid_id"]
             isOneToOne: false
-            referencedRelation: 'bids'
-            referencedColumns: ['id']
+            referencedRelation: "bids"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -757,11 +757,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'profiles_plan_id_fkey'
-            columns: ['plan_id']
+            foreignKeyName: "profiles_plan_id_fkey"
+            columns: ["plan_id"]
             isOneToOne: false
-            referencedRelation: 'construction_plans'
-            referencedColumns: ['id']
+            referencedRelation: "construction_plans"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -795,11 +795,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'project_budgets_project_id_fkey'
-            columns: ['project_id']
+            foreignKeyName: "project_budgets_project_id_fkey"
+            columns: ["project_id"]
             isOneToOne: false
-            referencedRelation: 'projects'
-            referencedColumns: ['id']
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -833,11 +833,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'project_compliance_project_id_fkey'
-            columns: ['project_id']
+            foreignKeyName: "project_compliance_project_id_fkey"
+            columns: ["project_id"]
             isOneToOne: false
-            referencedRelation: 'projects'
-            referencedColumns: ['id']
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -862,18 +862,18 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'project_partners_project_id_fkey'
-            columns: ['project_id']
+            foreignKeyName: "project_partners_project_id_fkey"
+            columns: ["project_id"]
             isOneToOne: false
-            referencedRelation: 'projects'
-            referencedColumns: ['id']
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'project_partners_vendor_id_fkey'
-            columns: ['vendor_id']
+            foreignKeyName: "project_partners_vendor_id_fkey"
+            columns: ["vendor_id"]
             isOneToOne: false
-            referencedRelation: 'vendors'
-            referencedColumns: ['id']
+            referencedRelation: "vendors"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -913,18 +913,18 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'project_stages_dependency_id_fkey'
-            columns: ['dependency_id']
+            foreignKeyName: "project_stages_dependency_id_fkey"
+            columns: ["dependency_id"]
             isOneToOne: false
-            referencedRelation: 'project_stages'
-            referencedColumns: ['id']
+            referencedRelation: "project_stages"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'project_stages_project_id_fkey'
-            columns: ['project_id']
+            foreignKeyName: "project_stages_project_id_fkey"
+            columns: ["project_id"]
             isOneToOne: false
-            referencedRelation: 'projects'
-            referencedColumns: ['id']
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -955,11 +955,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'project_updates_project_id_fkey'
-            columns: ['project_id']
+            foreignKeyName: "project_updates_project_id_fkey"
+            columns: ["project_id"]
             isOneToOne: false
-            referencedRelation: 'projects'
-            referencedColumns: ['id']
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -1038,11 +1038,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'purchase_order_items_purchase_order_id_fkey'
-            columns: ['purchase_order_id']
+            foreignKeyName: "purchase_order_items_purchase_order_id_fkey"
+            columns: ["purchase_order_id"]
             isOneToOne: false
-            referencedRelation: 'purchase_orders'
-            referencedColumns: ['id']
+            referencedRelation: "purchase_orders"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -1088,39 +1088,39 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'purchase_orders_finance_id_fkey'
-            columns: ['finance_id']
+            foreignKeyName: "purchase_orders_finance_id_fkey"
+            columns: ["finance_id"]
             isOneToOne: false
-            referencedRelation: 'profiles'
-            referencedColumns: ['id']
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'purchase_orders_manager_id_fkey'
-            columns: ['manager_id']
+            foreignKeyName: "purchase_orders_manager_id_fkey"
+            columns: ["manager_id"]
             isOneToOne: false
-            referencedRelation: 'profiles'
-            referencedColumns: ['id']
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'purchase_orders_project_id_fkey'
-            columns: ['project_id']
+            foreignKeyName: "purchase_orders_project_id_fkey"
+            columns: ["project_id"]
             isOneToOne: false
-            referencedRelation: 'projects'
-            referencedColumns: ['id']
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'purchase_orders_requester_id_fkey'
-            columns: ['requester_id']
+            foreignKeyName: "purchase_orders_requester_id_fkey"
+            columns: ["requester_id"]
             isOneToOne: false
-            referencedRelation: 'profiles'
-            referencedColumns: ['id']
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'purchase_orders_vendor_id_fkey'
-            columns: ['vendor_id']
+            foreignKeyName: "purchase_orders_vendor_id_fkey"
+            columns: ["vendor_id"]
             isOneToOne: false
-            referencedRelation: 'vendors'
-            referencedColumns: ['id']
+            referencedRelation: "vendors"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -1181,25 +1181,25 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'reviews_job_id_fkey'
-            columns: ['job_id']
+            foreignKeyName: "reviews_job_id_fkey"
+            columns: ["job_id"]
             isOneToOne: false
-            referencedRelation: 'jobs'
-            referencedColumns: ['id']
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'reviews_reviewer_id_fkey'
-            columns: ['reviewer_id']
+            foreignKeyName: "reviews_reviewer_id_fkey"
+            columns: ["reviewer_id"]
             isOneToOne: false
-            referencedRelation: 'profiles'
-            referencedColumns: ['id']
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'reviews_target_id_fkey'
-            columns: ['target_id']
+            foreignKeyName: "reviews_target_id_fkey"
+            columns: ["target_id"]
             isOneToOne: false
-            referencedRelation: 'profiles'
-            referencedColumns: ['id']
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -1254,11 +1254,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'subcategories_category_id_fkey'
-            columns: ['category_id']
+            foreignKeyName: "subcategories_category_id_fkey"
+            columns: ["category_id"]
             isOneToOne: false
-            referencedRelation: 'categories'
-            referencedColumns: ['id']
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -1292,11 +1292,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'vendor_contacts_vendor_id_fkey'
-            columns: ['vendor_id']
+            foreignKeyName: "vendor_contacts_vendor_id_fkey"
+            columns: ["vendor_id"]
             isOneToOne: false
-            referencedRelation: 'vendors'
-            referencedColumns: ['id']
+            referencedRelation: "vendors"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -1446,33 +1446,33 @@ export type Database = {
   }
 }
 
-type DatabaseWithoutInternals = Omit<Database, '__InternalSupabase'>
+type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
 
-type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, 'public'>]
+type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
 
 export type Tables<
   DefaultSchemaTableNameOrOptions extends
-    | keyof (DefaultSchema['Tables'] & DefaultSchema['Views'])
+    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
     | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables'] &
-        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Views'])
+    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
     : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
-  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables'] &
-      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Views'])[TableName] extends {
+  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
       Row: infer R
     }
     ? R
     : never
-  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema['Tables'] &
-        DefaultSchema['Views'])
-    ? (DefaultSchema['Tables'] &
-        DefaultSchema['Views'])[DefaultSchemaTableNameOrOptions] extends {
+  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])
+    ? (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
         Row: infer R
       }
       ? R
@@ -1481,23 +1481,23 @@ export type Tables<
 
 export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema['Tables']
+    | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables']
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
     : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
-  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables'][TableName] extends {
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
       Insert: infer I
     }
     ? I
     : never
-  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema['Tables']
-    ? DefaultSchema['Tables'][DefaultSchemaTableNameOrOptions] extends {
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
         Insert: infer I
       }
       ? I
@@ -1506,23 +1506,23 @@ export type TablesInsert<
 
 export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema['Tables']
+    | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables']
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
     : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
-  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables'][TableName] extends {
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
       Update: infer U
     }
     ? U
     : never
-  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema['Tables']
-    ? DefaultSchema['Tables'][DefaultSchemaTableNameOrOptions] extends {
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
         Update: infer U
       }
       ? U
@@ -1531,36 +1531,36 @@ export type TablesUpdate<
 
 export type Enums<
   DefaultSchemaEnumNameOrOptions extends
-    | keyof DefaultSchema['Enums']
+    | keyof DefaultSchema["Enums"]
     | { schema: keyof DatabaseWithoutInternals },
   EnumName extends DefaultSchemaEnumNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions['schema']]['Enums']
+    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
     : never = never,
 > = DefaultSchemaEnumNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
-  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions['schema']]['Enums'][EnumName]
-  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema['Enums']
-    ? DefaultSchema['Enums'][DefaultSchemaEnumNameOrOptions]
+  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
+  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
+    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
     : never
 
 export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
-    | keyof DefaultSchema['CompositeTypes']
+    | keyof DefaultSchema["CompositeTypes"]
     | { schema: keyof DatabaseWithoutInternals },
   CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions['schema']]['CompositeTypes']
+    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
     : never = never,
 > = PublicCompositeTypeNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
-  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions['schema']]['CompositeTypes'][CompositeTypeName]
-  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema['CompositeTypes']
-    ? DefaultSchema['CompositeTypes'][PublicCompositeTypeNameOrOptions]
+  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
+    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
     : never
 
 export const Constants = {
@@ -1568,6 +1568,7 @@ export const Constants = {
     Enums: {},
   },
 } as const
+
 
 // ====== DATABASE EXTENDED CONTEXT (auto-generated) ======
 // This section contains actual PostgreSQL column types, constraints, RLS policies,
@@ -2230,11 +2231,11 @@ export const Constants = {
 //     IF NOT public.is_admin() THEN
 //       RAISE EXCEPTION 'Not authorized';
 //     END IF;
-//
+//   
 //     DELETE FROM auth.users WHERE id = target_user_id;
 //   END;
 //   $function$
-//
+//   
 // FUNCTION admin_get_jobs_with_metrics()
 //   CREATE OR REPLACE FUNCTION public.admin_get_jobs_with_metrics()
 //    RETURNS TABLE(id uuid, title text, description text, category text, budget numeric, status text, created_at timestamp with time zone, owner_id uuid, owner_name text, owner_rating numeric)
@@ -2245,9 +2246,9 @@ export const Constants = {
 //     IF NOT public.is_admin() THEN
 //       RAISE EXCEPTION 'Not authorized';
 //     END IF;
-//
+//   
 //     RETURN QUERY
-//     SELECT
+//     SELECT 
 //       j.id,
 //       j.title,
 //       j.description,
@@ -2263,7 +2264,7 @@ export const Constants = {
 //     ORDER BY j.created_at DESC;
 //   END;
 //   $function$
-//
+//   
 // FUNCTION admin_get_users_with_metrics()
 //   CREATE OR REPLACE FUNCTION public.admin_get_users_with_metrics()
 //    RETURNS TABLE(id uuid, name text, email text, role text, is_admin boolean, created_at timestamp with time zone, city text, state text, status text, rating numeric, jobs_executed bigint)
@@ -2274,9 +2275,9 @@ export const Constants = {
 //     IF NOT public.is_admin() THEN
 //       RAISE EXCEPTION 'Not authorized';
 //     END IF;
-//
+//   
 //     RETURN QUERY
-//     SELECT
+//     SELECT 
 //       p.id,
 //       p.name,
 //       p.email,
@@ -2292,7 +2293,7 @@ export const Constants = {
 //     ORDER BY p.created_at DESC;
 //   END;
 //   $function$
-//
+//   
 // FUNCTION award_job(uuid, uuid)
 //   CREATE OR REPLACE FUNCTION public.award_job(job_id_param uuid, bid_id_param uuid)
 //    RETURNS boolean
@@ -2308,34 +2309,34 @@ export const Constants = {
 //     FROM public.jobs
 //     WHERE id = job_id_param
 //     FOR UPDATE;
-//
+//   
 //     IF NOT FOUND THEN
 //       RAISE EXCEPTION 'Job not found';
 //     END IF;
-//
+//   
 //     IF v_job_owner != auth.uid() AND NOT public.is_admin() THEN
 //       RAISE EXCEPTION 'Not authorized';
 //     END IF;
-//
+//   
 //     IF v_job_status != 'open' THEN
 //       RAISE EXCEPTION 'Job is not open';
 //     END IF;
-//
+//   
 //     -- Atomically reject others and accept the selected bid
 //     UPDATE public.bids
 //     SET status = CASE WHEN id = bid_id_param THEN 'accepted' ELSE 'rejected' END
 //     WHERE job_id = job_id_param;
-//
+//   
 //     -- Update job status and link accepted bid
 //     UPDATE public.jobs
 //     SET status = 'in_progress',
 //         accepted_bid_id = bid_id_param
 //     WHERE id = job_id_param;
-//
+//   
 //     RETURN true;
 //   END;
 //   $function$
-//
+//   
 // FUNCTION get_bayesian_rating(uuid)
 //   CREATE OR REPLACE FUNCTION public.get_bayesian_rating(p_target_id uuid)
 //    RETURNS numeric
@@ -2351,23 +2352,23 @@ export const Constants = {
 //   BEGIN
 //       -- Get global average
 //       SELECT COALESCE(AVG(rating), 5.0) INTO v_s_global FROM public.reviews;
-//
+//       
 //       -- Get user reviews count and average
-//       SELECT COUNT(*), COALESCE(AVG(rating), 5.0)
-//       INTO v_v, v_s_base
-//       FROM public.reviews
+//       SELECT COUNT(*), COALESCE(AVG(rating), 5.0) 
+//       INTO v_v, v_s_base 
+//       FROM public.reviews 
 //       WHERE target_id = p_target_id;
-//
+//       
 //       IF v_v = 0 THEN
 //           RETURN ROUND(v_s_global, 1);
 //       END IF;
-//
+//       
 //       v_final := ((v_v * v_s_base) + (v_k * v_s_global)) / (v_v + v_k);
-//
+//       
 //       RETURN ROUND(v_final, 1);
 //   END;
 //   $function$
-//
+//   
 // FUNCTION get_global_rating_average()
 //   CREATE OR REPLACE FUNCTION public.get_global_rating_average()
 //    RETURNS numeric
@@ -2381,7 +2382,7 @@ export const Constants = {
 //       RETURN ROUND(v_s_global, 2);
 //   END;
 //   $function$
-//
+//   
 // FUNCTION handle_ad_completion()
 //   CREATE OR REPLACE FUNCTION public.handle_ad_completion()
 //    RETURNS trigger
@@ -2396,15 +2397,15 @@ export const Constants = {
 //     v_category TEXT;
 //   BEGIN
 //     IF OLD.status NOT IN ('completed', 'expired') AND NEW.status IN ('completed', 'expired') THEN
-//
+//       
 //       SELECT * INTO v_vendor FROM public.vendors WHERE id = NEW.advertiser_id;
-//
+//       
 //       SELECT id INTO v_admin_id FROM public.profiles WHERE is_admin = true LIMIT 1;
-//
+//       
 //       v_region := COALESCE(NEW.specifications->>'region', 'Global');
 //       v_category := COALESCE(NEW.specifications->>'category', 'General');
 //       v_tier := COALESCE(NEW.tier, 'N/A');
-//
+//       
 //       IF v_vendor.owner_id IS NOT NULL THEN
 //         INSERT INTO public.invoices (
 //           job_id,
@@ -2436,7 +2437,7 @@ export const Constants = {
 //     RETURN NEW;
 //   END;
 //   $function$
-//
+//   
 // FUNCTION handle_job_completion()
 //   CREATE OR REPLACE FUNCTION public.handle_job_completion()
 //    RETURNS trigger
@@ -2447,11 +2448,11 @@ export const Constants = {
 //     v_bid RECORD;
 //   BEGIN
 //     IF OLD.status != 'completed' AND NEW.status = 'completed' AND NEW.accepted_bid_id IS NOT NULL THEN
-//
+//       
 //       SELECT amount, executor_id INTO v_bid
 //       FROM public.bids
 //       WHERE id = NEW.accepted_bid_id;
-//
+//   
 //       IF FOUND THEN
 //         INSERT INTO public.invoices (
 //           job_id,
@@ -2473,12 +2474,12 @@ export const Constants = {
 //           'Invoice for completed job: ' || NEW.title
 //         );
 //       END IF;
-//
+//   
 //     END IF;
 //     RETURN NEW;
 //   END;
 //   $function$
-//
+//   
 // FUNCTION handle_new_user()
 //   CREATE OR REPLACE FUNCTION public.handle_new_user()
 //    RETURNS trigger
@@ -2512,7 +2513,7 @@ export const Constants = {
 //     RETURN NEW;
 //   END;
 //   $function$
-//
+//   
 // FUNCTION handle_subscription_payment()
 //   CREATE OR REPLACE FUNCTION public.handle_subscription_payment()
 //    RETURNS trigger
@@ -2529,7 +2530,7 @@ export const Constants = {
 //     RETURN NEW;
 //   END;
 //   $function$
-//
+//   
 // FUNCTION increment_job_impressions(uuid[])
 //   CREATE OR REPLACE FUNCTION public.increment_job_impressions(job_ids_param uuid[])
 //    RETURNS void
@@ -2542,7 +2543,7 @@ export const Constants = {
 //     WHERE id = ANY(job_ids_param);
 //   END;
 //   $function$
-//
+//   
 // FUNCTION increment_job_view(uuid)
 //   CREATE OR REPLACE FUNCTION public.increment_job_view(job_id_param uuid)
 //    RETURNS void
@@ -2555,7 +2556,7 @@ export const Constants = {
 //     WHERE id = job_id_param;
 //   END;
 //   $function$
-//
+//   
 // FUNCTION is_admin()
 //   CREATE OR REPLACE FUNCTION public.is_admin()
 //    RETURNS boolean
@@ -2570,7 +2571,7 @@ export const Constants = {
 //     );
 //   END;
 //   $function$
-//
+//   
 // FUNCTION lock_paid_invoices()
 //   CREATE OR REPLACE FUNCTION public.lock_paid_invoices()
 //    RETURNS trigger
@@ -2588,7 +2589,7 @@ export const Constants = {
 //     RETURN NEW;
 //   END;
 //   $function$
-//
+//   
 // FUNCTION log_audit_event()
 //   CREATE OR REPLACE FUNCTION public.log_audit_event()
 //    RETURNS trigger
@@ -2608,7 +2609,7 @@ export const Constants = {
 //     ELSIF TG_OP = 'INSERT' THEN
 //       new_data := to_jsonb(NEW);
 //     END IF;
-//
+//   
 //     INSERT INTO public.audit_logs (user_id, action, entity_type, entity_id, old_data, new_data)
 //     VALUES (
 //       user_id,
@@ -2618,14 +2619,14 @@ export const Constants = {
 //       old_data,
 //       new_data
 //     );
-//
+//     
 //     IF TG_OP = 'DELETE' THEN
 //       RETURN OLD;
 //     END IF;
 //     RETURN NEW;
 //   END;
 //   $function$
-//
+//   
 // FUNCTION trigger_invoice_email_webhook()
 //   CREATE OR REPLACE FUNCTION public.trigger_invoice_email_webhook()
 //    RETURNS trigger
@@ -2640,12 +2641,12 @@ export const Constants = {
 //     IF NEW.type = 'advertising' THEN
 //       RETURN NEW;
 //     END IF;
-//
+//   
 //     v_payload := jsonb_build_object(
 //       'record', to_jsonb(NEW),
 //       'type', TG_OP
 //     );
-//
+//     
 //     IF EXISTS (SELECT 1 FROM pg_extension WHERE extname = 'pg_net') THEN
 //       BEGIN
 //         SELECT net.http_post(
@@ -2657,11 +2658,11 @@ export const Constants = {
 //         RAISE NOTICE 'Failed to invoke webhook for email';
 //       END;
 //     END IF;
-//
+//     
 //     RETURN NEW;
 //   END;
 //   $function$
-//
+//   
 
 // --- TRIGGERS ---
 // Table: advertising_campaigns
@@ -2702,3 +2703,4 @@ export const Constants = {
 //   CREATE UNIQUE INDEX unique_review_per_job ON public.reviews USING btree (job_id, reviewer_id, target_id)
 // Table: site_settings
 //   CREATE UNIQUE INDEX site_settings_key_key ON public.site_settings USING btree (key)
+
