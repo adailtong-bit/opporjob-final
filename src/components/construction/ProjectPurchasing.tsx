@@ -101,8 +101,12 @@ export function ProjectPurchasing({ projectId }: { projectId: string }) {
 
         toast({
           title: 'Recibo Anexado',
-          description: 'O documento foi salvo com sucesso.',
+          description:
+            'O documento foi salvo com sucesso. Confirmando entrega...',
         })
+
+        await markAsDelivered(selectedOrderId)
+
         fetchOrders()
       } catch (err) {
         console.error(err)
@@ -246,7 +250,7 @@ export function ProjectPurchasing({ projectId }: { projectId: string }) {
                           {order.status === 'pending_manager' && (
                             <Badge
                               variant="outline"
-                              className="text-yellow-600 border-yellow-300 bg-yellow-50"
+                              className="text-yellow-600 border-yellow-300 bg-yellow-50 mb-2 w-full"
                             >
                               Pendente Gerente
                             </Badge>
@@ -254,24 +258,28 @@ export function ProjectPurchasing({ projectId }: { projectId: string }) {
                           {order.status === 'pending_finance' && (
                             <Badge
                               variant="outline"
-                              className="text-yellow-600 border-yellow-300 bg-yellow-50"
+                              className="text-yellow-600 border-yellow-300 bg-yellow-50 mb-2 w-full"
                             >
                               Pendente Finanças
                             </Badge>
                           )}
                           {order.status === 'ordered' && (
+                            <Badge
+                              variant="secondary"
+                              className="bg-blue-100 text-blue-800 border-blue-200 mb-2 w-full"
+                            >
+                              Aprovado / Comprado
+                            </Badge>
+                          )}
+
+                          {(order.status === 'ordered' ||
+                            order.status === 'pending_manager') && (
                             <>
-                              <Badge
-                                variant="secondary"
-                                className="bg-blue-100 text-blue-800 border-blue-200"
-                              >
-                                Aprovado / Comprado
-                              </Badge>
                               {!order.receiptUrl ? (
                                 <Button
                                   size="sm"
                                   variant="outline"
-                                  className="h-7 text-xs w-full"
+                                  className="h-7 text-xs w-full mt-1"
                                   disabled={uploadingOrderId === order.id}
                                   onClick={() => {
                                     setSelectedOrderId(order.id)
@@ -287,7 +295,7 @@ export function ProjectPurchasing({ projectId }: { projectId: string }) {
                                 <Button
                                   size="sm"
                                   variant="default"
-                                  className="h-7 text-xs w-full bg-green-600 hover:bg-green-700"
+                                  className="h-7 text-xs w-full bg-green-600 hover:bg-green-700 mt-1"
                                   onClick={() => markAsDelivered(order.id)}
                                 >
                                   Confirmar Entrega
