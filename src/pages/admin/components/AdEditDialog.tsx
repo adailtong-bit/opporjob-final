@@ -16,7 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { useAdStore } from '@/stores/useAdStore'
+import { useAdStore, AdCampaign } from '@/stores/useAdStore'
 import { useVendorStore } from '@/stores/useVendorStore'
 import { useCategoryStore } from '@/stores/useCategoryStore'
 import { usePricingMatrixStore } from '@/stores/usePricingMatrixStore'
@@ -24,33 +24,38 @@ import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/lib/supabase/client'
 import { Loader2 } from 'lucide-react'
 
-export function AdCreateDialog({
+export function AdEditDialog({
+  ad,
   open,
   onOpenChange,
 }: {
+  ad: AdCampaign
   open: boolean
-  onOpenChange: (open: boolean) => void
+  onOpenChange: (o: boolean) => void
 }) {
-  const { addAd } = useAdStore()
+  const { updateAd } = useAdStore()
   const { vendors, fetchVendors } = useVendorStore()
   const { categories, fetchCategories } = useCategoryStore()
   const { calculatePrice, fetchRules } = usePricingMatrixStore()
   const { toast } = useToast()
-
   const [loading, setLoading] = useState(false)
   const [uploading, setUploading] = useState(false)
 
   const [formData, setFormData] = useState({
-    advertiser_id: '',
-    title: '',
-    target_url: '',
-    media_url: '',
-    tier: 'Tier 3 (Basic)',
-    category: '',
-    start_date: '',
-    end_date: '',
-    price: 0,
-    status: 'active',
+    advertiser_id: ad.advertiser_id || '',
+    title: ad.title || '',
+    target_url: ad.target_url || '',
+    media_url: ad.media_url || '',
+    tier: ad.tier || 'Tier 3 (Basic)',
+    category: ad.specifications?.category || '',
+    start_date: ad.start_date
+      ? new Date(ad.start_date).toISOString().split('T')[0]
+      : '',
+    end_date: ad.end_date
+      ? new Date(ad.end_date).toISOString().split('T')[0]
+      : '',
+    price: ad.price || 0,
+    status: ad.status || 'draft',
   })
 
   useEffect(() => {
@@ -58,8 +63,24 @@ export function AdCreateDialog({
       fetchVendors()
       fetchCategories()
       fetchRules()
+      setFormData({
+        advertiser_id: ad.advertiser_id || '',
+        title: ad.title || '',
+        target_url: ad.target_url || '',
+        media_url: ad.media_url || '',
+        tier: ad.tier || 'Tier 3 (Basic)',
+        category: ad.specifications?.category || '',
+        start_date: ad.start_date
+          ? new Date(ad.start_date).toISOString().split('T')[0]
+          : '',
+        end_date: ad.end_date
+          ? new Date(ad.end_date).toISOString().split('T')[0]
+          : '',
+        price: ad.price || 0,
+        status: ad.status || 'draft',
+      })
     }
-  }, [open, fetchVendors, fetchCategories, fetchRules])
+  }, [open, ad, fetchVendors, fetchCategories, fetchRules])
 
   useEffect(() => {
     if (
@@ -71,13 +92,15 @@ export function AdCreateDialog({
       const start = new Date(formData.start_date).getTime()
       const end = new Date(formData.end_date).getTime()
       const days = (end - start) / (1000 * 3600 * 24)
-      const computed = calculatePrice(
-        formData.tier,
-        'Global',
-        formData.category,
-        days > 0 ? days : 30,
-      )
-      setFormData((prev) => ({ ...prev, price: computed }))
+      setFormData((prev) => ({
+        ...prev,
+        price: calculatePrice(
+          formData.tier,
+          'Global',
+          formData.category,
+          days > 0 ? days : 30,
+        ),
+      }))
     }
   }, [
     formData.tier,
@@ -90,21 +113,19 @@ export function AdCreateDialog({
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
-
     setUploading(true)
     const fileExt = file.name.split('.').pop()
     const fileName = `${Math.random().toString(36).substring(2)}.${fileExt}`
     const { data, error } = await supabase.storage
       .from('ads')
       .upload(fileName, file)
-
-    if (error) {
+    if (error)
       toast({
         title: 'Error uploading image',
         description: error.message,
         variant: 'destructive',
       })
-    } else if (data) {
+    else if (data) {
       const {
         data: { publicUrl },
       } = supabase.storage.from('ads').getPublicUrl(fileName)
@@ -123,11 +144,15 @@ export function AdCreateDialog({
       return
     }
     setLoading(true)
-    await addAd({
+    await updateAd(ad.id, {
       ...formData,
-      specifications: { category: formData.category, region: 'Global' },
+      specifications: {
+        ...ad.specifications,
+        category: formData.category,
+        region: 'Global',
+      },
     })
-    toast({ title: 'Campaign created successfully' })
+    toast({ title: 'Campaign updated successfully' })
     setLoading(false)
     onOpenChange(false)
   }
@@ -136,7 +161,7 @@ export function AdCreateDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Create Advertising Campaign</DialogTitle>
+          <DialogTitle>Edit Advertising Campaign</DialogTitle>
         </DialogHeader>
         <div className="grid grid-cols-2 gap-4 py-4">
           <div className="space-y-2 col-span-2">
@@ -176,6 +201,25 @@ export function AdCreateDialog({
                 setFormData({ ...formData, target_url: e.target.value })
               }
             />
+          </div>
+          <div className="space-y-2">
+            <Label>Status</Label>
+            <Select
+              value={formData.status}
+              onValueChange={(v) => setFormData({ ...formData, status: v })}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="draft">Draft</SelectItem>
+                <SelectItem value="active">Active</SelectItem>
+                <SelectItem value="paused">Paused</SelectItem>
+                <SelectItem value="completed">Completed</SelectItem>
+                <SelectItem value="expired">Expired</SelectItem>
+                <SelectItem value="canceled">Canceled</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
           <div className="space-y-2">
             <Label>Tier</Label>
@@ -219,6 +263,16 @@ export function AdCreateDialog({
             </Select>
           </div>
           <div className="space-y-2">
+            <Label>Price (Manual or Calculated)</Label>
+            <Input
+              type="number"
+              value={formData.price}
+              onChange={(e) =>
+                setFormData({ ...formData, price: Number(e.target.value) })
+              }
+            />
+          </div>
+          <div className="space-y-2">
             <Label>Start Date</Label>
             <Input
               type="date"
@@ -235,33 +289,6 @@ export function AdCreateDialog({
               value={formData.end_date}
               onChange={(e) =>
                 setFormData({ ...formData, end_date: e.target.value })
-              }
-            />
-          </div>
-          <div className="space-y-2">
-            <Label>Status</Label>
-            <Select
-              value={formData.status}
-              onValueChange={(v) => setFormData({ ...formData, status: v })}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select Status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="draft">Draft</SelectItem>
-                <SelectItem value="active">Active</SelectItem>
-                <SelectItem value="paused">Paused</SelectItem>
-                <SelectItem value="completed">Completed</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="space-y-2">
-            <Label>Price (Manual or Calculated)</Label>
-            <Input
-              type="number"
-              value={formData.price}
-              onChange={(e) =>
-                setFormData({ ...formData, price: Number(e.target.value) })
               }
             />
           </div>
@@ -298,7 +325,7 @@ export function AdCreateDialog({
             Cancel
           </Button>
           <Button onClick={handleSubmit} disabled={loading || uploading}>
-            Save Campaign
+            Save Changes
           </Button>
         </DialogFooter>
       </DialogContent>

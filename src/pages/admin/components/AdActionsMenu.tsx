@@ -11,11 +11,13 @@ import {
 import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/lib/supabase/client'
 import { useAdStore } from '@/stores/useAdStore'
+import { AdEditDialog } from './AdEditDialog'
 
 export function AdActionsMenu({ ad }: { ad: any }) {
   const { toast } = useToast()
   const { fetchAds } = useAdStore()
   const [deleting, setDeleting] = useState(false)
+  const [editOpen, setEditOpen] = useState(false)
 
   const handleDelete = async () => {
     if (!confirm('Are you sure you want to delete this campaign?')) return
@@ -126,29 +128,33 @@ export function AdActionsMenu({ ad }: { ad: any }) {
   }
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="h-8 w-8 p-0">
-          <span className="sr-only">Open menu</span>
-          <MoreHorizontal className="h-4 w-4" />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuItem>
-          <Edit className="mr-2 h-4 w-4" /> Edit Campaign
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={handleGenerateContract}>
-          <FileText className="mr-2 h-4 w-4" /> Generate Contract (PDF)
-        </DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem
-          onClick={handleDelete}
-          disabled={deleting}
-          className="text-destructive focus:text-destructive"
-        >
-          <Trash className="mr-2 h-4 w-4" /> Delete Campaign
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" className="h-8 w-8 p-0">
+            <span className="sr-only">Open menu</span>
+            <MoreHorizontal className="h-4 w-4" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuItem onClick={() => setEditOpen(true)}>
+            <Edit className="mr-2 h-4 w-4" /> Edit Campaign
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={handleGenerateContract}>
+            <FileText className="mr-2 h-4 w-4" /> Generate Contract (PDF)
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem
+            onClick={handleDelete}
+            disabled={deleting}
+            className="text-destructive focus:text-destructive"
+          >
+            <Trash className="mr-2 h-4 w-4" /> Delete Campaign
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+      <AdEditDialog ad={ad} open={editOpen} onOpenChange={setEditOpen} />
+    </>
   )
 }

@@ -61,6 +61,12 @@ export default function ManageAds() {
             Active
           </Badge>
         )
+      case 'paused':
+        return (
+          <Badge className="bg-yellow-500 cursor-pointer" onClick={toggle}>
+            Paused
+          </Badge>
+        )
       case 'draft':
         return (
           <Badge
