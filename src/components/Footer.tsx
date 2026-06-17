@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { supabase } from '@/lib/supabase/client'
 
 const defaultFooterData = {
@@ -65,10 +66,24 @@ export function Footer() {
           </div>
 
           {/* Column 4 */}
-          <div className="space-y-0.5">
+          <div className="space-y-1.5">
             <h3 className="text-sm font-bold text-white">Contact Us</h3>
-            <div className="text-xs space-y-0.5 text-slate-400 whitespace-pre-line leading-tight">
+            <div className="text-xs space-y-0.5 text-slate-400 whitespace-pre-line leading-tight mb-2">
               {`Email: ${data.contactEmail}\nPhone: ${data.contactPhone}\nAddress: ${data.contactAddress}`}
+            </div>
+            <div className="flex flex-col space-y-1 pt-2">
+              <Link
+                to="/contact"
+                className="text-xs text-blue-400 hover:text-blue-300 transition-colors"
+              >
+                Enviar Mensagem / Fale Conosco
+              </Link>
+              <Link
+                to="/pwa-guide"
+                className="text-xs text-blue-400 hover:text-blue-300 transition-colors"
+              >
+                Instalar App (PWA Guide)
+              </Link>
             </div>
           </div>
         </div>

@@ -75,6 +75,9 @@ import PushNotifications from '@/pages/admin/PushNotifications'
 import ManageIntegrations from '@/pages/admin/ManageIntegrations'
 import FinancialControl from '@/pages/admin/FinancialControl'
 import ManageJobs from '@/pages/admin/ManageJobs'
+import PwaGuide from '@/pages/PwaGuide'
+import ContactUs from '@/pages/ContactUs'
+import ManageContacts from '@/pages/admin/ManageContacts'
 import { useAuthStore } from '@/stores/useAuthStore'
 import { useNotificationStore } from '@/stores/useNotificationStore'
 import { supabase } from '@/lib/supabase/client'
@@ -696,6 +699,8 @@ const App = () => {
               <Route path="/services" element={<Services />} />
               <Route path="/find-jobs" element={<FindJobs />} />
               <Route path="/jobs/:id" element={<JobDetail />} />
+              <Route path="/pwa-guide" element={<PwaGuide />} />
+              <Route path="/contact" element={<ContactUs />} />
 
               {/* Public Auth Routes */}
               <Route element={<AuthLayout />}>
@@ -838,6 +843,14 @@ const App = () => {
                   element={
                     <AdminRoute>
                       <ManageJobs />
+                    </AdminRoute>
+                  }
+                />
+                <Route
+                  path="/admin/contacts"
+                  element={
+                    <AdminRoute>
+                      <ManageContacts />
                     </AdminRoute>
                   }
                 />
