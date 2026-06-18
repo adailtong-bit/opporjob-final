@@ -7,6 +7,8 @@ import {
   MessageSquare,
   LogIn,
   UserPlus,
+  Smartphone,
+  Mail,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAuthStore } from '@/stores/useAuthStore'
@@ -20,8 +22,8 @@ export function BottomNav() {
   const isActive = (path: string) => location.pathname === path
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 border-t bg-background z-50 pb-safe md:hidden">
-      <div className="flex justify-around items-center h-16 px-2">
+    <div className="fixed bottom-0 left-0 right-0 border-t bg-background z-50 pb-safe md:hidden overflow-x-auto scrollbar-hide">
+      <div className="flex justify-around items-center min-w-[320px] h-16 px-1 gap-1">
         <Link
           to="/"
           className={cn(
@@ -47,13 +49,39 @@ export function BottomNav() {
         </Link>
 
         <Link
+          to="/pwa-guide"
+          className={cn(
+            'flex flex-col items-center justify-center w-full h-full space-y-1',
+            isActive('/pwa-guide') ? 'text-primary' : 'text-muted-foreground',
+          )}
+        >
+          <Smartphone className="h-5 w-5" />
+          <span className="text-[10px] font-medium truncate max-w-[45px] text-center">
+            {t('nav.install_app')}
+          </span>
+        </Link>
+
+        <Link
           to="/post-job"
           className="flex flex-col items-center justify-center w-full h-full space-y-1 -mt-6"
         >
           <div className="bg-primary text-primary-foreground rounded-full p-3 shadow-lg hover:bg-primary/90 transition-colors">
             <PlusCircle className="h-6 w-6" />
           </div>
-          <span className="text-[10px] font-medium">Publicar</span>
+          <span className="text-[10px] font-medium">{t('nav.post')}</span>
+        </Link>
+
+        <Link
+          to="/contact"
+          className={cn(
+            'flex flex-col items-center justify-center w-full h-full space-y-1',
+            isActive('/contact') ? 'text-primary' : 'text-muted-foreground',
+          )}
+        >
+          <Mail className="h-5 w-5" />
+          <span className="text-[10px] font-medium truncate max-w-[45px] text-center">
+            {t('nav.contact_us')}
+          </span>
         </Link>
 
         {isAuthenticated ? (
@@ -106,7 +134,9 @@ export function BottomNav() {
               )}
             >
               <UserPlus className="h-5 w-5" />
-              <span className="text-[10px] font-medium">Criar Conta</span>
+              <span className="text-[10px] font-medium truncate max-w-[45px] text-center">
+                {t('nav.register')}
+              </span>
             </Link>
           </>
         )}

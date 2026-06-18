@@ -201,6 +201,54 @@ export const translations: Translations = {
     'nav.finance': 'Financeiro',
     'nav.visitor': 'Visitante',
     'nav.nav_jobs': 'Navegação e Vagas',
+    'contact.title': 'Fale Conosco',
+    'contact.desc':
+      'Tem alguma dúvida ou interesse? Envie sua mensagem e nossa equipe responderá o mais rápido possível.',
+    'contact.name': 'Nome Completo *',
+    'contact.name_placeholder': 'Seu nome',
+    'contact.email': 'E-mail *',
+    'contact.email_placeholder': 'seu@email.com',
+    'contact.phone': 'Telefone *',
+    'contact.phone_placeholder': '(00) 00000-0000',
+    'contact.subject': 'Motivo do Contato *',
+    'contact.subject_placeholder': 'Selecione um motivo',
+    'contact.subject.partnership': 'Parceria',
+    'contact.subject.support': 'Suporte Técnico',
+    'contact.subject.interest': 'Interesse em Serviços',
+    'contact.subject.other': 'Outros',
+    'contact.message': 'Mensagem *',
+    'contact.message_placeholder': 'Detalhe o motivo do seu contato...',
+    'contact.send': 'Enviar Mensagem',
+    'contact.sending': 'Enviando Mensagem...',
+    'contact.success':
+      'Sua mensagem foi enviada com sucesso! Nossa equipe entrará em contato em breve.',
+    'contact.error':
+      'Ocorreu um erro ao enviar sua mensagem. Tente novamente mais tarde.',
+    'contact.validation.required':
+      'Por favor, preencha todos os campos obrigatórios.',
+    'pwa.guide.title': 'Instale nosso Aplicativo',
+    'pwa.guide.desc':
+      'Tenha a OPPORJOB sempre à mão, direto na tela inicial do seu celular. Não é necessário baixar da loja de aplicativos!',
+    'pwa.guide.android.title': 'Usuários Android',
+    'pwa.guide.android.step1.title': 'Abra o Google Chrome',
+    'pwa.guide.android.step1.desc':
+      'Acesse nosso site utilizando o navegador Chrome no seu celular Android.',
+    'pwa.guide.android.step2.title': 'Toque no menu de opções',
+    'pwa.guide.android.step2.desc':
+      'Localize e toque no ícone de três pontos no canto superior direito.',
+    'pwa.guide.android.step3.title': 'Instalar aplicativo',
+    'pwa.guide.android.step3.desc':
+      'Selecione a opção "Instalar aplicativo" ou "Adicionar à tela inicial". Confirme a instalação para concluir.',
+    'pwa.guide.ios.title': 'Usuários iOS (iPhone)',
+    'pwa.guide.ios.step1.title': 'Abra o Safari',
+    'pwa.guide.ios.step1.desc':
+      'Acesse nosso site utilizando o navegador nativo Safari no seu iPhone.',
+    'pwa.guide.ios.step2.title': 'Toque em Compartilhar',
+    'pwa.guide.ios.step2.desc':
+      'Localize e toque no ícone de Compartilhar (quadrado com a seta para cima) na barra inferior.',
+    'pwa.guide.ios.step3.title': 'Adicionar à Tela de Início',
+    'pwa.guide.ios.step3.desc':
+      'Role a lista de opções para baixo e selecione "Adicionar à Tela de Início". Confirme tocando em "Adicionar" no canto superior.',
     'nav.construction_mgmt': 'Gestão de Obras (Contratante)',
     'nav.my_projects': 'Meus Projetos',
     'nav.partner_panel': 'Painel do Parceiro',
@@ -222,6 +270,8 @@ export const translations: Translations = {
     'nav.earnings': 'Ganhos (Prestador)',
     'nav.manage_jobs': 'Gestão de Vagas',
     'nav.admin_team': 'Equipe Admin',
+    'nav.install_app': 'Instalar App',
+    'nav.contact_us': 'Fale Conosco',
     'nav.audit_logs': 'Logs de Auditoria',
     'nav.financial_control': 'Controle Financeiro',
     'admin.jobs.page_title': 'Vagas e Projetos',
@@ -1975,6 +2025,53 @@ export const translations: Translations = {
     'nav.finance': 'Finance',
     'nav.visitor': 'Visitor',
     'nav.nav_jobs': 'Navigation & Jobs',
+    'contact.title': 'Contact Us',
+    'contact.desc':
+      'Have any questions or interests? Send your message and our team will respond as soon as possible.',
+    'contact.name': 'Full Name *',
+    'contact.name_placeholder': 'Your name',
+    'contact.email': 'Email *',
+    'contact.email_placeholder': 'your@email.com',
+    'contact.phone': 'Phone *',
+    'contact.phone_placeholder': '(000) 000-0000',
+    'contact.subject': 'Reason for Contact *',
+    'contact.subject_placeholder': 'Select a reason',
+    'contact.subject.partnership': 'Partnership',
+    'contact.subject.support': 'Technical Support',
+    'contact.subject.interest': 'Interest in Services',
+    'contact.subject.other': 'Other',
+    'contact.message': 'Message *',
+    'contact.message_placeholder': 'Detail the reason for your contact...',
+    'contact.send': 'Send Message',
+    'contact.sending': 'Sending Message...',
+    'contact.success':
+      'Your message has been sent successfully! Our team will contact you shortly.',
+    'contact.error':
+      'An error occurred while sending your message. Please try again later.',
+    'contact.validation.required': 'Please fill in all required fields.',
+    'pwa.guide.title': 'Install our App',
+    'pwa.guide.desc':
+      "Have OPPORJOB always at hand, right on your phone's home screen. No need to download from the app store!",
+    'pwa.guide.android.title': 'Android Users',
+    'pwa.guide.android.step1.title': 'Open Google Chrome',
+    'pwa.guide.android.step1.desc':
+      'Access our website using the Chrome browser on your Android phone.',
+    'pwa.guide.android.step2.title': 'Tap the options menu',
+    'pwa.guide.android.step2.desc':
+      'Locate and tap the three-dot icon in the top right corner.',
+    'pwa.guide.android.step3.title': 'Install app',
+    'pwa.guide.android.step3.desc':
+      'Select the option "Install app" or "Add to Home screen". Confirm the installation to complete.',
+    'pwa.guide.ios.title': 'iOS Users (iPhone)',
+    'pwa.guide.ios.step1.title': 'Open Safari',
+    'pwa.guide.ios.step1.desc':
+      'Access our website using the native Safari browser on your iPhone.',
+    'pwa.guide.ios.step2.title': 'Tap Share',
+    'pwa.guide.ios.step2.desc':
+      'Locate and tap the Share icon (square with an up arrow) in the bottom bar.',
+    'pwa.guide.ios.step3.title': 'Add to Home Screen',
+    'pwa.guide.ios.step3.desc':
+      'Scroll down the options list and select "Add to Home Screen". Confirm by tapping "Add" in the top corner.',
     'nav.construction_mgmt': 'Construction Mgmt (Contractor)',
     'nav.my_projects': 'My Projects',
     'nav.partner_panel': 'Partner Dashboard',
@@ -2116,6 +2213,8 @@ export const translations: Translations = {
     'val.req_city': 'City is required',
     'val.req_state': 'State is required',
     'publish.what': 'What do you want to post?',
+    'nav.install_app': 'Install App',
+    'nav.contact_us': 'Contact Us',
     'publish.btn': 'Post',
     'post.type.product.title': 'Sell Product',
     'post.type.product.desc': 'Sell materials or tools.',
@@ -3624,6 +3723,54 @@ export const translations: Translations = {
     'nav.finance': 'Finanzas',
     'nav.visitor': 'Visitante',
     'nav.nav_jobs': 'Navegación y Vacantes',
+    'contact.title': 'Contáctenos',
+    'contact.desc':
+      '¿Tiene alguna pregunta o interés? Envíe su mensaje y nuestro equipo le responderá lo antes posible.',
+    'contact.name': 'Nombre Completo *',
+    'contact.name_placeholder': 'Su nombre',
+    'contact.email': 'Email *',
+    'contact.email_placeholder': 'su@email.com',
+    'contact.phone': 'Teléfono *',
+    'contact.phone_placeholder': '(000) 000-0000',
+    'contact.subject': 'Motivo de Contacto *',
+    'contact.subject_placeholder': 'Seleccione un motivo',
+    'contact.subject.partnership': 'Asociación',
+    'contact.subject.support': 'Soporte Técnico',
+    'contact.subject.interest': 'Interés en Servicios',
+    'contact.subject.other': 'Otros',
+    'contact.message': 'Mensaje *',
+    'contact.message_placeholder': 'Detalle el motivo de su contacto...',
+    'contact.send': 'Enviar Mensaje',
+    'contact.sending': 'Enviando Mensaje...',
+    'contact.success':
+      '¡Su mensaje ha sido enviado con éxito! Nuestro equipo se pondrá en contacto pronto.',
+    'contact.error':
+      'Ocurrió un error al enviar su mensaje. Por favor, inténtelo de nuevo más tarde.',
+    'contact.validation.required':
+      'Por favor, complete todos los campos obligatorios.',
+    'pwa.guide.title': 'Instale nuestra App',
+    'pwa.guide.desc':
+      'Tenga a OPPORJOB siempre a mano, directo en la pantalla de inicio de su celular. ¡No es necesario descargar de la tienda de aplicaciones!',
+    'pwa.guide.android.title': 'Usuarios Android',
+    'pwa.guide.android.step1.title': 'Abra Google Chrome',
+    'pwa.guide.android.step1.desc':
+      'Acceda a nuestro sitio web utilizando el navegador Chrome en su celular Android.',
+    'pwa.guide.android.step2.title': 'Toque el menú de opciones',
+    'pwa.guide.android.step2.desc':
+      'Localice y toque el icono de tres puntos en la esquina superior derecha.',
+    'pwa.guide.android.step3.title': 'Instalar aplicación',
+    'pwa.guide.android.step3.desc':
+      'Seleccione la opción "Instalar aplicación" o "Agregar a la pantalla principal". Confirme la instalación para completar.',
+    'pwa.guide.ios.title': 'Usuarios iOS (iPhone)',
+    'pwa.guide.ios.step1.title': 'Abra Safari',
+    'pwa.guide.ios.step1.desc':
+      'Acceda a nuestro sitio web utilizando el navegador nativo Safari en su iPhone.',
+    'pwa.guide.ios.step2.title': 'Toque Compartir',
+    'pwa.guide.ios.step2.desc':
+      'Localice y toque el icono de Compartir (cuadrado con una flecha hacia arriba) en la barra inferior.',
+    'pwa.guide.ios.step3.title': 'Agregar a la Pantalla de Inicio',
+    'pwa.guide.ios.step3.desc':
+      'Desplácese por la lista de opciones hacia abajo y seleccione "Agregar a la Pantalla de Inicio". Confirme tocando "Agregar" en la esquina superior.',
     'nav.construction_mgmt': 'Gestión de Obras (Contratista)',
     'nav.my_projects': 'Mis Proyectos',
     'nav.partner_panel': 'Panel del Socio',

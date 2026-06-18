@@ -31,6 +31,7 @@ import {
   ShieldCheck,
   UserCog,
   ClipboardList,
+  Smartphone,
 } from 'lucide-react'
 import {
   Sidebar,
@@ -91,6 +92,8 @@ export function MainSidebar() {
         { title: t('sidebar.find_jobs'), url: '/find-jobs', icon: Search },
         { title: t('nav.login'), url: '/login', icon: LogIn },
         { title: t('nav.register'), url: '/register', icon: UserPlus },
+        { title: t('nav.install_app'), url: '/pwa-guide', icon: Smartphone },
+        { title: t('nav.contact_us'), url: '/contact', icon: Mail },
       ],
     })
   } else {
@@ -201,6 +204,8 @@ export function MainSidebar() {
         { title: t('nav.sub_plans'), url: '/subscription', icon: Crown },
         { title: t('nav.ranking'), url: '/leaderboard', icon: Trophy },
         { title: t('nav.documents'), url: '/documents', icon: FolderOpen },
+        { title: t('nav.install_app'), url: '/pwa-guide', icon: Smartphone },
+        { title: t('nav.contact_us'), url: '/contact', icon: Mail },
         { title: t('nav.settings'), url: '/settings', icon: Settings },
       ],
     })

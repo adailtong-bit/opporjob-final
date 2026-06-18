@@ -20,8 +20,10 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Loader2, Mail } from 'lucide-react'
+import { useLanguageStore } from '@/stores/useLanguageStore'
 
 export default function ContactUs() {
+  const { t } = useLanguageStore()
   const [loading, setLoading] = useState(false)
   const [formData, setFormData] = useState({
     name: '',
@@ -41,13 +43,13 @@ export default function ContactUs() {
       !formData.subject ||
       !formData.message
     ) {
-      toast.error('Por favor, preencha todos os campos obrigatórios.')
+      toast.error(t('contact.validation.required'))
       return
     }
 
     setLoading(true)
     try {
-      const { error } = await supabase.from('contact_requests' as any).insert([
+      const { error } = await supabase.from('contact_requests').insert([
         {
           name: formData.name,
           email: formData.email,
@@ -60,16 +62,11 @@ export default function ContactUs() {
 
       if (error) throw error
 
-      toast.success(
-        'Sua mensagem foi enviada com sucesso! Nossa equipe entrará em contato em breve.',
-      )
+      toast.success(t('contact.success'))
       setFormData({ name: '', email: '', phone: '', subject: '', message: '' })
     } catch (err: any) {
       console.error(err)
-      toast.error(
-        err.message ||
-          'Ocorreu um erro ao enviar sua mensagem. Tente novamente mais tarde.',
-      )
+      toast.error(err.message || t('contact.error'))
     } finally {
       setLoading(false)
     }
@@ -82,20 +79,21 @@ export default function ContactUs() {
           <div className="mx-auto bg-primary/10 p-4 rounded-full w-fit mb-4">
             <Mail className="w-8 h-8 text-primary" />
           </div>
-          <CardTitle className="text-3xl font-bold">Fale Conosco</CardTitle>
+          <CardTitle className="text-3xl font-bold">
+            {t('contact.title')}
+          </CardTitle>
           <CardDescription className="text-lg mt-2">
-            Tem alguma dúvida ou interesse? Envie sua mensagem e nossa equipe
-            responderá o mais rápido possível.
+            {t('contact.desc')}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid sm:grid-cols-2 gap-5">
               <div className="space-y-2.5">
-                <Label htmlFor="name">Nome Completo *</Label>
+                <Label htmlFor="name">{t('contact.name')}</Label>
                 <Input
                   id="name"
-                  placeholder="Seu nome"
+                  placeholder={t('contact.name_placeholder')}
                   value={formData.name}
                   onChange={(e) =>
                     setFormData({ ...formData, name: e.target.value })
@@ -104,11 +102,11 @@ export default function ContactUs() {
                 />
               </div>
               <div className="space-y-2.5">
-                <Label htmlFor="email">E-mail *</Label>
+                <Label htmlFor="email">{t('contact.email')}</Label>
                 <Input
                   id="email"
                   type="email"
-                  placeholder="seu@email.com"
+                  placeholder={t('contact.email_placeholder')}
                   value={formData.email}
                   onChange={(e) =>
                     setFormData({ ...formData, email: e.target.value })
@@ -120,11 +118,11 @@ export default function ContactUs() {
 
             <div className="grid sm:grid-cols-2 gap-5">
               <div className="space-y-2.5">
-                <Label htmlFor="phone">Telefone *</Label>
+                <Label htmlFor="phone">{t('contact.phone')}</Label>
                 <Input
                   id="phone"
                   type="tel"
-                  placeholder="(00) 00000-0000"
+                  placeholder={t('contact.phone_placeholder')}
                   value={formData.phone}
                   onChange={(e) =>
                     setFormData({ ...formData, phone: e.target.value })
@@ -133,7 +131,7 @@ export default function ContactUs() {
                 />
               </div>
               <div className="space-y-2.5">
-                <Label htmlFor="subject">Motivo do Contato *</Label>
+                <Label htmlFor="subject">{t('contact.subject')}</Label>
                 <Select
                   value={formData.subject}
                   onValueChange={(val) =>
@@ -142,25 +140,33 @@ export default function ContactUs() {
                   required
                 >
                   <SelectTrigger id="subject">
-                    <SelectValue placeholder="Selecione um motivo" />
+                    <SelectValue
+                      placeholder={t('contact.subject_placeholder')}
+                    />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Partnership">Parceria</SelectItem>
-                    <SelectItem value="Support">Suporte Técnico</SelectItem>
-                    <SelectItem value="Interest in Services">
-                      Interesse em Serviços
+                    <SelectItem value="Partnership">
+                      {t('contact.subject.partnership')}
                     </SelectItem>
-                    <SelectItem value="Other">Outros</SelectItem>
+                    <SelectItem value="Support">
+                      {t('contact.subject.support')}
+                    </SelectItem>
+                    <SelectItem value="Interest in Services">
+                      {t('contact.subject.interest')}
+                    </SelectItem>
+                    <SelectItem value="Other">
+                      {t('contact.subject.other')}
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </div>
             </div>
 
             <div className="space-y-2.5">
-              <Label htmlFor="message">Mensagem *</Label>
+              <Label htmlFor="message">{t('contact.message')}</Label>
               <Textarea
                 id="message"
-                placeholder="Detalhe o motivo do seu contato..."
+                placeholder={t('contact.message_placeholder')}
                 rows={6}
                 value={formData.message}
                 onChange={(e) =>
@@ -181,7 +187,7 @@ export default function ContactUs() {
               ) : (
                 <Mail className="w-5 h-5 mr-2" />
               )}
-              {loading ? 'Enviando Mensagem...' : 'Enviar Mensagem'}
+              {loading ? t('contact.sending') : t('contact.send')}
             </Button>
           </form>
         </CardContent>
