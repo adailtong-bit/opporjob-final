@@ -28,7 +28,7 @@ export default function Index() {
     typeof window !== 'undefined' && window.location.hostname === 'opporjob.com'
 
   const validJobs = jobs.filter((j: any) => {
-    if (isStrictProd && (j.isDemo || j.is_demo)) return false
+    if (j.isDemo || j.is_demo) return true
 
     if (!isProd && !isStrictProd) return true
 

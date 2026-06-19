@@ -95,15 +95,7 @@ export const useJobStore = create<JobState>((set, get) => ({
   fetchJobs: async () => {
     set({ loading: true })
 
-    const isProd =
-      typeof window !== 'undefined' &&
-      window.location.hostname === 'opporjob.com'
-
     let query = supabase.from('jobs').select('*, bids!bids_job_id_fkey(*)')
-
-    if (isProd) {
-      query = query.eq('is_demo', false)
-    }
 
     const { data: jobsData, error } = await query
       .order('priority_weight', { ascending: false, nullsFirst: false })
@@ -157,6 +149,7 @@ export const useJobStore = create<JobState>((set, get) => ({
           })),
         }))
         .filter((j: Job) => {
+          if (j.isDemo) return true
           if (isPremium) return true
           if (currentUser && j.ownerId === currentUser.id) return true
           if (j.earlyAccessHours && j.earlyAccessHours > 0) {
@@ -229,10 +222,6 @@ export const useJobStore = create<JobState>((set, get) => ({
   getJob: (id) => {
     const job = get().jobs.find((j) => j.id === id)
     if (!job) return undefined
-    const isProd =
-      typeof window !== 'undefined' &&
-      window.location.hostname === 'opporjob.com'
-    if (isProd && (job.isDemo || (job as any).is_demo)) return undefined
     return job
   },
   updateJob: async (id, job) => {
@@ -398,18 +387,10 @@ export const useJobStore = create<JobState>((set, get) => ({
     await supabase.rpc('increment_job_impressions', { job_ids_param: jobIds })
   },
   fetchJobById: async (id) => {
-    const isProd =
-      typeof window !== 'undefined' &&
-      window.location.hostname === 'opporjob.com'
-
     let query = supabase
       .from('jobs')
       .select('*, bids!bids_job_id_fkey(*)')
       .eq('id', id)
-
-    if (isProd) {
-      query = query.eq('is_demo', false)
-    }
 
     const { data, error } = await query.single()
 
@@ -463,6 +444,7 @@ export const useJobStore = create<JobState>((set, get) => ({
     const userEarlyAccessHours = userPlan?.earlyAccessHours || 0
 
     if (
+      !formattedJob.isDemo &&
       !isPremium &&
       currentUser?.id !== formattedJob.ownerId &&
       formattedJob.earlyAccessHours! > 0

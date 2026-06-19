@@ -97,29 +97,6 @@ const PageTracker = () => {
     if (match) {
       const jobId = match[1]
 
-      // Direct Access Prevention for Demo items in Production
-      const isStrictProd =
-        typeof window !== 'undefined' &&
-        window.location.hostname === 'opporjob.com'
-      if (isStrictProd) {
-        const checkJob = async () => {
-          const { data } = await supabase
-            .from('jobs')
-            .select('is_demo, owner_id')
-            .eq('id', jobId)
-            .single()
-          if (data?.is_demo) {
-            const {
-              data: { user },
-            } = await supabase.auth.getUser()
-            if (!user || user.id !== data.owner_id) {
-              window.location.replace('/')
-              return
-            }
-          }
-        }
-        checkJob()
-      }
       useJobStore.getState().incrementView(jobId)
 
       const trackJobView = async () => {
@@ -632,12 +609,12 @@ const App = () => {
             if (store?.state?.jobs && Array.isArray(store.state.jobs)) {
               const originalLength = store.state.jobs.length
               store.state.jobs = store.state.jobs.filter((j: any) => {
+                if (j.isDemo || j.is_demo) return true
                 if (j.is_published !== true) return false
                 const title = (j.title || '').toLowerCase()
                 const desc = (j.description || '').toLowerCase()
                 return !(
                   title.includes('test') ||
-                  title.includes('demo') ||
                   title.includes('fictício') ||
                   title.includes('ficticio') ||
                   title.includes('mock') ||
@@ -652,11 +629,11 @@ const App = () => {
             if (store?.state?.ads && Array.isArray(store.state.ads)) {
               const originalLength = store.state.ads.length
               store.state.ads = store.state.ads.filter((a: any) => {
+                if (a.isDemo || a.is_demo) return true
                 if (a.is_published !== true) return false
                 const title = (a.title || '').toLowerCase()
                 return !(
                   title.includes('test') ||
-                  title.includes('demo') ||
                   title.includes('fictício') ||
                   title.includes('ficticio') ||
                   title.includes('mock') ||

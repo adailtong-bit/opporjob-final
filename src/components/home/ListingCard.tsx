@@ -48,20 +48,20 @@ export function ListingCard({
               {t('demo.badge.job') || 'Anúncio Demo'}
             </Badge>
           )}
-          {status && (
+          {(status || showDemo) && (
             <Badge
-              variant={status === 'open' ? 'default' : 'secondary'}
+              variant={status === 'open' && !showDemo ? 'default' : 'secondary'}
               className={cn(
                 'absolute top-2 left-2 shadow-sm font-semibold z-10',
-                status === 'completed' &&
-                  'bg-destructive text-destructive-foreground hover:bg-destructive',
+                (status === 'completed' || showDemo) &&
+                  'bg-emerald-600 text-white hover:bg-emerald-700 border-transparent',
               )}
             >
-              {status === 'open'
-                ? 'Available'
-                : status === 'completed'
-                  ? 'Closed'
-                  : 'In Negotiation'}
+              {status === 'completed' || showDemo
+                ? t('status.completed') || 'Closed'
+                : status === 'open'
+                  ? t('status.open') || 'Available'
+                  : t('status.in_negotiation') || 'In Negotiation'}
             </Badge>
           )}
           {/* Mock Online Status Badge */}

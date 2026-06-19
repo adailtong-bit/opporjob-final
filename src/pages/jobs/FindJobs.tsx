@@ -69,7 +69,13 @@ export default function FindJobs() {
 
   const isBasicUser = !user || !user.planName || user.planName === 'Básico'
 
-  const availableJobs = jobs.filter((job) => job.status === 'open')
+  const availableJobs = jobs.filter(
+    (job) =>
+      job.status === 'open' ||
+      job.status === 'completed' ||
+      job.isDemo ||
+      job.is_demo,
+  )
   const regions = Array.from(new Set(jobs.map((j) => j.regionCode))).filter(
     Boolean,
   )
@@ -140,7 +146,7 @@ export default function FindJobs() {
         if (minBudget && jobPrice < Number(minBudget)) matchesBudget = false
         if (maxBudget && jobPrice > Number(maxBudget)) matchesBudget = false
 
-        if (isBasicUser) {
+        if (isBasicUser && !job.isDemo && !job.is_demo) {
           const isNewListing = isAfter(
             new Date(job.createdAt),
             twentyFourHoursAgo,
@@ -530,9 +536,19 @@ export default function FindJobs() {
                 </div>
               </CardContent>
               <CardFooter className="border-t pt-4">
-                <Button className="w-full" asChild>
-                  <Link to={`/jobs/${job.id}`}>{t('view')}</Link>
-                </Button>
+                {job.isDemo || job.is_demo || job.status === 'completed' ? (
+                  <Button
+                    className="w-full bg-green-600 hover:bg-green-600 text-white !opacity-100 cursor-not-allowed"
+                    style={{ opacity: 1 }}
+                    disabled
+                  >
+                    Closed
+                  </Button>
+                ) : (
+                  <Button className="w-full" asChild>
+                    <Link to={`/jobs/${job.id}`}>{t('view')}</Link>
+                  </Button>
+                )}
               </CardFooter>
             </Card>
           )
