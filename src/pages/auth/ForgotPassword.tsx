@@ -48,13 +48,13 @@ export default function ForgotPassword() {
     if (error) {
       toast({
         variant: 'destructive',
-        title: 'Erro',
+        title: t('error') || 'Error',
         description: error.message,
       })
     } else {
       toast({
-        title: 'E-mail enviado',
-        description: 'Verifique sua caixa de entrada.',
+        title: 'Email Sent',
+        description: t('auth.forgot.sent_desc') || 'Check your inbox.',
       })
       setStep(2)
     }
@@ -80,12 +80,13 @@ export default function ForgotPassword() {
         </div>
         <h1 className="text-3xl font-bold tracking-tight">
           {step === 1 && t('auth.forgot.title')}
-          {step === 2 && 'Verifique seu e-mail'}
+          {step === 2 && 'Check your email'}
         </h1>
         <p className="text-muted-foreground text-sm">
           {step === 1 && t('auth.forgot.desc')}
           {step === 2 &&
-            `Enviamos um link de recuperação para o e-mail ${email}. Clique nele para criar uma nova senha.`}
+            (t('auth.forgot.generic_success') ||
+              `If an account exists for this email, you will receive a password reset link shortly.`)}
         </p>
       </div>
 

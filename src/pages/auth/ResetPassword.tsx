@@ -64,15 +64,15 @@ export default function ResetPassword() {
     if (error) {
       toast({
         variant: 'destructive',
-        title: 'Erro ao atualizar a senha',
+        title: 'Error updating password',
         description: error.message,
       })
     } else {
       toast({
-        title: 'Senha atualizada',
-        description: 'Sua senha foi alterada com sucesso!',
+        title: 'Password updated',
+        description: 'Your password was changed successfully!',
       })
-      navigate('/construction/dashboard')
+      navigate('/dashboard')
     }
   }
 
@@ -82,9 +82,9 @@ export default function ResetPassword() {
         <div className="mx-auto w-12 h-12 bg-primary/10 text-primary flex items-center justify-center rounded-xl mb-4">
           <KeyRound className="h-6 w-6" />
         </div>
-        <h1 className="text-3xl font-bold tracking-tight">Nova Senha</h1>
+        <h1 className="text-3xl font-bold tracking-tight">New Password</h1>
         <p className="text-muted-foreground text-sm">
-          Crie uma nova senha segura para o seu acesso.
+          Create a new secure password for your access.
         </p>
       </div>
 
@@ -98,7 +98,7 @@ export default function ResetPassword() {
             name="password"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Nova Senha</FormLabel>
+                <FormLabel>New Password</FormLabel>
                 <FormControl>
                   <Input
                     type="password"
@@ -116,7 +116,7 @@ export default function ResetPassword() {
             name="confirmPassword"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Confirmar Nova Senha</FormLabel>
+                <FormLabel>Confirm New Password</FormLabel>
                 <FormControl>
                   <Input
                     type="password"
@@ -131,7 +131,7 @@ export default function ResetPassword() {
           />
           <Button type="submit" className="w-full h-11" disabled={isLoading}>
             {isLoading && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
-            Salvar e Entrar
+            Save and Sign In
           </Button>
         </form>
       </Form>

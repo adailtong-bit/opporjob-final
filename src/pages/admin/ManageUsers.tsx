@@ -49,6 +49,8 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { useAuthStore } from '@/stores/useAuthStore'
 import { Link } from 'react-router-dom'
+import { useLanguageStore } from '@/stores/useLanguageStore'
+import { Key } from 'lucide-react'
 
 export default function ManageUsers() {
   const [users, setUsers] = useState<any[]>([])
@@ -65,6 +67,7 @@ export default function ManageUsers() {
   const [minScoreFilter, setMinScoreFilter] = useState('')
 
   const { toast } = useToast()
+  const { t } = useLanguageStore()
 
   const { user: currentUser } = useAuthStore()
 
@@ -163,6 +166,28 @@ export default function ManageUsers() {
     } else {
       toast({ title: 'User deleted successfully' })
       fetchUsers()
+    }
+  }
+
+  const handleSendReset = async (u: any) => {
+    const { error } = await supabase.auth.resetPasswordForEmail(u.email, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    })
+
+    if (error) {
+      toast({
+        title: t('auth.reset.admin_error') || 'Failed to send reset email',
+        description: error.message,
+        variant: 'destructive',
+      })
+    } else {
+      toast({
+        title: 'Success',
+        description: (
+          t('auth.reset.admin_success') ||
+          'Password reset email sent to {email}.'
+        ).replace('{email}', u.email),
+      })
     }
   }
 
@@ -377,6 +402,12 @@ export default function ManageUsers() {
                             <span className="text-orange-500">Suspend</span>
                           </>
                         )}
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleSendReset(u)}>
+                        <Key className="mr-2 h-4 w-4 text-blue-500" />
+                        <span className="text-blue-500">
+                          {t('auth.reset.admin_trigger') || 'Send Reset Email'}
+                        </span>
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem onClick={() => handleDelete(u)}>

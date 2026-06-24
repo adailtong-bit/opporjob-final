@@ -20,6 +20,7 @@ import {
 } from '@/components/ui/select'
 import { useToast } from '@/hooks/use-toast'
 import { Loader2, User, ShieldAlert } from 'lucide-react'
+import { SecuritySettings } from './SecuritySettings'
 
 export default function Settings() {
   const { user } = useAuth()
@@ -360,6 +361,10 @@ export default function Settings() {
             </div>
           </CardContent>
         </Card>
+
+        <div className="md:col-span-3">
+          <SecuritySettings />
+        </div>
       </div>
     </div>
   )
